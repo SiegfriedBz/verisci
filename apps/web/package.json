@@ -1,0 +1,27 @@
+{
+  "name": "@verisci/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "next typegen && tsc --noEmit"
+  },
+  "dependencies": {
+    "@verisci/agents": "workspace:*",
+    "@verisci/contracts": "workspace:*",
+    "@verisci/core": "workspace:*",
+    "@verisci/dkg": "workspace:*",
+    "@verisci/env": "workspace:*",
+    "next": "16.3.8",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0"
+  }
+}
