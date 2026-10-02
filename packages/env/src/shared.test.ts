@@ -24,6 +24,16 @@ describe("createSharedEnv", () => {
     expect(error.message).toContain("APP_ENV: required in a production build");
   });
 
+  it("rejects an invalid APP_ENV in a production build without echoing it", () => {
+    const secret = "sk-live-123";
+    const error = catchEnvError(() => createSharedEnv({ NODE_ENV: "production", APP_ENV: secret }));
+
+    expect(error.issues.map((issue) => issue.variable)).toEqual(["APP_ENV"]);
+    expect(error.message).not.toContain("required");
+    expect(error.message).not.toContain(secret);
+    expect(JSON.stringify(error.issues)).not.toContain(secret);
+  });
+
   it("defaults NODE_ENV to development when unset", () => {
     expect(createSharedEnv({}).NODE_ENV).toBe("development");
   });
