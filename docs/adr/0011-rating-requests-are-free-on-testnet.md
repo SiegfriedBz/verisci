@@ -14,5 +14,5 @@ Every rating costs the oracle gas (`fulfil`) and a DKG publish. The previous rep
 
 ## Consequences
 
-- Anyone can drain the oracle wallet by spamming requests; watch its balance.
+- Anyone can drain the oracle wallet by spamming requests. Its balance is alerted on, not just watched ([0020](0020-oracle-transactions-are-serialized.md)).
 - No payment logic in the contract or the app for now.

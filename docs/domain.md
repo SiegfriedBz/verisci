@@ -17,12 +17,15 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
   different, local graph, so queries with it silently return nothing.
 - **Store and mint are separate calls:** `POST /api/knowledge-assets`, then
   `…/{name}/vm/publish`. Asset states are missing, stored (`promoted`) and minted
-  (`published`); only `publishedUal` means minted ([ADR 0013](adr/0013-store-then-mint-converging.md)).
+  (`published`); only `publishedUal` means minted ([ADR 0013](adr/0013-all-writes-converge.md)).
 - **Mints outlive the client:** the daemon finishes a mint after the client disconnects,
   and `vm/publish-async` returns a job id to poll ([ADR 0014](adr/0014-mints-are-async-polled-in-short-steps.md)).
 - **Mint time varies from about 5 s to over 300 s.** A mint can also fail fast on quorum
   (`storage_ack_insufficient`, `CORE_TEMPORARILY_UNAVAILABLE`); retrying after a couple of
   minutes usually works ([ADR 0015](adr/0015-retries-are-spaced-with-step-sleep.md)).
+- **The daemon has a single admin token:** `dkg init` writes one bearer token to
+  `~/.dkg/auth.token`, valid for every graph on the node; there are no tokens scoped per
+  graph. Caddy serves `/api/status` without it.
 - **Every context graph must be listed** under `contextGraphs` in the node's
   `~/.dkg/config.json`, or the node stops serving it after a restart.
 - **A new graph reports `authority-resolution-failed` for up to about 20 minutes.** That is

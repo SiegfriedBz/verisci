@@ -5,7 +5,7 @@
 
 ## Context
 
-Mints can fail fast on quorum (`storage_ack_insufficient`, `CORE_TEMPORARILY_UNAVAILABLE`), and retrying a couple of minutes later usually works. The previous repo threw Inngest's `RetryAfterError` from inside `step.run` to space those retries; there it is silently ignored, and one production run spent all its attempts within six minutes against peers that needed longer to recover.
+Mints can fail fast on quorum (`storage_ack_insufficient`, `CORE_TEMPORARILY_UNAVAILABLE`), and retrying a couple of minutes later usually works. Inngest's default backoff starts in seconds: one production run of the previous repo spent all three of its attempts within six minutes against peers that needed longer to recover. The previous repo then threw `RetryAfterError` from inside `step.run` to space retries, which hides the delay in an error path and in the SDK's retry semantics.
 
 ## Decision
 
@@ -14,6 +14,6 @@ Mints can fail fast on quorum (`storage_ack_insufficient`, `CORE_TEMPORARILY_UNA
 
 ## Consequences
 
-- The delay between attempts is visible in the code and in the run timeline.
+- The delay between attempts is visible in the code, testable, and shown in the run timeline.
 - The function body carries its own retry loop for these cases instead of relying on step retries.
 - After the last attempt the request stays pending and the reconciler takes over ([0016](0016-a-cron-reconciler-recovers-stuck-requests.md)).

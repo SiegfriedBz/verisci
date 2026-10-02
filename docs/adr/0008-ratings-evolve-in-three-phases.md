@@ -10,7 +10,7 @@ A machine score alone is a weak quality signal. The rating is meant to grow stro
 ## Decision
 
 - A rating evolves through three phases: phase 1 a machine score, phase 2 human review, phase 3 wet-lab replication.
-- Each phase's score is an integer from 0 to 100, written once on chain by the oracle, with its R-KA holding the rationale.
+- Each phase's score is an integer from 0 to 100, written once on chain, with its R-KA holding the rationale. The oracle writes phase 1; who signs phases 2 and 3 is for their ADRs.
 - Only phase 1 is built now; phases 2 and 3 get their own plans and ADRs.
 
 ## Consequences

@@ -18,6 +18,9 @@ verisci runs in production (`main`) and staging (`develop`), each deployed at a 
 
 ## Consequences
 
-- A staging run can never touch production assets, and a misconfiguration fails at startup.
+- A staging run can never touch production contracts, wallets or webhooks, and a misconfiguration fails at startup.
+- The shared node is the gap in this isolation: one node wallet serves both graphs, and the daemon has a single admin token (`~/.dkg/auth.token`), so staging credentials could technically write into the production graph, and staging traffic spends the same node funds.
+  - Target: one token per graph, so the node itself refuses a staging write to production. Adopted as soon as the node supports scoped tokens; it does not today.
+  - Until then, the `-prod` guard in the dkg env module is mandatory before any production write.
 - A node outage takes down both environments.
 - Every new external resource is created twice, and its variable set in both Vercel scopes.

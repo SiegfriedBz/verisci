@@ -35,17 +35,19 @@ Inngest, Vercel, tooling) live in [`docs/domain.md`](../domain.md).
 | ADR | Decision |
 | --- | --- |
 | [0012. Asset names derive from the on-chain request id](0012-asset-names-derive-from-request-id.md) | Each request gets its own v2 id; asset names and recovery derive from it, never from a browser |
-| [0013. Store, then mint, and minting converges](0013-store-then-mint-converging.md) | The mint reads the asset's state first and returns the existing UAL if already minted |
-| [0014. Mints are async, polled in short steps](0014-mints-are-async-polled-in-short-steps.md) | `vm/publish-async` polled with `step.sleep`; no step holds a connection longer than one poll |
+| [0013. Every write converges: store, mint and fulfil](0013-all-writes-converge.md) | Each write reads state first and treats "already done" as success; nothing is regenerated on retry |
+| [0014. Mints are async, polled in short steps](0014-mints-are-async-polled-in-short-steps.md) | `vm/publish-async` polled with `step.sleep`, falling back to asset state if the job id is lost |
 | [0015. Retries are spaced with step.sleep](0015-retries-are-spaced-with-step-sleep.md) | Explicit `step.sleep`, never `RetryAfterError` in `step.run`; start at 2 min, 5 attempts, 45 min |
-| [0016. A cron reconciler recovers stuck requests](0016-a-cron-reconciler-recovers-stuck-requests.md) | One cron workflow finishes or cancels stuck requests; the v2 contract lists pending ids |
+| [0016. A cron reconciler recovers stuck requests](0016-a-cron-reconciler-recovers-stuck-requests.md) | One cron workflow finishes or cancels stuck requests, sharing the run's lock; never re-scores; gives up after a limit |
+| [0020. Oracle transactions are serialized](0020-oracle-transactions-are-serialized.md) | One oracle transaction in flight at a time; per-environment hot key, balance alert, rotation via `setOracleAgent` |
+| [0021. Chain events are ingested at least once](0021-chain-events-are-ingested-at-least-once.md) | HMAC-verified webhooks, deduplicated by `txHash:logIndex`, `removed` logs ignored; the reconciler heals misses |
 
 ## Pipelines
 
 | ADR | Decision |
 | --- | --- |
-| [0017. PDFs become Target KAs in a stepped pipeline](0017-pdf-to-target-ka-pipeline.md) | Pin on IPFS, GROBID, LLM extraction, store, mint: one workflow step each |
-| [0018. The phase-1 scorer has a fixed output contract](0018-phase-1-scorer-output-contract.md) | `{ score, rationale, observed, missing }`, deterministic; the model is configuration |
+| [0017. PDFs become Target KAs in a stepped pipeline](0017-pdf-to-target-ka-pipeline.md) | Pin on IPFS, GROBID, LLM extraction, store, mint: one step each; the Target KA is named from the PDF's CID |
+| [0018. The phase-1 scorer has a fixed output contract](0018-phase-1-scorer-output-contract.md) | `{ score, rationale, observed, missing }`, schema-validated, computed once and read back; the model is configuration |
 
 ## App
 
@@ -55,7 +57,7 @@ Inngest, Vercel, tooling) live in [`docs/domain.md`](../domain.md).
 
 ## Adding an ADR
 
-1. Take the next number (`0020`, …) and name the file `NNNN-kebab-title.md`.
+1. Take the next number (`0022`, …) and name the file `NNNN-kebab-title.md`.
 2. Put it in the group it belongs to (or a new one). Use the same headings as the others: a title `# NNNN. Title`, then `Status` and `Date`,
    then `## Context`, `## Decision`, `## Consequences`. Keep it under a page.
 3. Add a row to its group's table, and commit it with the plan that took the decision
