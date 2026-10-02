@@ -62,9 +62,11 @@ to draft a PR while docs findings remain.
 
 ## Hooks (.claude/hooks)
 
-- After each edit: Biome `check --write` and related Vitest tests (TS/JSON/CSS), or
-  `forge fmt`, NatSpec and `forge test` (Solidity). Fix what they report in the same turn.
+- After each edit: Biome `check --write` (TS, JS, JSON, CSS), then related Vitest tests
+  (`.ts`/`.tsx` only); or `forge fmt`, NatSpec and `forge test` (Solidity). Fix what they
+  report in the same turn.
 - Before an edit: generated files (lockfiles, `next-env.d.ts`, Foundry output, Soldeer
   dependencies, deployments) are refused with how to regenerate them.
-- Env files other than `.env.example` can't be read or edited; ask the user instead.
-- On stop: changed workspaces must typecheck, or the stop is blocked with the errors.
+- Env files other than `.env.example` can't be read, grepped or edited; ask the user.
+- On stop: workspaces changed on the branch must typecheck, or the stop is blocked with
+  the errors. After 3 blocks in a row you may stop: report the remaining errors instead.

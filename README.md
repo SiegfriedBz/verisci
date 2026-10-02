@@ -83,8 +83,8 @@ rules. `.claude/` holds the shared settings, hooks and skills:
 
 Hooks format, lint and test each file Claude edits, block edits to generated files and
 reads of env files (except `.env.example`), and typecheck the changed workspaces before
-Claude finishes. They need `jq`. Claude can't push or broadcast transactions; `git commit`
-asks first. Personal overrides go in `.claude/settings.local.json` (gitignored).
+Claude finishes. They need `jq`. Claude can't push, broadcast transactions or deploy
+contracts (`forge script --broadcast`, `forge create`, `cast send`); `git commit` asks first. Personal overrides go in `.claude/settings.local.json` (gitignored).
 
 ## Contributing
 
