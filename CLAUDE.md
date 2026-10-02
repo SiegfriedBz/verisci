@@ -43,7 +43,8 @@ Toolchain: Node 24.21.0 (`.nvmrc`), pnpm 10.34.6 via Corepack, Foundry 1.8.4. If
 1. `/plan-feature <name>` writes `docs/plans/NNN-<name>.md` (gitignored local notes).
 2. `/implement <NNN>` branches from `origin/develop`, writes the tests first and shows them
    failing, then implements until green, committing in small steps.
-3. `/review-branch` runs the read-only reviewer, blocks on stale docs, then drafts the PR.
+3. `/review-branch` runs CI's checks, tests and builds, then the read-only reviewer; it
+   blocks on any failure or stale docs, then drafts the PR.
 
 Branches: `<type>/<NNN>-<slug>` from `develop`. Feature PRs target `develop` and are
 squash-merged; releases go `develop` → `main` with a merge commit.
