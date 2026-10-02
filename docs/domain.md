@@ -11,8 +11,16 @@ facts before relying on them. Add a fact when you learn one the hard way.
 
 Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base Sepolia.
 
-- **UAL shape:** `did:dkg:base:{chainId}/{dkgAgentAddress}/{tokenId}`. The middle segment
-  is the node's agent wallet, not a contract; naming it after a contract caused confusion.
+- **A UAL has two shapes on V10,** chosen by the on-chain id (OriginTrail/dkg
+  `packages/core/src/ka-ual-identity.ts`, checked at `abfd785`, 2026-09):
+  - `did:dkg:base:{chainId}/{authorAddress}/{kaNumber}`: the V10 form. The author is the
+    publishing agent's wallet, packed into the id's high 160 bits. Ours look like this: the
+    previous repo's middle segment equals the node's agent address and has no contract code.
+  - `did:dkg:base:{chainId}/{DKGKnowledgeAssets address}/{kaId}`: the older form, for ids
+    with no author bits. OriginTrail's docs still show only this one.
+
+  A UAL parser accepts both and never assumes the middle segment is our node: a target
+  published elsewhere ([ADR 0011](adr/0011-a-rating-is-a-separate-r-ka.md)) may use either.
 - **Context graph ids** are the full `<agent address>/<name>`. A bare name refers to a
   different, local graph, so queries with it silently return nothing.
 - **Store and mint are separate calls:** `POST /api/knowledge-assets`, then
@@ -37,8 +45,9 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
   `~/.dkg/config.json`, or the node stops serving it after a restart.
 - **A new graph reports `authority-resolution-failed` for up to about 20 minutes.** That is
   a slow chain read, not a bad registration: wait before re-registering.
-- **Token ids are global:** OriginTrail's shared contract mints them for every node and
-  environment, so each environment sees gaps in its numbering. Expected, not a bug.
+- **KA numbers are counted per author** and reserved at store time (the `reservedUal`).
+  Both our graphs publish as one author, and a stored asset that is never minted keeps
+  its number, so each environment sees gaps in its numbering. Expected, not a bug.
 - **Authority resolution needs the node's local JSON-RPC proxy:** public Base Sepolia
   endpoints are not reliable enough for it.
 

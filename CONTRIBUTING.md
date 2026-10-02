@@ -56,10 +56,10 @@ keeps branches in build order.
   the full-width PR description): *why*, not *what* — the diff shows what.
 
 ```text
-feat(core): parse UALs into chain id, agent address and token id
+feat(core): parse both UAL shapes
 
-The middle segment is the node's agent wallet, not a contract, so the
-parser names it dkgAgentAddress to stop the old confusion recurring.
+V10 UALs carry the author's wallet where older ones carry the storage
+contract, so the parser accepts both instead of assuming our node.
 ```
 
 Commit small and often on the branch: each commit should build and pass its
