@@ -21,6 +21,7 @@ describe("createSharedEnv", () => {
     const error = catchEnvError(() => createSharedEnv({ NODE_ENV: "production", ...appEnv }));
 
     expect(error.issues.map((issue) => issue.variable)).toEqual(["APP_ENV"]);
+    expect(error.message).toContain("APP_ENV: required in a production build");
   });
 
   it("defaults NODE_ENV to development when unset", () => {
