@@ -18,5 +18,5 @@ A machine score alone is a weak quality signal. A rating should grow stronger as
 
 - The contract stores one score per phase, so a later phase never overwrites an earlier one.
 - The UI shows which phase a rating has reached, not only a number.
-- Only the R-KA's owner can update it, and it is minted to our node's agent, so later phases update it through our node, whoever signs them ([domain](../domain.md)).
+- On the DKG, only a KA's owner can update it, and the R-KA is minted to our node's agent ([domain](../domain.md)). So our node writes every phase's R-KA version, as it does in phase 1; who may request or score a later phase on the contract is a separate question, for those phases' ADRs.
 - An update is a write like any other, so it must converge: it reads the R-KA's current version first ([0007](0007-all-writes-converge.md)).
