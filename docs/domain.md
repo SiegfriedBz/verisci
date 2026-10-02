@@ -39,6 +39,9 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
 
 Observed on Base Sepolia (chain id 84532) with Alchemy.
 
+- **Base produces a block every 2 seconds; a block is final only once its batch is final on
+  L1,** minutes later. Reorgs before that are rare but possible (Base docs), which is why
+  request ids are bound to their content ([ADR 0012](adr/0012-asset-names-derive-from-request-id.md)).
 - **The free RPC tier caps `eth_getLogs` at 10 blocks,** so nothing may depend on scanning
   history; read current contract state instead ([ADR 0016](adr/0016-a-cron-reconciler-recovers-stuck-requests.md)).
 - **Alchemy delivers a log to every webhook rule matching its contract:** keep exactly one
@@ -62,6 +65,8 @@ Observed on Vercel Hobby with Inngest Cloud, except where a fact cites the vendo
 - **Inngest concurrency limits count running steps, not runs:** a run that is sleeping or
   waiting holds no slot, so a concurrency key cannot keep two functions (or two runs) off
   the same request ([ADR 0016](adr/0016-a-cron-reconciler-recovers-stuck-requests.md)).
+- **Inngest `singleton` (mode `skip`) locks a whole run, sleeps included:** while a run for
+  a key is active, new runs for that key are skipped (Inngest docs) ([ADR 0016](adr/0016-a-cron-reconciler-recovers-stuck-requests.md)).
 - **Inngest deduplicates event ids for 24 hours only:** an event re-sent later with the
   same id starts a new run ([ADR 0021](adr/0021-chain-events-are-ingested-at-least-once.md)).
 - **Vercel caps a function's request body at 4.5 MB** (Vercel docs, to verify on our

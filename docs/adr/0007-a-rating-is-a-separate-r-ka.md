@@ -13,6 +13,6 @@ A rating is its own Rating Knowledge Asset (R-KA), stored and minted like any KA
 
 ## Consequences
 
-- Anyone can rate any KA, including ones verisci did not publish.
+- Anyone can request a rating of any KA, including ones verisci did not publish. Scoring needs our node to read the target: reading KAs from other context graphs is not yet verified on V10, and a target the node cannot read is cancelled, not retried.
 - Finding a paper's ratings is a query on `schema:about`, not a field on the paper.
 - Each rating costs its own store and mint.

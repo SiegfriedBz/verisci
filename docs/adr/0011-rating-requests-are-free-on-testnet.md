@@ -5,14 +5,16 @@
 
 ## Context
 
-Every rating costs the oracle gas (`fulfil`) and a DKG publish. The previous repo made requests free to keep the first version simple, and named the result a known abuse surface.
+Every rating costs an LLM call (real money), the oracle's `fulfil` gas and a DKG publish. The previous repo made requests free to keep the first version simple, and named the result a known abuse surface.
 
 ## Decision
 
-- Rating requests are free: the requester pays only their own gas. The oracle wallet pays the fulfil gas and sponsors the DKG publish.
-- Accepted on testnet only. A payment or rate-limiting plan supersedes this ADR before any mainnet deployment.
+- Rating requests are free: the requester pays only their own gas. The oracle wallet pays the fulfil gas, the node's wallet pays the DKG publish (TRAC and gas), and verisci pays the LLM.
+- Abuse is bounded, not priced: the contract caps the pending requests per requester, and the rating function is throttled.
+- Accepted on testnet only. A payment plan supersedes this ADR before any mainnet deployment.
 
 ## Consequences
 
-- Anyone can drain the oracle wallet by spamming requests. Its balance is alerted on, not just watched ([0020](0020-oracle-transactions-are-serialized.md)).
+- Spam costs the attacker only testnet gas, so the caps are what limit spend. The oracle and node wallet balances are alerted on, not just watched ([0020](0020-oracle-transactions-are-serialized.md)).
+- The contracts plan sets the per-requester cap; the agents plan sets the throttle.
 - No payment logic in the contract or the app for now.

@@ -13,7 +13,7 @@ Publishing a Knowledge Asset on the DKG node is two daemon calls: a store (`POST
 - Every write reads the current state first and treats "already done" as success:
   - **store:** if the asset is stored or minted, skip, and reuse the stored content (subject ids included) instead of generating new ones;
   - **mint:** read the asset's `state` (missing, stored, minted), never infer it from which UAL field is present; if minted, return the existing UAL;
-  - **fulfil:** read the request on chain; if it is already fulfilled with this R-KA, return success without sending a transaction. The read and the send are not atomic, so a revert saying the request is no longer pending (`NotPending`) also counts as done. A request fulfilled with a *different* R-KA should never happen: it raises an alert instead of succeeding.
+  - **fulfil:** read the request on chain, inside the oracle function's serialized step ([0020](0020-oracle-transactions-are-serialized.md)); if it is already fulfilled with this R-KA, return success without sending a transaction. If the send still reverts with `NotPending` (an owner action landed in between), read again: fulfilled with this R-KA is done; cancelled or unknown stops the run and logs the asset as an orphan; fulfilled with a *different* R-KA should never happen and raises an alert.
 - A blind `vm/publish` on a minted name, or a `fulfil` on a settled request, is an error, and the code never sends one.
 
 ## Consequences

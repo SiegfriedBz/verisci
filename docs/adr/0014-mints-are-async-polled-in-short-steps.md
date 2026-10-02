@@ -14,6 +14,6 @@ A DKG mint takes anywhere from about 5 seconds to over 300. Vercel Hobby stops a
 
 ## Consequences
 
-- No step can hit Vercel's function time limit, however slow the mint.
+- No mint step can hit Vercel's function time limit, however slow the mint. Every other step (GROBID, the LLM, waiting for a receipt) must also finish well inside that limit, with its own timeout.
 - More steps per rating, so more Inngest step executions.
 - Poll interval and give-up threshold become explicit settings, chosen in the agents plan.

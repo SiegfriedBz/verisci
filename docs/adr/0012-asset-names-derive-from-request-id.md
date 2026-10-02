@@ -9,8 +9,9 @@ A rating is requested on chain, then scored, stored and minted on the DKG by the
 
 ## Decision
 
-- The v2 contract gives every request its own id: a counter hashed with the contract address and chain id. A retry is a new request with a new id.
-- Every DKG asset name and every recovery derives from that request id alone. Given a request id, any process can compute the asset name, read its state on chain and on the daemon, and finish or cancel it.
+- The v2 contract gives every request its own id: the hash of the chain id, the contract address, a counter, the requester and the target UAL. A retry is a new request with a new id.
+- Hashing the requester and target binds the id to its content: if a reorg drops a request and another takes its counter, that other request gets a different id, so a run can never fulfil one request with another's rating.
+- Every rating asset name (with its phase, [0008](0008-ratings-evolve-in-three-phases.md)) and every recovery derives from that request id. Given a request id, any process can compute the asset name, read its state on chain and on the daemon, and finish or cancel it. Target KAs are named from their PDF instead ([0017](0017-pdf-to-target-ka-pipeline.md)).
 - Nothing load-bearing lives in a browser: client storage may cache, never decide.
 
 ## Consequences
