@@ -24,6 +24,11 @@ pnpm install
 pnpm dev         # starts apps/web on http://localhost:3000
 ```
 
+Environment variables are listed in [`.env.example`](.env.example); each one
+has a default or is optional for now, so the app runs without an env file. How
+workspaces declare and validate them is in the
+[`@verisci/env` README](packages/env/README.md).
+
 ## Commands
 
 | Command | What it does |

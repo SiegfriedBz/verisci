@@ -1,12 +1,69 @@
 # @verisci/env
 
-Typed access to environment variables for every other workspace.
+Typed, validated environment variables for every other workspace. Each workspace
+declares the variables it reads as Zod schemas; a missing or invalid variable fails
+on first import with one `EnvError` that names every bad variable and never shows
+its value.
 
-Status: placeholder. Plan 005 fills it in.
+Built on [`@t3-oss/env-core`](https://env.t3.gg) and [Zod](https://zod.dev).
 
 ## Depends on
 
 No other workspace.
+
+## Shared variables
+
+`sharedEnv` holds the variables every workspace may read, validated from
+`process.env` on first import.
+
+| Variable | Values | Default |
+| --- | --- | --- |
+| `NODE_ENV` | `development`, `test`, `production` | `development` |
+| `APP_ENV` | `local`, `staging` (`develop`), `production` (`main`) | `local` |
+
+`APP_ENV` is set per host environment, never inferred from the branch. Empty
+strings count as unset, so `APP_ENV=` gets the default.
+
+## Declaring a workspace's variables
+
+Each workspace keeps its schema in its own `src/env.ts` and extends `sharedEnv`.
+A workspace declares only what it reads, so no workspace requires (or sees) a
+secret it does not use.
+
+```ts
+// packages/dkg/src/env.ts
+import { defineEnv, sharedEnv } from "@verisci/env";
+import { z } from "zod";
+
+export const env = defineEnv({
+  extends: [sharedEnv],
+  server: { DKG_URL: z.url() },
+});
+
+env.DKG_URL; // string
+env.APP_ENV; // "local" | "staging" | "production"
+```
+
+The workspace adds `zod` to its own dependencies, pinned to the version `env` uses.
+Add each new variable to the root [`.env.example`](../../.env.example) in the same PR.
+
+## API
+
+| Export | What it does |
+| --- | --- |
+| `defineEnv({ server, extends?, runtimeEnv? })` | Validates `runtimeEnv` (default `process.env`, never mutated) and returns a typed, read-only object; throws `EnvError` |
+| `EnvError` | `message` lists each variable and the schema's message; `issues` is `{ variable, message }[]`. Never contains a value |
+| `sharedSchema` | The Zod schemas for `NODE_ENV` and `APP_ENV` |
+| `sharedEnv` | The shared variables, validated from `process.env` |
+| `createSharedEnv(runtimeEnv?)` | Builds the shared env from a given object, for tests and scripts |
+
+In tests, pass `runtimeEnv` explicitly rather than setting `process.env`.
+
+## Skipping validation
+
+`SKIP_ENV_VALIDATION=1` (or `true`) returns the raw values unchecked, with no
+defaults applied. Use it only where no code reads the values (lint, a Docker image
+build); never in a running app.
 
 ## Scripts
 
