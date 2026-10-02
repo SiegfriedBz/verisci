@@ -1,4 +1,4 @@
-# 0004. Explicit retry spacing
+# 0015. Retries are spaced with step.sleep
 
 - Status: Accepted
 - Date: 2026-10-02
@@ -16,4 +16,4 @@ Mints can fail fast on quorum (`storage_ack_insufficient`, `CORE_TEMPORARILY_UNA
 
 - The delay between attempts is visible in the code and in the run timeline.
 - The function body carries its own retry loop for these cases instead of relying on step retries.
-- After the last attempt the request stays pending and the reconciler takes over ([0010](0010-one-reconciler-owns-recovery.md)).
+- After the last attempt the request stays pending and the reconciler takes over ([0016](0016-a-cron-reconciler-recovers-stuck-requests.md)).

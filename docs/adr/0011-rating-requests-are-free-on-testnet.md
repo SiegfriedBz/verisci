@@ -1,4 +1,4 @@
-# 0017. Payment model V0
+# 0011. Rating requests are free on testnet
 
 - Status: Accepted
 - Date: 2026-10-02

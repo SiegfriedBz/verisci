@@ -1,4 +1,4 @@
-# 0015. Three-phase rating
+# 0008. Ratings evolve in three phases
 
 - Status: Accepted
 - Date: 2026-10-02

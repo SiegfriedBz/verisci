@@ -1,4 +1,4 @@
-# 0018. Phase-1 scorer contract
+# 0018. The phase-1 scorer has a fixed output contract
 
 - Status: Accepted
 - Date: 2026-10-02

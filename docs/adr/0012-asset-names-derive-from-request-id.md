@@ -1,4 +1,4 @@
-# 0001. Names derive from chain state
+# 0012. Asset names derive from the on-chain request id
 
 - Status: Accepted
 - Date: 2026-10-02
@@ -15,7 +15,7 @@ A rating is requested on chain, then scored, stored and minted on the DKG by the
 
 ## Consequences
 
-- Recovery works from any machine, including the reconciler ([0010](0010-one-reconciler-owns-recovery.md)).
+- Recovery works from any machine, including the reconciler ([0016](0016-a-cron-reconciler-recovers-stuck-requests.md)).
 - Asset names are deterministic, so a retried store or mint targets the same name instead of creating a duplicate.
-- Two deployments never produce the same id ([0008](0008-environment-isolation.md)), and several ratings per paper become possible ([0007](0007-ratings-are-plural-ready.md)).
+- Two deployments never produce the same id ([0004](0004-staging-and-production-are-isolated.md)), and several ratings per paper become possible ([0009](0009-several-ratings-per-paper.md)).
 - Requires the v2 contract; the contracts plan implements the id scheme.

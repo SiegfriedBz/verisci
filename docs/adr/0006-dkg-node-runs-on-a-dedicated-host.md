@@ -1,4 +1,4 @@
-# 0016. Node host topology
+# 0006. The DKG node runs on a dedicated host
 
 - Status: Accepted
 - Date: 2026-10-02
@@ -11,7 +11,7 @@ A DKG node is a long-lived peer-to-peer daemon, and Vercel runs serverless funct
 
 - The DKG daemon, GROBID and a JSON-RPC proxy run on their own host (a VM), each bound to `127.0.0.1`. Caddy is the only public process: it terminates TLS and routes to them.
 - The app (Vercel) and its workflows (Inngest) reach the host over HTTPS; the daemon reaches the chain through the local RPC proxy.
-- One host serves both environments ([0008](0008-environment-isolation.md)).
+- One host serves both environments ([0004](0004-staging-and-production-are-isolated.md)).
 
 ## Consequences
 

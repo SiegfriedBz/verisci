@@ -1,4 +1,4 @@
-# 0012. Packages ship source
+# 0002. Internal packages ship TypeScript source
 
 - Status: Accepted
 - Date: 2026-10-02

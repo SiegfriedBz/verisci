@@ -17,12 +17,12 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
   different, local graph, so queries with it silently return nothing.
 - **Store and mint are separate calls:** `POST /api/knowledge-assets`, then
   `…/{name}/vm/publish`. Asset states are missing, stored (`promoted`) and minted
-  (`published`); only `publishedUal` means minted ([ADR 0002](adr/0002-store-then-mint.md)).
+  (`published`); only `publishedUal` means minted ([ADR 0013](adr/0013-store-then-mint-converging.md)).
 - **Mints outlive the client:** the daemon finishes a mint after the client disconnects,
-  and `vm/publish-async` returns a job id to poll ([ADR 0003](adr/0003-short-steps-async-mint.md)).
+  and `vm/publish-async` returns a job id to poll ([ADR 0014](adr/0014-mints-are-async-polled-in-short-steps.md)).
 - **Mint time varies from about 5 s to over 300 s.** A mint can also fail fast on quorum
   (`storage_ack_insufficient`, `CORE_TEMPORARILY_UNAVAILABLE`); retrying after a couple of
-  minutes usually works ([ADR 0004](adr/0004-explicit-retry-spacing.md)).
+  minutes usually works ([ADR 0015](adr/0015-retries-are-spaced-with-step-sleep.md)).
 - **Every context graph must be listed** under `contextGraphs` in the node's
   `~/.dkg/config.json`, or the node stops serving it after a restart.
 - **A new graph reports `authority-resolution-failed` for up to about 20 minutes.** That is
@@ -37,7 +37,7 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
 Observed on Base Sepolia (chain id 84532) with Alchemy.
 
 - **The free RPC tier caps `eth_getLogs` at 10 blocks,** so nothing may depend on scanning
-  history; read current contract state instead ([ADR 0010](adr/0010-one-reconciler-owns-recovery.md)).
+  history; read current contract state instead ([ADR 0016](adr/0016-a-cron-reconciler-recovers-stuck-requests.md)).
 - **Alchemy delivers a log to every webhook rule matching its contract:** keep exactly one
   rule per contract, or one request reaches two oracles.
 - **The webhook route verifies the HMAC with its environment's secret:** a mismatch is a

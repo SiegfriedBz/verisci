@@ -1,4 +1,4 @@
-# 0007. Ratings are plural-ready
+# 0009. A paper can have several ratings
 
 - Status: Accepted
 - Date: 2026-10-02
@@ -9,9 +9,9 @@ In the previous repo the contract allowed one rating per paper: the request id w
 
 ## Decision
 
-- A rating's identity is its own request id and R-KA UAL, never its paper's ([0001](0001-names-derive-from-chain-state.md)).
+- A rating's identity is its own request id and R-KA UAL, never its paper's ([0012](0012-asset-names-derive-from-request-id.md)).
 - Rating count is a number, never a boolean.
-- R-KA means Rating Knowledge Asset ([0014](0014-ratings-are-separate-r-kas.md)).
+- R-KA means Rating Knowledge Asset ([0007](0007-a-rating-is-a-separate-r-ka.md)).
 
 ## Consequences
 

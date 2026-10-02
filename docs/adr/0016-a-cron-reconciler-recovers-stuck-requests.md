@@ -1,11 +1,11 @@
-# 0010. One reconciler owns recovery
+# 0016. A cron reconciler recovers stuck requests
 
 - Status: Accepted
 - Date: 2026-10-02
 
 ## Context
 
-Requests can get stuck between steps ([0001](0001-names-derive-from-chain-state.md), [0002](0002-store-then-mint.md)). The previous repo recovered from the browser that made the request, and finding stuck requests by scanning logs is not possible: the free Base Sepolia RPC tier caps `eth_getLogs` at 10 blocks.
+Requests can get stuck between steps ([0012](0012-asset-names-derive-from-request-id.md), [0013](0013-store-then-mint-converging.md)). The previous repo recovered from the browser that made the request, and finding stuck requests by scanning logs is not possible: the free Base Sepolia RPC tier caps `eth_getLogs` at 10 blocks.
 
 ## Decision
 

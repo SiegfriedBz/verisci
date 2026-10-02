@@ -1,4 +1,4 @@
-# 0003. Short steps, async mint
+# 0014. Mints are async, polled in short steps
 
 - Status: Accepted
 - Date: 2026-10-02

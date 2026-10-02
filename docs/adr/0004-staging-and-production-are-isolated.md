@@ -1,4 +1,4 @@
-# 0008. Environment isolation
+# 0004. Staging and production use separate resources
 
 - Status: Accepted
 - Date: 2026-10-02
@@ -10,11 +10,11 @@ verisci runs in production (`main`) and staging (`develop`), each deployed at a 
 ## Decision
 
 - Production and staging each have their own contract, context graph (`…/verisci-prod` vs `…/verisci`), Alchemy webhook and its secret, oracle wallet and Inngest keys. Feature previews and local development use the staging resources.
-- The DKG node host is the one shared resource: it serves both context graphs, and both must be in its `contextGraphs` config ([0016](0016-node-host-topology.md)).
+- The DKG node host is the one shared resource: it serves both context graphs, and both must be in its `contextGraphs` config ([0006](0006-dkg-node-runs-on-a-dedicated-host.md)).
 - A per-environment variable is one name with two values, scoped in Vercel to Production and Preview.
-- `APP_ENV` names the environment (`local`, `staging`, `production`); see [0009](0009-env-declared-where-it-is-read.md). Local and previews use staging *resources* while `APP_ENV` stays `local` or `staging`.
+- `APP_ENV` names the environment (`local`, `staging`, `production`); see [0005](0005-each-workspace-declares-its-env.md). Local and previews use staging *resources* while `APP_ENV` stays `local` or `staging`.
 - The dkg env module refuses a `-prod` context graph unless `APP_ENV=production`, and requires one when it is. Decided here; enforced when the dkg package lands.
-- Request ids hash the contract address ([0001](0001-names-derive-from-chain-state.md)), so two deployments never produce the same asset name.
+- Request ids hash the contract address ([0012](0012-asset-names-derive-from-request-id.md)), so two deployments never produce the same asset name.
 
 ## Consequences
 

@@ -1,4 +1,4 @@
-# 0019. Publish pipeline
+# 0017. PDFs become Target KAs in a stepped pipeline
 
 - Status: Accepted
 - Date: 2026-10-02
@@ -9,9 +9,9 @@ Papers enter verisci as PDFs and must become Target KAs. Parsing a PDF, extracti
 
 ## Decision
 
-- Publishing a PDF runs these stages, each its own workflow step: pin the PDF on IPFS, parse it to TEI with GROBID (header and kept body sections), extract structured metadata with an LLM, store the Target KA, then mint it ([0002](0002-store-then-mint.md), [0003](0003-short-steps-async-mint.md)).
+- Publishing a PDF runs these stages, each its own workflow step: pin the PDF on IPFS, parse it to TEI with GROBID (header and kept body sections), extract structured metadata with an LLM, store the Target KA, then mint it ([0013](0013-store-then-mint-converging.md), [0014](0014-mints-are-async-polled-in-short-steps.md)).
 - The KA links the PDF by its content address (`ipfs://…`); a DOI is metadata only.
-- Current tools: Pinata for pinning, GROBID on the node host ([0016](0016-node-host-topology.md)), Gemini for extraction. They are choices, not part of the decision.
+- Current tools: Pinata for pinning, GROBID on the node host ([0006](0006-dkg-node-runs-on-a-dedicated-host.md)), Gemini for extraction. They are choices, not part of the decision.
 
 ## Consequences
 

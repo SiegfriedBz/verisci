@@ -1,4 +1,4 @@
-# 0013. Tooling choices
+# 0001. Toolchain: Biome, TypeScript 6, Soldeer, exact pins
 
 - Status: Accepted
 - Date: 2026-10-02

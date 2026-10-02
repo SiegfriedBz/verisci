@@ -28,9 +28,9 @@ and `APP_ENV=local` in the root `.env.local` for a local `pnpm build`. Empty
 strings count as unset.
 
 Why the environments are split this way is
-[ADR 0008](../../docs/adr/0008-environment-isolation.md); why each workspace
+[ADR 0004](../../docs/adr/0004-staging-and-production-are-isolated.md); why each workspace
 declares its own variables and why `APP_ENV` is required in production builds is
-[ADR 0009](../../docs/adr/0009-env-declared-where-it-is-read.md).
+[ADR 0005](../../docs/adr/0005-each-workspace-declares-its-env.md).
 
 ## Declaring a workspace's variables
 

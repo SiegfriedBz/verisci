@@ -1,4 +1,4 @@
-# 0014. Ratings are separate R-KAs
+# 0007. A rating is a separate R-KA, linked by schema:about
 
 - Status: Accepted
 - Date: 2026-10-02

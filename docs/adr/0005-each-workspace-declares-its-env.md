@@ -1,4 +1,4 @@
-# 0009. Env declared where it is read
+# 0005. Each workspace declares its own env variables
 
 - Status: Accepted
 - Date: 2026-10-02

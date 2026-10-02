@@ -1,4 +1,4 @@
-# 0002. Store, then mint
+# 0013. Store, then mint, and minting converges
 
 - Status: Accepted
 - Date: 2026-10-02

@@ -1,4 +1,4 @@
-# 0011. Workflows live in agents
+# 0003. Inngest workflows live in the agents package
 
 - Status: Accepted
 - Date: 2026-10-02

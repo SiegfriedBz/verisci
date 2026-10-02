@@ -1,4 +1,4 @@
-# 0005. Results, not throws
+# 0019. Server reads and actions return typed results
 
 - Status: Accepted
 - Date: 2026-10-02
