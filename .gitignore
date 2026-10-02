@@ -1,1 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build output and caches
+.next/
+.turbo/
+dist/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment
+.env*
+!.env.example
+
+# Plans are local working notes
 docs/plans/
