@@ -23,4 +23,5 @@ verisci runs in production (`main`) and staging (`develop`), each deployed at a 
   - Target: one token per graph, so the node itself refuses a staging write to production. Adopted as soon as the node supports scoped tokens; it does not today.
   - Until then, the `-prod` guard in the dkg env module is mandatory before any production write.
 - A node outage takes down both environments.
+- Previews request ratings on the staging contract, but only the stable `develop` deployment receives webhooks, so those requests are processed by `develop`'s code. A workflow change cannot be tested end to end on a preview, only on `develop`.
 - Every new external resource is created twice, and its variable set in both Vercel scopes.

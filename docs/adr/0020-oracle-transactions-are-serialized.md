@@ -9,12 +9,13 @@ Every `fulfil` and `cancel` is sent from one oracle account. Concurrent workflow
 
 ## Decision
 
-- Every transaction the oracle signs runs under one Inngest concurrency key, the oracle address, with limit 1, shared across functions (`scope: "env"`). Only one oracle transaction is in flight at a time; it waits for its receipt before the next is sent.
+- Every transaction the oracle signs goes through one dedicated Inngest function. It sends the transaction and waits for its receipt in a single step, with a concurrency limit of 1 keyed on the oracle address. Workflows call it with `step.invoke` instead of signing themselves. (Inngest concurrency limits count running steps, so a key on a whole workflow would serialize all its steps, LLM calls and mints included.)
+- A transaction not mined within a timeout is replaced with the same nonce and a higher fee, so one underpriced transaction cannot block the queue.
 - The key is per environment ([0004](0004-staging-and-production-are-isolated.md)), holds only what a few days of ratings need, and its balance raises an alert below a threshold.
 - The key is rotated through the contract's `setOracleAgent` (owner only), never by redeploying; the old key is emptied after rotation.
 
 ## Consequences
 
-- No nonce races, and a stuck transaction blocks the queue visibly instead of failing silently.
-- Oracle throughput is one transaction per confirmation time, ample for testnet volumes; a nonce manager replaces the lock if that ever limits.
-- The agents plan wires the lock and the balance alert.
+- No nonce races, and a stuck transaction is replaced instead of blocking every rating.
+- Oracle throughput is one transaction per confirmation time, ample for testnet volumes; a nonce manager replaces the single lane if that ever limits.
+- The agents plan builds the oracle function, the replacement timeout and the balance alert.

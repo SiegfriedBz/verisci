@@ -48,7 +48,7 @@ Observed on Base Sepolia (chain id 84532) with Alchemy.
 
 ## Inngest and Vercel
 
-Observed on Vercel Hobby with Inngest Cloud.
+Observed on Vercel Hobby with Inngest Cloud, except where a fact cites the vendor's docs.
 
 - **Vercel Hobby stops any function at 300 s,** which is shorter than a slow mint.
 - **Inngest keys:** Production has its own pair; all branch environments share one other
@@ -59,6 +59,14 @@ Observed on Vercel Hobby with Inngest Cloud.
   cannot reach `/api/inngest`.
 - **Only production and the stable `develop` deployment receive webhooks:** feature
   previews have no stable URL to register.
+- **Inngest concurrency limits count running steps, not runs:** a run that is sleeping or
+  waiting holds no slot, so a concurrency key cannot keep two functions (or two runs) off
+  the same request ([ADR 0016](adr/0016-a-cron-reconciler-recovers-stuck-requests.md)).
+- **Inngest deduplicates event ids for 24 hours only:** an event re-sent later with the
+  same id starts a new run ([ADR 0021](adr/0021-chain-events-are-ingested-at-least-once.md)).
+- **Vercel caps a function's request body at 4.5 MB** (Vercel docs, to verify on our
+  plan). The previous repo raised the server-action limit to 5 MB, so uploads between 4.5
+  and 5 MB likely failed with a 413 in production ([ADR 0017](adr/0017-pdf-to-target-ka-pipeline.md)).
 
 ## Next.js
 

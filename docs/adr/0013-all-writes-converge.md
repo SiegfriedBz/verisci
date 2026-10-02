@@ -13,7 +13,7 @@ Publishing a Knowledge Asset on the DKG node is two daemon calls: a store (`POST
 - Every write reads the current state first and treats "already done" as success:
   - **store:** if the asset is stored or minted, skip, and reuse the stored content (subject ids included) instead of generating new ones;
   - **mint:** read the asset's `state` (missing, stored, minted), never infer it from which UAL field is present; if minted, return the existing UAL;
-  - **fulfil:** read the request on chain; if it is already fulfilled with this R-KA, return success without sending a transaction.
+  - **fulfil:** read the request on chain; if it is already fulfilled with this R-KA, return success without sending a transaction. The read and the send are not atomic, so a revert saying the request is no longer pending (`NotPending`) also counts as done. A request fulfilled with a *different* R-KA should never happen: it raises an alert instead of succeeding.
 - A blind `vm/publish` on a minted name, or a `fulfil` on a settled request, is an error, and the code never sends one.
 
 ## Consequences

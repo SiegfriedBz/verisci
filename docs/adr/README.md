@@ -18,7 +18,7 @@ Inngest, Vercel, tooling) live in [`docs/domain.md`](../domain.md).
 | --- | --- |
 | [0004. Staging and production use separate resources](0004-staging-and-production-are-isolated.md) | Separate contracts, graphs, webhooks, wallets and keys per environment; only the node host is shared |
 | [0005. Each workspace declares its own env variables](0005-each-workspace-declares-its-env.md) | `defineEnv` per workspace; fails fast, never shows values; `APP_ENV` required in production builds |
-| [0006. The DKG node runs on a dedicated host](0006-dkg-node-runs-on-a-dedicated-host.md) | DKG daemon, GROBID and RPC proxy on their own host behind Caddy |
+| [0006. The DKG node runs on a dedicated host](0006-dkg-node-runs-on-a-dedicated-host.md) | DKG daemon, GROBID and RPC proxy on their own host; Caddy is the only HTTP entry and every route needs auth |
 
 ## Rating model
 
@@ -38,15 +38,15 @@ Inngest, Vercel, tooling) live in [`docs/domain.md`](../domain.md).
 | [0013. Every write converges: store, mint and fulfil](0013-all-writes-converge.md) | Each write reads state first and treats "already done" as success; nothing is regenerated on retry |
 | [0014. Mints are async, polled in short steps](0014-mints-are-async-polled-in-short-steps.md) | `vm/publish-async` polled with `step.sleep`, falling back to asset state if the job id is lost |
 | [0015. Retries are spaced with step.sleep](0015-retries-are-spaced-with-step-sleep.md) | Explicit `step.sleep`, never `RetryAfterError` in `step.run`; start at 2 min, 5 attempts, 45 min |
-| [0016. A cron reconciler recovers stuck requests](0016-a-cron-reconciler-recovers-stuck-requests.md) | One cron workflow finishes or cancels stuck requests, sharing the run's lock; never re-scores; gives up after a limit |
-| [0020. Oracle transactions are serialized](0020-oracle-transactions-are-serialized.md) | One oracle transaction in flight at a time; per-environment hot key, balance alert, rotation via `setOracleAgent` |
-| [0021. Chain events are ingested at least once](0021-chain-events-are-ingested-at-least-once.md) | HMAC-verified webhooks, deduplicated by `txHash:logIndex`, `removed` logs ignored; the reconciler heals misses |
+| [0016. A cron reconciler recovers stuck requests](0016-a-cron-reconciler-recovers-stuck-requests.md) | One cron workflow finishes or cancels stuck requests; ownership by request age, not locks; never re-scores; gives up after a limit |
+| [0020. Oracle transactions are serialized](0020-oracle-transactions-are-serialized.md) | One dedicated function sends every oracle transaction, one at a time, replacing stuck ones; per-environment hot key, balance alert, rotation |
+| [0021. Chain events are ingested at least once](0021-chain-events-are-ingested-at-least-once.md) | Raw-body HMAC check, dedup by `txHash:logIndex` (24 h), `removed` logs ignored, request re-read on chain; the reconciler heals misses |
 
 ## Pipelines
 
 | ADR | Decision |
 | --- | --- |
-| [0017. PDFs become Target KAs in a stepped pipeline](0017-pdf-to-target-ka-pipeline.md) | Pin on IPFS, GROBID, LLM extraction, store, mint: one step each; the Target KA is named from the PDF's CID |
+| [0017. PDFs become Target KAs in a stepped pipeline](0017-pdf-to-target-ka-pipeline.md) | Pin on IPFS, GROBID, LLM extraction, store, mint: one step each; named from the PDF's CID, which events carry instead of bytes |
 | [0018. The phase-1 scorer has a fixed output contract](0018-phase-1-scorer-output-contract.md) | `{ score, rationale, observed, missing }`, schema-validated, computed once and read back; the model is configuration |
 
 ## App

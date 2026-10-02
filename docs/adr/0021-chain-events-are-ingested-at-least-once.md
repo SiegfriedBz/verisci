@@ -9,9 +9,9 @@ Rating requests reach verisci as Alchemy webhook calls carrying contract logs. W
 
 ## Decision
 
-- The webhook route verifies the HMAC signature with its environment's secret, in constant time, and rejects a mismatch with 401 before reading the body further.
-- Each log becomes one Inngest event whose id is `txHash:logIndex`, so a duplicate delivery collapses into the existing event.
-- Logs marked `removed` are ignored: the workflow acts only on logs that are on chain.
+- The webhook route reads the raw body, verifies its HMAC signature with its environment's secret in constant time, and only then parses the JSON. A mismatch is rejected with 401.
+- Each log becomes one Inngest event whose id is `txHash:logIndex`, so a duplicate delivery collapses into the existing event. Inngest deduplicates ids only within 24 hours; past that, convergent writes ([0013](0013-all-writes-converge.md)) and the contract's state stop a repeat.
+- Logs marked `removed` are ignored, and each run reads the request from the contract before acting, so a request reorged out after delivery is dropped.
 - Delivery is not trusted for completeness: a request whose webhook never arrives is still in the contract's pending set, and the reconciler picks it up ([0016](0016-a-cron-reconciler-recovers-stuck-requests.md)).
 
 ## Consequences

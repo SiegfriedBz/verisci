@@ -9,7 +9,8 @@ A DKG node is a long-lived peer-to-peer daemon, and Vercel runs serverless funct
 
 ## Decision
 
-- The DKG daemon, GROBID and a JSON-RPC proxy run on their own host (a VM), each bound to `127.0.0.1`. Caddy is the only public process: it terminates TLS and routes to them.
+- The DKG daemon, GROBID and a JSON-RPC proxy run on their own host (a VM), their HTTP APIs bound to `127.0.0.1`. Caddy is the only public HTTP entry point: it terminates TLS and routes to them. The daemon's peer-to-peer port is opened only as far as its node role requires.
+- Every route behind Caddy requires authentication: the daemon's bearer token for the DKG API, and a credential checked by Caddy for GROBID (a secret path alone is not enough). Only `/api/status` is public, for health checks.
 - The app (Vercel) and its workflows (Inngest) reach the host over HTTPS; the daemon reaches the chain through the local RPC proxy.
 - One host serves both environments ([0004](0004-staging-and-production-are-isolated.md)).
 
