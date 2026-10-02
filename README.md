@@ -11,8 +11,8 @@ through `transpilePackages`.
 - Node 24.15 or later within 24.x; `.nvmrc` pins 24.21.0, which CI uses.
   `pnpm install` refuses anything outside `>=24.15 <25`.
 - Corepack, which provides the pnpm version pinned in `packageManager`.
-- [Foundry](https://getfoundry.sh) 1.8.4 for `packages/contracts`
-  (`foundryup --install 1.8.4`).
+- [Foundry](https://getfoundry.sh) 1.8.4 (`foundryup --install 1.8.4`). Needed for
+  `packages/contracts`, and by `pnpm check` and `pnpm test`, which call `forge`.
 
 ## Getting started
 
@@ -31,7 +31,7 @@ pnpm dev         # starts apps/web on http://localhost:3000
 | `pnpm check:fix` | Biome rewrites what it can fix safely |
 | `pnpm typecheck` | `tsc` in every workspace |
 | `pnpm test` | Vitest in every workspace, plus `forge test` in `packages/contracts` |
-| `pnpm test:coverage` | Vitest across all workspaces with coverage thresholds: `core` ≥ 90% branches, the others ≥ 70% lines |
+| `pnpm test:coverage` | Vitest across all workspaces with coverage thresholds: `core` ≥ 90% branches, the others ≥ 70% lines. Until real code lands, only files imported by tests count (see `vitest.config.ts`) |
 | `pnpm vitest related <file> --run` | Only the tests that touch `<file>` |
 | `pnpm build` | Builds `apps/web` |
 
