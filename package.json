@@ -5,10 +5,13 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "check": "biome check",
+    "check:fix": "biome check --write",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.15",
     "turbo": "2.11.6",
     "typescript": "6.0.3"
   },
