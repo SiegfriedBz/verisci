@@ -15,7 +15,25 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
 
+  packages/contracts:
+    dependencies:
+      '@verisci/core':
+        specifier: workspace:*
+        version: link:../core
+      '@verisci/env':
+        specifier: workspace:*
+        version: link:../env
+
   packages/core: {}
+
+  packages/dkg:
+    dependencies:
+      '@verisci/core':
+        specifier: workspace:*
+        version: link:../core
+      '@verisci/env':
+        specifier: workspace:*
+        version: link:../env
 
   packages/env: {}
 
