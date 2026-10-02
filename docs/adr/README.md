@@ -42,7 +42,7 @@ A PDF becomes a Target KA.
 
 | ADR | Decision |
 | --- | --- |
-| [0010. PDFs become Target KAs in a stepped pipeline](0010-pdf-to-target-ka-pipeline.md) | Browser uploads to IPFS by signed URL; GROBID, LLM, store and mint as steps; named from the PDF's CID |
+| [0010. PDFs become Target KAs in a stepped pipeline](0010-pdf-to-target-ka-pipeline.md) | Browser uploads to IPFS by signed URL; the submitter signs the CID (EIP-712) and the KA records it; GROBID, LLM, store and mint as steps; named from the PDF's CID |
 
 ## What a rating is
 
@@ -79,7 +79,7 @@ Not decided yet. Each becomes an ADR in the plan that first needs the answer; th
 | Question | Leaning | Decided in |
 | --- | --- | --- |
 | How does the UI list a paper's ratings? | The contract indexes request ids by target (`ratingsOf`); the DKG serves R-KA content on demand ([0014](0014-contract-owns-scores-dkg-owns-content.md)). An indexer only if view calls stop being enough. | contracts plan |
-| How do users authenticate? | Wallet connection (Reown AppKit + wagmi). Server actions that spend money, such as upload URLs ([0010](0010-pdf-to-target-ka-pipeline.md)), add a SIWE session to rate-limit per address. | first web plan with a wallet |
+| How do users authenticate? | Wallet connection (Reown AppKit + wagmi). A submission is authorized by its EIP-712 signature ([0010](0010-pdf-to-target-ka-pipeline.md)), and rate limits key on the signing address; a SIWE session only if sign-in sessions are ever needed. | first web plan with a wallet |
 | Where do alerts go? | One chat-bot channel behind a single `notify()`, fed by a scheduled check (wallet balances, orphans, age of the oldest pending request) and an uptime check on the node's `/api/status`. | agents plan |
 | Is the contract upgradeable? | No proxy on testnet: a fix redeploys, and the app reads a list of contract addresses (current plus past, read-only). Ids include the contract address, so deployments never collide ([0016](0016-asset-names-derive-from-request-id.md)). | contracts plan |
 | Where does mutable app state live? | Nowhere authoritative: the chain and the DKG hold the truth. Rate-limit counters go in one small key-value store (Upstash Redis); losing it only resets the limits. | first web plan with a wallet |

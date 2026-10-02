@@ -20,8 +20,9 @@ no user-facing feature has shipped yet. Everything runs on testnets.
 
 ## How it works
 
-- **A paper becomes a Target KA.** A PDF is parsed, its metadata extracted, and
-  it is published to the DKG as a Knowledge Asset
+- **A paper becomes a Target KA.** Its submitter signs it with their wallet; the
+  PDF is parsed, its metadata extracted, and it is published to the DKG as a
+  Knowledge Asset that records who submitted it
   ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)).
 - **Anyone can request a rating on chain.** The oracle scores the paper,
   publishes the rating as its own Rating KA (R-KA) and records the score on the
