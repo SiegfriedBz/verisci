@@ -20,13 +20,15 @@
     "deny": [
       "Bash(git push *)",
       "Bash(forge script *--broadcast*)",
+      "Bash(forge create *)",
       "Bash(cast send *)",
       "Bash(cast publish *)",
       "Bash(cat *.env*)",
       "Bash(less *.env*)",
       "Bash(head *.env*)",
       "Bash(tail *.env*)",
-      "Bash(grep *.env*)",
+      "Bash(grep * .env*)",
+      "Bash(grep * */.env*)",
       "Read(**/.env)",
       "Read(**/.env.local)",
       "Read(**/.env.*.local)",
@@ -50,17 +52,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/before-edit.sh",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/before-edit.sh",
             "timeout": 10
           }
         ]
       },
       {
-        "matcher": "Read",
+        "matcher": "Read|Grep",
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/before-read.sh",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/before-read.sh",
             "timeout": 10
           }
         ]
@@ -72,7 +74,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/after-edit.sh",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/after-edit.sh",
             "timeout": 180
           }
         ]
@@ -83,7 +85,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/on-stop.sh",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/on-stop.sh",
             "timeout": 300
           }
         ]
