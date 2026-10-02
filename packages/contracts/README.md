@@ -3,8 +3,8 @@
 Solidity contracts (Foundry), plus the TypeScript side that the other
 workspaces import.
 
-Status: placeholder. The Foundry project is set up, but `src/` has no
-contracts yet.
+Status: placeholder. `Counter` (contract, tests and deploy script) proves the
+toolchain end to end; replace it with the first real contract.
 
 ## Depends on
 
@@ -15,6 +15,7 @@ contracts yet.
 ```text
 src/            # .sol contracts (Foundry) and index.ts (TypeScript side)
 test/           # Foundry tests, *.t.sol
+script/         # Foundry scripts, *.s.sol
 foundry.toml    # compiler, fuzz and invariant profiles
 soldeer.lock    # pinned Solidity dependencies
 remappings.txt  # written by hand: forge-std/ → dependencies/forge-std-<version>/src/
@@ -52,5 +53,6 @@ overlap with `forge fmt`.
 | `pnpm --filter @verisci/contracts typecheck` | Typechecks the TypeScript side |
 | `forge build --sizes` | Compiles and reports contract sizes |
 | `FOUNDRY_PROFILE=ci forge test` | Tests with the CI fuzz and invariant runs |
+| `forge script script/Counter.s.sol` | Dry-runs the deploy script (add `--rpc-url` and `--broadcast` to deploy) |
 
 The TypeScript side ships as source (`src/index.ts`), with no build step.
