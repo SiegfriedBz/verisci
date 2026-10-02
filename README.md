@@ -82,11 +82,12 @@ rules. `.claude/` holds the shared settings, hooks and skills:
 | `/review-branch` | Read-only review of the branch; blocks on stale docs, then drafts the PR |
 
 Hooks format, lint and test each file Claude edits, block edits to generated files and
-reads of env files (except `.env.example`), and typecheck the changed workspaces before
-Claude finishes. They need `jq`. Permission rules deny `git push` and the
-usual deploy commands (`forge script --broadcast`, `forge create`, `cast send`); `git commit`
-asks first. These rules match how a command is written, so they are guard rails, not a
-sandbox. Personal overrides go in `.claude/settings.local.json` (gitignored).
+reads of env files (except `.env.example`), and typecheck the changed workspaces and the
+workspaces depending on them before Claude finishes. They need `jq`. Permission rules deny
+`git push` and the usual deploy commands (`forge script --broadcast`, `forge create`,
+`cast send`); `git commit` asks first. These rules match how a command is written, so they
+are guard rails, not a sandbox. Personal overrides go in `.claude/settings.local.json`
+(gitignored).
 
 ## Contributing
 
