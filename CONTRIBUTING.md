@@ -90,7 +90,9 @@ touches is true again.
   Changes (bullets), How to verify (commands and expected result),
   Checklist (tests, `pnpm check`/`typecheck`/`test` pass, READMEs, comments,
   TSDoc and NatSpec updated as described in [Docs](#docs), no secrets).
-  Claude drafts it; you edit and paste it.
+  Claude drafts it with `/review-branch`, from
+  [`.github/pull_request_template.md`](.github/pull_request_template.md); you
+  edit and paste it.
 - **Full width**: PR titles and descriptions have no hard line breaks inside
   a paragraph or bullet; each one is a single line, and GitHub wraps it.
   This also applies to the squash commit, whose body is the description;
@@ -119,6 +121,6 @@ commit, brings the fix back.
 | Create branch | Proposes the name, runs `git switch -c` | Approve |
 | Commit | Writes the message, runs `git commit` (asks first) | Approve or edit |
 | Push | — (denied in settings) | `git push -u origin <branch>` |
-| Open PR | `/review` drafts title and description | `gh pr create` or GitHub UI |
+| Open PR | `/review-branch` reviews, then drafts title and description | `gh pr create` or GitHub UI |
 | Merge | — | Squash and merge into `develop` when CI is green |
 | Release | Drafts the release PR | Merge commit into `main` |

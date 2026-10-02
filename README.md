@@ -11,6 +11,7 @@ through `transpilePackages`.
 - Node 24.15 or later within 24.x; `.nvmrc` pins 24.21.0, which CI uses.
   `pnpm install` refuses anything outside `>=24.15 <25`.
 - Corepack, which provides the pnpm version pinned in `packageManager`.
+- `jq`, used by the Claude Code hooks in `.claude/hooks/`.
 - [Foundry](https://getfoundry.sh) 1.8.4 (`foundryup --install 1.8.4`). Needed for
   `packages/contracts`, and by `pnpm check` and `pnpm test`, which call `forge`.
 
@@ -68,6 +69,25 @@ typecheck`.
 `develop` is staging (testnets) and `main` is production. Feature
 PRs target `develop`; release PRs move `develop` into `main`. Details are in
 [CONTRIBUTING.md](CONTRIBUTING.md#environments).
+
+## Working with Claude Code
+
+[`CLAUDE.md`](CLAUDE.md) and one `CLAUDE.md` per workspace give Claude Code the project
+rules. `.claude/` holds the shared settings, hooks and skills:
+
+| Skill | What it does |
+| --- | --- |
+| `/plan-feature <name>` | Writes `docs/plans/NNN-<name>.md` from the plan template |
+| `/implement <NNN>` | Branches from `develop`, writes the tests first, then implements until green |
+| `/review-branch` | Read-only review of the branch; blocks on stale docs, then drafts the PR |
+
+Hooks format, lint and test each file Claude edits, block edits to generated files and
+reads of env files (except `.env.example`), and typecheck the changed workspaces and the
+workspaces depending on them before Claude finishes. They need `jq`. Permission rules deny
+`git push` and the usual deploy commands (`forge script --broadcast`, `forge create`,
+`cast send`); `git commit` asks first. These rules match how a command is written, so they
+are guard rails, not a sandbox. Personal overrides go in `.claude/settings.local.json`
+(gitignored).
 
 ## Contributing
 

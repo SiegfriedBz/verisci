@@ -23,6 +23,12 @@ remappings.txt  # written by hand: forge-std/ → dependencies/forge-std-<versio
 
 `out/`, `cache/` and `dependencies/` are generated and gitignored.
 
+Also generated, once they exist: `broadcast/` (written by `forge script --broadcast`),
+`deployments/` (deployed addresses per network) and `src/generated/` (TypeScript bindings
+from the build). Never edit them by hand: change the `.sol` source or the script, then
+rerun the build or the deploy script that writes them. The plan that adds each one documents
+its exact command here.
+
 ## Toolchain
 
 | Tool | Version | Pinned in |
