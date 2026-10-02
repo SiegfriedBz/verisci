@@ -5,7 +5,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "check": "biome check",
+    "check": "biome check && pnpm --filter @verisci/contracts check",
     "check:fix": "biome check --write",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
