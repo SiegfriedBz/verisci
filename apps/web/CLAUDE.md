@@ -6,8 +6,9 @@ Next.js 16 App Router app. See `README.md` here for scripts and status.
   in `next.config.ts`, or the import fails at build time.
 - Server-only code (secrets, `@verisci/env`, adapters) stays in server components, route
   handlers or server actions, never in a `"use client"` file.
-- Env files live at the repo root; `next.config.ts` loads them and ignores any in
-  `apps/web`. Never read them (see the root `CLAUDE.md` hooks).
+- Env files live at the repo root, never in `apps/web`; `next.config.ts` loads them,
+  and editing one needs a dev server restart. Never read them (see the root
+  `CLAUDE.md` hooks).
 - Vitest runs in `jsdom` here. `pnpm --filter @verisci/web typecheck` runs `next typegen`
   first; `next-env.d.ts` is generated, never edit it.
 - Playwright end-to-end tests arrive in M7; until then, cover logic in unit tests.

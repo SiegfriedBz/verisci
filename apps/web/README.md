@@ -17,8 +17,10 @@ All five packages: `@verisci/env`, `@verisci/core`, `@verisci/dkg`,
 ## Environment
 
 `next.config.ts` loads env files from the repo root (`.env.local` and friends; see
-[`.env.example`](../../.env.example)), not from `apps/web`: any env file here is
-ignored. Variables already set in the environment (CI, the host) take precedence.
+[`.env.example`](../../.env.example)). Keep them there, not in `apps/web`: Next.js
+would mix the two unpredictably when it reloads. Next.js only watches `apps/web`,
+so restart `pnpm dev` after editing a root env file. Variables already set in the
+environment (CI, the host) take precedence.
 
 ## Scripts
 
