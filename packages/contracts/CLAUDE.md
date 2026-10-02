@@ -11,7 +11,8 @@ layout, toolchain versions and commands.
 - Dependencies via Soldeer (`forge soldeer install`), never `forge install` or git
   submodules. After bumping one, update the path in `remappings.txt` by hand.
 - Fuzz-test every function that takes input; the `ci` profile runs 5000 fuzz runs.
-- Never broadcast (`forge script --broadcast`, `cast send`): deploying is the user's call.
+- Never broadcast or deploy (`forge script --broadcast`, `forge create`, `cast send`):
+  deploying is the user's call.
 - `out/`, `cache/`, `dependencies/`, `soldeer.lock` and future `broadcast/`,
-  `deployments/` are generated; change the source and regenerate.
+  `deployments/`, `src/generated/` are generated; change the source and regenerate.
 - `Counter` is a placeholder: replace it with the first real contract.

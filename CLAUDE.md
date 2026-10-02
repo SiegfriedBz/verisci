@@ -67,6 +67,8 @@ to draft a PR while docs findings remain.
   report in the same turn.
 - Before an edit: generated files (lockfiles, `next-env.d.ts`, Foundry output, Soldeer
   dependencies, deployments) are refused with how to regenerate them.
-- Env files other than `.env.example` can't be read, grepped or edited; ask the user.
-- On stop: workspaces changed on the branch must typecheck, or the stop is blocked with
-  the errors. After 3 blocks in a row you may stop: report the remaining errors instead.
+- Env files other than `.env.example` are blocked for the Read, Grep and Edit tools and for
+  `cat`, `less`, `head`, `tail` and `grep` in the shell. Never read them any other way;
+  ask the user.
+- On stop: workspaces changed on the branch, and the workspaces depending on them (all of
+  them after a root config change), must typecheck, or the stop is blocked with the errors. After 3 blocks in a row you may stop: report the remaining errors instead.
