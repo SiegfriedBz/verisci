@@ -39,7 +39,8 @@ typecheck`.
 ## Contributing
 
 Branches, commits, docs rules and pull requests are covered in
-[CONTRIBUTING.md](CONTRIBUTING.md).
+[CONTRIBUTING.md](CONTRIBUTING.md). verisci is built with
+[Claude Code](https://claude.com/claude-code).
 
 ## License
 

@@ -43,6 +43,10 @@ parser names it dkgAgentAddress to stop the old confusion recurring.
 Commit small and often on the branch: each commit should build and pass its
 tests. History on the branch is for you; squash-merge rewrites it for `main`.
 
+verisci is built with [Claude Code](https://claude.com/claude-code). Commits it
+writes end with `Co-Authored-By: Claude <noreply@anthropic.com>`, and PR
+descriptions end with a "Built with Claude Code" line.
+
 ## Docs
 
 Docs ship with the code: a PR is not ready to push until every doc its diff
