@@ -1,0 +1,16 @@
+{
+  "name": "@verisci/dkg",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@verisci/core": "workspace:*",
+    "@verisci/env": "workspace:*"
+  }
+}
