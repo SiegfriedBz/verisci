@@ -24,9 +24,10 @@ pnpm install
 pnpm dev         # starts apps/web on http://localhost:3000
 ```
 
-Environment variables are listed in [`.env.example`](.env.example). `pnpm dev`
-and `pnpm test` run without an env file; `pnpm build` needs `APP_ENV`
-(`APP_ENV=local pnpm build`). How workspaces declare and validate them is in the
+Environment variables are listed in [`.env.example`](.env.example): copy it to
+`.env.local` at the repo root (gitignored), where `apps/web` loads it from.
+`pnpm dev` and `pnpm test` run without it; `pnpm build` needs `APP_ENV`
+(`APP_ENV=local`). How workspaces declare and validate them is in the
 [`@verisci/env` README](packages/env/README.md).
 
 ## Commands
@@ -39,7 +40,7 @@ and `pnpm test` run without an env file; `pnpm build` needs `APP_ENV`
 | `pnpm test` | Vitest in every workspace, plus `forge test` in `packages/contracts` |
 | `pnpm test:coverage` | Vitest across all workspaces with coverage thresholds: `core` ≥ 90% branches, the others ≥ 70% lines. Until real code lands, only files imported by tests count (see `vitest.config.ts`) |
 | `pnpm vitest related <file> --run` | Only the tests that touch `<file>` |
-| `pnpm build` | Builds `apps/web`; needs `APP_ENV` (`APP_ENV=local pnpm build` locally) |
+| `pnpm build` | Builds `apps/web`; needs `APP_ENV` (from the root `.env.local`, or `APP_ENV=local pnpm build`) |
 
 `typecheck`, `test` and `build` run through Turbo, which caches results by
 input. Biome and coverage run once at the root.
@@ -84,7 +85,7 @@ rules. `.claude/` holds the shared settings, hooks and skills:
 | --- | --- |
 | `/plan-feature <name>` | Writes `docs/plans/NNN-<name>.md` from the plan template |
 | `/implement <NNN>` | Branches from `develop`, writes the tests first, then implements until green |
-| `/review-branch` | Read-only review of the branch; blocks on stale docs, then drafts the PR |
+| `/review-branch` | Runs CI's checks and the build, then a read-only review; blocks on any failure or stale docs, then drafts the PR |
 
 Hooks format, lint and test each file Claude edits, block edits to generated files and
 reads of env files (except `.env.example`), and typecheck the changed workspaces and the

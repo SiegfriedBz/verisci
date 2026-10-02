@@ -29,8 +29,8 @@ deployed, which is a separate question: a staging deploy is a production build
 When `NODE_ENV` is `production`, `APP_ENV` has no default: a production build
 must say where it deploys, so a host that forgets it fails instead of quietly
 running as `local`. Set it per host environment (on Vercel: Production →
-`production`, Preview → `staging`), and `APP_ENV=local` for a local
-`pnpm build`. Empty strings count as unset.
+`production`, Preview → `staging`), and `APP_ENV=local` in the root `.env.local`
+for a local `pnpm build`. Empty strings count as unset.
 
 ## Declaring a workspace's variables
 
