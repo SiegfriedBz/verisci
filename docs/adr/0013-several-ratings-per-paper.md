@@ -9,7 +9,7 @@ In the previous repo the request id was `keccak256(targetUal)`, so a paper could
 
 ## Decision
 
-- A rating is identified by its own request id ([0016](0016-asset-names-derive-from-request-id.md)) and its R-KA's UAL ([0011](0011-a-rating-is-a-separate-r-ka.md)), never by its paper.
+- A rating is identified by its phase-1 request id ([0016](0016-asset-names-derive-from-request-id.md)) and its R-KA's UAL ([0011](0011-a-rating-is-a-separate-r-ka.md)), never by its paper.
 - Rating count is a number, never a boolean.
 
 ## Consequences

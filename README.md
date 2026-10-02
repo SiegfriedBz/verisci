@@ -24,9 +24,9 @@ no user-facing feature has shipped yet. Everything runs on testnets.
   PDF is parsed, its metadata extracted, and it is published to the DKG as a
   Knowledge Asset that records who submitted it
   ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)).
-- **Anyone can request a rating on chain.** The oracle scores the paper,
-  publishes the rating as its own Rating KA (R-KA) and records the score on the
-  contract ([ADR 0011](docs/adr/0011-a-rating-is-a-separate-r-ka.md),
+- **Anyone can request a rating on chain.** verisci scores the paper, our DKG
+  node publishes the rating as its own Rating KA (R-KA), and the oracle records
+  the score on the contract ([ADR 0011](docs/adr/0011-a-rating-is-a-separate-r-ka.md),
   [ADR 0014](docs/adr/0014-contract-owns-scores-dkg-owns-content.md)).
 - **Every write is safe to retry.** Each step checks what is already done
   before acting, so a retry never duplicates anything
@@ -35,10 +35,11 @@ no user-facing feature has shipped yet. Everything runs on testnets.
   list of pending requests
   ([ADR 0020](docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md)).
 - **Staging and production are kept apart**, with their own contracts, graphs
-  and wallets ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)).
+  and oracle wallets; only the DKG node is shared ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)).
 
-Terms: a **KA** (Knowledge Asset) is a record on the DKG; the **oracle** is
-verisci's backend account that scores requests and writes results on chain.
+Terms: a **KA** (Knowledge Asset) is a record on the DKG, minted and owned by
+verisci's DKG node; the **oracle** is verisci's account that records rating
+results on the contract.
 
 ## The repo
 

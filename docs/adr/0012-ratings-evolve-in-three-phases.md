@@ -10,7 +10,7 @@ A machine score alone is a weak quality signal. A rating should grow stronger as
 ## Decision
 
 - A rating evolves through three phases: phase 1 a machine score, phase 2 human review, phase 3 wet-lab replication.
-- Each phase's score is an integer from 0 to 100, written once on chain.
+- Each phase's score is an integer from 0 to 100, written once on chain, and only after that phase's R-KA version is written, so the contract is never ahead of the DKG ([0014](0014-contract-owns-scores-dkg-owns-content.md)).
 - The rating's single R-KA holds the rationale ([0011](0011-a-rating-is-a-separate-r-ka.md)): phase 1 mints it, and phases 2 and 3 each add a new version of it under the same UAL. The oracle writes phase 1; who signs phases 2 and 3 is for their ADRs.
 - Only phase 1 is built now.
 
