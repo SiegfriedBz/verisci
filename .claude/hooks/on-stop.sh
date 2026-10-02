@@ -41,6 +41,9 @@ if [ "$blocks" -gt "$max_blocks" ]; then
 fi
 echo "$blocks" > "$counter"
 
-jq -n --arg reason "Typecheck fails in the workspaces this session touched. Fix these errors before finishing:
-$(printf '%s\n' "$out" | grep -E 'error TS|Failed:' | head -n 40)" '{decision: "block", reason: $reason}'
+errors=$(printf '%s\n' "$out" | grep -E 'error TS|Failed:' | head -n 40)
+[ -n "$errors" ] || errors=$(printf '%s\n' "$out" | tail -n 40)
+
+jq -n --arg reason "Typecheck fails in workspaces changed on this branch (attempt $blocks of $max_blocks). Fix these errors before finishing:
+$errors" '{decision: "block", reason: $reason}'
 exit 0

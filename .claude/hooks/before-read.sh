@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# PreToolUse (Read): keep env files out of Claude's context. Backs up the Read
+# PreToolUse (Read|Grep): keep env files out of Claude's context. Grep skips
+# gitignored files when searching a folder, so only an explicit env path matters. Backs up the Read
 # deny rules in settings.json, which cannot allow .env.example once .env* is denied.
 set -uo pipefail
 
 root="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-file=$(jq -r '.tool_input.file_path // empty')
+file=$(jq -r '.tool_input.file_path // .tool_input.path // empty')
 [ -n "$file" ] || exit 0
 rel="${file#"$root"/}"
 

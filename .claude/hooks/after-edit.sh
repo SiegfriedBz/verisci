@@ -30,7 +30,7 @@ $out"
       *.ts | *.tsx)
         if ! out=$(node_modules/.bin/vitest related "$rel" --run --passWithNoTests 2>&1); then
           fail "Tests related to $rel fail:
-$(printf '%s\n' "$out" | tail -n 60)"
+$(printf '%s\n' "$out" | tail -n 150)"
         fi
         ;;
     esac
