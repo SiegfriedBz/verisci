@@ -37,7 +37,11 @@ export interface DefineEnvOptions<
 > {
   /** One schema per variable this workspace reads. */
   server: TServer;
-  /** Envs already built with `defineEnv`, such as `sharedEnv`; merged into the result. */
+  /**
+   * Envs already built with `defineEnv`, such as `sharedEnv`; merged into the result.
+   * They keep the values they were built with and are not re-read from `runtimeEnv`:
+   * to validate a custom `runtimeEnv` end to end, pass `createSharedEnv(runtimeEnv)`.
+   */
   extends?: TExtends;
   /** Defaults to `process.env`. Never mutated. */
   runtimeEnv?: RuntimeEnv;
@@ -48,8 +52,8 @@ export interface DefineEnvOptions<
  * with every env in `extends`. Empty strings count as unset, so defaults apply.
  *
  * @throws {EnvError} listing every missing or invalid variable, unless
- * `SKIP_ENV_VALIDATION` is `1` or `true`, in which case the raw values are
- * returned unchecked.
+ * `SKIP_ENV_VALIDATION` is `1` or `true`: then it returns the whole copy of
+ * `runtimeEnv` unchecked, with no defaults and without `extends` merged in.
  */
 export function defineEnv<
   TServer extends StandardSchemaDictionary,
@@ -67,6 +71,8 @@ export function defineEnv<
     runtimeEnv,
     isServer: true,
     emptyStringAsUndefined: true,
+    // When skipping, t3 also sets `skipValidation: true` on each `extends` env, so
+    // `sharedEnv` gains that stray key. Harmless: nothing reads it.
     skipValidation: skip === "1" || skip === "true",
     onValidationError: (issues) => {
       throw new EnvError(issues.map(toEnvIssue));

@@ -52,6 +52,10 @@ env.DKG_URL; // string
 env.APP_ENV; // "local" | "staging" | "production"
 ```
 
+Envs in `extends` keep the values they were built with; they are not re-read from
+the `runtimeEnv` you pass. `sharedEnv` is always built from `process.env`, so a test
+or script with its own `runtimeEnv` extends `createSharedEnv(runtimeEnv)` instead.
+
 The workspace adds `zod` to its own dependencies, pinned to the version `env` uses.
 Add each new variable to the root [`.env.example`](../../.env.example) in the same PR.
 
@@ -69,9 +73,14 @@ In tests, pass `runtimeEnv` explicitly rather than setting `process.env`.
 
 ## Skipping validation
 
-`SKIP_ENV_VALIDATION=1` (or `true`) returns the raw values unchecked, with no
-defaults applied. Use it only where no code reads the values (lint, a Docker image
-build); never in a running app.
+`SKIP_ENV_VALIDATION=1` (or `true`) turns validation off. `defineEnv` then returns
+the whole copy of `runtimeEnv` unchecked: every variable in `process.env`, secrets
+included, with no defaults applied and without `extends` merged in.
+
+Nothing in the repo needs it today. It is only for a step that imports env-declaring
+modules without running code that reads the values. Never use it for `next build`,
+which prerenders pages with the values (the home page would show `undefined`), and
+never in a running app.
 
 ## Scripts
 

@@ -35,6 +35,7 @@ describe("defineEnv", () => {
     expect(env.NODE_ENV).toBe("development");
     expect(env.APP_ENV).toBe("staging");
     expectTypeOf(env.DKG_URL).toEqualTypeOf<string>();
+    expectTypeOf(env.NODE_ENV).toEqualTypeOf<"development" | "test" | "production">();
     expectTypeOf(env.APP_ENV).toEqualTypeOf<"local" | "staging" | "production">();
   });
 
