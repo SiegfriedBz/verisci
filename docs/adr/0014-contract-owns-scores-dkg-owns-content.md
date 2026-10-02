@@ -5,11 +5,11 @@
 
 ## Context
 
-A rating has scores on the contract, one per phase ([0012](0012-ratings-evolve-in-three-phases.md)), and content (rationale, evidence) in its R-KAs on the DKG. The two can disagree: a mint can fail after scoring, or the daemon can stop serving an R-KA the contract points to.
+A rating has scores on the contract, one per phase ([0012](0012-ratings-evolve-in-three-phases.md)), and content (rationale, evidence) in its R-KA on the DKG. The two can disagree: a mint can fail after scoring, a later phase's score can land before its R-KA update is readable, or the daemon can stop serving the R-KA the contract points to.
 
 ## Decision
 
-The contract is the authority for scores and for which R-KAs count; the DKG is the authority for content. When they disagree, the UI shows the contract's score and flags the gap.
+The contract is the authority for scores and for which R-KA counts; the DKG is the authority for content. When they disagree, the UI shows the contract's score and flags the gap.
 
 ## Consequences
 

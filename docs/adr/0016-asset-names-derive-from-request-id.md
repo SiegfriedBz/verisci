@@ -11,11 +11,11 @@ A rating is requested on chain, then scored, stored and minted by the oracle, an
 
 - The v2 contract gives every request its own id: the hash of the chain id, the contract address, a counter, the requester and the target UAL. A retry is a new request.
 - Because the id hashes the requester and target, a reorg that reorders requests can never pair one request's rating with another.
-- Every rating asset name derives from the request id and its phase ([0012](0012-ratings-evolve-in-three-phases.md)). Target KAs are named from their PDF instead ([0010](0010-pdf-to-target-ka-pipeline.md)).
+- The rating's R-KA name derives from the request id ([0011](0011-a-rating-is-a-separate-r-ka.md)). Target KAs are named from their PDF instead ([0010](0010-pdf-to-target-ka-pipeline.md)).
 - Nothing load-bearing lives in a browser: client storage may cache, never decide.
 
 ## Consequences
 
-- Given a request id, any process can compute the asset names and read the state on chain and on the daemon, so recovery needs no browser ([0020](0020-a-cron-reconciler-recovers-stuck-requests.md)).
+- Given a request id, any process can compute the R-KA's name and read the state on chain and on the daemon, so recovery needs no browser ([0020](0020-a-cron-reconciler-recovers-stuck-requests.md)).
 - A retried store or mint targets the same name instead of creating a duplicate.
 - Two deployments never produce the same id ([0005](0005-staging-and-production-are-isolated.md)), and several ratings per paper are possible ([0013](0013-several-ratings-per-paper.md)).

@@ -45,6 +45,11 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
   `~/.dkg/config.json`, or the node stops serving it after a restart.
 - **A new graph reports `authority-resolution-failed` for up to about 20 minutes.** That is
   a slow chain read, not a bad registration: wait before re-registering.
+- **A KA keeps its UAL across updates** (OriginTrail/dkg
+  `packages/evm-module/docs/greenfield-ka-ual.md`): the KA is minted to its author as an
+  ERC-721 token, and each update adds a new immutable version under the same token. Only
+  the owner (the token holder) can update it. Unverified: the daemon API call for an update
+  ([ADR 0012](adr/0012-ratings-evolve-in-three-phases.md)).
 - **KA numbers are counted per author** and reserved at store time (the `reservedUal`).
   Both our graphs publish as one author, and a stored asset that is never minted keeps
   its number, so each environment sees gaps in its numbering. Expected, not a bug.
