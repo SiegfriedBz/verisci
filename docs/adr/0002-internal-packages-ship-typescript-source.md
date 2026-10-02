@@ -9,7 +9,7 @@ Internal packages are consumed only inside this monorepo. A build step per packa
 
 ## Decision
 
-Internal packages export `src/*.ts` with no build step. Next.js compiles them via `transpilePackages`, and scripts run them via `tsx`. Relative imports keep the `.ts` extension (`allowImportingTsExtensions` in `tsconfig.base.json`, safe because nothing emits).
+Internal packages export `src/*.ts` with no build step. Next.js compiles them via `transpilePackages`; anything else that runs them (a script, a command-line tool) uses a TypeScript runner such as `tsx`, added by the first plan that needs one. Relative imports keep the `.ts` extension (`allowImportingTsExtensions` in `tsconfig.base.json`, safe because nothing emits).
 
 ## Consequences
 

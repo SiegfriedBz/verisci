@@ -1,4 +1,4 @@
-# 0005. Each workspace declares its own env variables
+# 0004. Each workspace declares its own env variables
 
 - Status: Accepted
 - Date: 2026-10-02
@@ -17,6 +17,6 @@ Every adapter needs configuration (URLs, keys, wallets). One central schema woul
 
 ## Consequences
 
-- A workspace cannot read a secret it did not declare, and a bad config fails at startup with a clear message.
+- A workspace's env object exposes only what it declares, and a bad config fails at startup with a clear message. This is hygiene, not isolation: every module in a deployment shares one `process.env`, so a secret set on a host is readable by all the code it runs.
 - Each plan that reads a new variable adds it to its workspace's `src/env.ts` and to `.env.example`.
 - Usage is documented in the [`@verisci/env` README](../../packages/env/README.md).

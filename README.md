@@ -69,7 +69,7 @@ chain, Inngest, Vercel and tooling are in [`docs/domain.md`](docs/domain.md).
 | [`packages/core`](packages/core/README.md) | Domain logic, no IO | none |
 | [`packages/dkg`](packages/dkg/README.md) | DKG adapter | core, env |
 | [`packages/contracts`](packages/contracts/README.md) | Solidity contracts and their TypeScript side | core, env |
-| [`packages/agents`](packages/agents/README.md) | Agents | core, env, dkg, contracts |
+| [`packages/agents`](packages/agents/README.md) | Inngest workflows | core, env, dkg, contracts |
 
 Each workspace may only import the workspaces it declares. pnpm does not
 hoist undeclared workspace packages, so breaking this rule fails `pnpm
@@ -77,7 +77,8 @@ typecheck`.
 
 ## Environments
 
-`develop` is staging (testnets) and `main` is production. Feature
+`develop` is staging and `main` is production, both on testnets for now, with
+separate resources ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)). Feature
 PRs target `develop`; release PRs move `develop` into `main`. Details are in
 [CONTRIBUTING.md](CONTRIBUTING.md#environments).
 

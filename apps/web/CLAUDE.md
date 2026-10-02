@@ -11,6 +11,11 @@ Next.js 16 App Router app. See `README.md` here for scripts and status.
   `CLAUDE.md` hooks).
 - Vitest runs in `jsdom` here. `pnpm --filter @verisci/web typecheck` runs `next typegen`
   first; `next-env.d.ts` is generated, never edit it.
+- Server reads and actions return typed results: never throw an expected failure to the
+  client, never swallow it into empty data
+  ([ADR 0021](../../docs/adr/0021-server-reads-return-typed-results.md)).
+- Inngest functions live in `@verisci/agents`; `web` only serves them
+  ([ADR 0003](../../docs/adr/0003-inngest-workflows-live-in-agents.md)).
 - Playwright end-to-end tests arrive in M7; until then, cover logic in unit tests.
 
 <!-- BEGIN:nextjs-agent-rules -->

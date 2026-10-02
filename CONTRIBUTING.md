@@ -12,11 +12,14 @@ other services can target it.
 | Branch | Environment | Networks | Receives |
 | --- | --- | --- | --- |
 | `develop` | Staging | testnets | squash-merged feature PRs |
-| `main` | Production | production networks | release PRs from `develop` |
+| `main` | Production | testnets, until a payment plan allows mainnet | release PRs from `develop` |
 
-Each environment has its own secrets, contract deployments and webhook
-endpoints; nothing is shared between them. Both branches are protected: PRs
-only, CI green, never deleted.
+Each environment has its own secrets, contract deployments, context graph and
+webhook endpoints; only the DKG node host is shared
+([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)). Mainnet
+waits on a payment plan
+([ADR 0015](docs/adr/0015-rating-requests-are-free-on-testnet.md)). Both
+branches are protected: PRs only, CI green, never deleted.
 
 ## Branches
 

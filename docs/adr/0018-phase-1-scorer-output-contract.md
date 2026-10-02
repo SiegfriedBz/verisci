@@ -10,6 +10,7 @@ Phase 1 scores a Target KA by machine. The previous repo used one Gemini model a
 ## Decision
 
 - The phase-1 scorer reads the target KA's triples and returns `{ score, rationale, observed, missing }`: `score` an integer from 0 to 100, `rationale` text, `observed` and `missing` the signals it found and did not find.
+- Its input is capped (a configured number of triples), so one large target cannot multiply the cost of a rating ([0015](0015-rating-requests-are-free-on-testnet.md)).
 - Its output is schema-validated before use; anything else (a score out of range, a missing field) fails the step instead of reaching the chain.
 - It runs at temperature 0, which reduces variance but does not make a hosted model deterministic. So the score is computed once, persisted in the R-KA, and every later step (retries, the reconciler) reads it back instead of scoring again.
 - The R-KA records the model and prompt version that produced the score.

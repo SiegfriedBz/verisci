@@ -1,4 +1,4 @@
-# 0011. Rating requests are free on testnet
+# 0015. Rating requests are free on testnet
 
 - Status: Accepted
 - Date: 2026-10-02
@@ -15,6 +15,9 @@ Every rating costs an LLM call (real money), the oracle's `fulfil` gas and a DKG
 
 ## Consequences
 
-- Spam costs the attacker only testnet gas, so the caps are what limit spend. The oracle and node wallet balances are alerted on, not just watched ([0020](0020-oracle-transactions-are-serialized.md)).
+- Spam costs the attacker only testnet gas, so the caps are what limit spend. Fresh addresses get around the per-requester cap, so the throttle is the real bound on spend.
+- Every request, spam included, ends in one run and one oracle transaction (a fulfil, or a cancel at the maximum age), so the throttle is sized against the Inngest execution cap ([domain](../domain.md)) and the oracle's gas budget.
+- A spam backlog can delay genuine requests past the maximum age ([0020](0020-a-cron-reconciler-recovers-stuck-requests.md)), and they are cancelled. Accepted on testnet.
+- The oracle and node wallet balances are alerted on, not just watched ([0019](0019-oracle-transactions-are-serialized.md)).
 - The contracts plan sets the per-requester cap; the agents plan sets the throttle.
 - No payment logic in the contract or the app for now.

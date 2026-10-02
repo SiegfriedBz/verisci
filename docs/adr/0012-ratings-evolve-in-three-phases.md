@@ -1,4 +1,4 @@
-# 0008. Ratings evolve in three phases
+# 0012. Ratings evolve in three phases
 
 - Status: Accepted
 - Date: 2026-10-02

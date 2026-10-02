@@ -1,11 +1,11 @@
-# 0010. The contract owns scores, the DKG owns content
+# 0014. The contract owns scores, the DKG owns content
 
 - Status: Accepted
 - Date: 2026-10-02
 
 ## Context
 
-A rating has scores recorded by the contract, one per phase ([0008](0008-ratings-evolve-in-three-phases.md)), and content (rationale, evidence) stored in its R-KA on the DKG. The two can disagree: a mint can fail after scoring, a request can be fulfilled with an R-KA the daemon no longer serves, or a later phase can be recorded before its R-KA is readable.
+A rating has scores recorded by the contract, one per phase ([0012](0012-ratings-evolve-in-three-phases.md)), and content (rationale, evidence) stored in its R-KA on the DKG. The two can disagree: a mint can fail after scoring, a request can be fulfilled with an R-KA the daemon no longer serves, or a later phase can be recorded before its R-KA is readable.
 
 ## Decision
 
