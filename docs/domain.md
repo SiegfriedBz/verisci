@@ -9,7 +9,7 @@ facts before relying on them. Add a fact when you learn one the hard way.
 
 ## DKG
 
-Observed on an OriginTrail V10 node, Base Sepolia.
+Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base Sepolia.
 
 - **UAL shape:** `did:dkg:base:{chainId}/{dkgAgentAddress}/{tokenId}`. The middle segment
   is the node's agent wallet, not a contract; naming it after a contract caused confusion.
@@ -27,6 +27,8 @@ Observed on an OriginTrail V10 node, Base Sepolia.
   `~/.dkg/config.json`, or the node stops serving it after a restart.
 - **A new graph reports `authority-resolution-failed` for up to about 20 minutes.** That is
   a slow chain read, not a bad registration: wait before re-registering.
+- **Token ids are global:** OriginTrail's shared contract mints them for every node and
+  environment, so each environment sees gaps in its numbering. Expected, not a bug.
 - **Authority resolution needs the node's local JSON-RPC proxy:** public Base Sepolia
   endpoints are not reliable enough for it.
 
