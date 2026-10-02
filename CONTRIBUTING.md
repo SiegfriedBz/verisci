@@ -1,10 +1,26 @@
 # Contributing
 
-One feature, one branch, one PR, squash-merged. `main` reads as a clean list
-of Conventional Commits, one per feature.
+One feature, one branch, one PR, squash-merged into `develop`. `develop`
+reads as a clean list of Conventional Commits, one per feature; `main`
+receives them through release PRs.
+
+## Environments
+
+Two long-lived branches, each deployed at a stable URL so that webhooks and
+other services can target it.
+
+| Branch | Environment | Networks | Receives |
+| --- | --- | --- | --- |
+| `develop` | Staging | testnets | squash-merged feature PRs |
+| `main` | Production | production networks | release PRs from `develop` |
+
+Each environment has its own secrets, contract deployments and webhook
+endpoints; nothing is shared between them. Both branches are protected: PRs
+only, CI green, never deleted.
 
 ## Branches
 
+Feature branches start from `develop`:
 `<type>/<plan>-<slug>` — lowercase, kebab-case, under 40 characters.
 
 | Type | Use for |
@@ -41,7 +57,7 @@ parser names it dkgAgentAddress to stop the old confusion recurring.
 ```
 
 Commit small and often on the branch: each commit should build and pass its
-tests. History on the branch is for you; squash-merge rewrites it for `main`.
+tests. History on the branch is for you; squash-merge rewrites it for `develop`.
 
 verisci is built with [Claude Code](https://claude.com/claude-code). Commits it
 writes end with `Co-Authored-By: Claude <noreply@anthropic.com>`, and PR
@@ -67,16 +83,29 @@ touches is true again.
 
 ## Pull requests
 
-- **Title** = the squash commit on `main`, so it follows the commit format and
-  reads as a plain sentence: `feat(web): add the KA detail page`.
+- **Title** = the squash commit on `develop`, so it follows the commit format
+  and reads as a plain sentence: `feat(web): add the KA detail page`.
 - **Description**: four sections — Summary (what and why, 2–3 sentences),
   Changes (bullets), How to verify (commands and expected result),
   Checklist (tests, `pnpm check`/`typecheck`/`test` pass, READMEs, comments,
   TSDoc and NatSpec updated as described in [Docs](#docs), no secrets).
   Claude drafts it; you edit and paste it.
-- **Merge** with "Squash and merge" only (repo setting), with the default
-  squash message set to "Pull request title and description".
-- Delete the branch after merge. Then `/clear` in Claude Code.
+- **Base** = `develop` (the default branch).
+- **Merge** with "Squash and merge", with the default squash message set to
+  "Pull request title and description".
+- Delete the feature branch after merge. Then `/clear` in Claude Code.
+
+## Releases
+
+A release PR from `develop` into `main`, titled
+`chore(repo): release <YYYY-MM-DD>`, listing the features it ships. Merge it
+with **"Create a merge commit"**, never squash: squashing would give `main`
+commits that `develop` lacks, and every later release would conflict.
+`git log --first-parent main` then lists one entry per release or hotfix.
+
+A fix that cannot wait for a release branches from `main`, goes to `main`
+in its own PR. Then a PR from `main` into `develop`, merged with a merge
+commit, brings the fix back.
 
 ## Who does what
 
@@ -86,4 +115,5 @@ touches is true again.
 | Commit | Writes the message, runs `git commit` (asks first) | Approve or edit |
 | Push | — (denied in settings) | `git push -u origin <branch>` |
 | Open PR | `/review` drafts title and description | `gh pr create` or GitHub UI |
-| Merge | — | Squash and merge when CI is green |
+| Merge | — | Squash and merge into `develop` when CI is green |
+| Release | Drafts the release PR | Merge commit into `main` |

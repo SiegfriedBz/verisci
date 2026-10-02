@@ -36,9 +36,15 @@ Each workspace may only import the workspaces it declares. pnpm does not
 hoist undeclared workspace packages, so breaking this rule fails `pnpm
 typecheck`.
 
+## Environments
+
+`develop` is staging (testnets) and `main` is production. Feature
+PRs target `develop`; release PRs move `develop` into `main`. Details are in
+[CONTRIBUTING.md](CONTRIBUTING.md#environments).
+
 ## Contributing
 
-Branches, commits, docs rules and pull requests are covered in
+Branches, commits, docs rules, pull requests and releases are covered in
 [CONTRIBUTING.md](CONTRIBUTING.md). verisci is built with
 [Claude Code](https://claude.com/claude-code).
 
