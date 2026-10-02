@@ -24,10 +24,10 @@ pnpm install
 pnpm dev         # starts apps/web on http://localhost:3000
 ```
 
-Environment variables are listed in [`.env.example`](.env.example); each one
-has a default or is optional for now, so the app runs without an env file. How
-workspaces declare and validate them is in the
-[`@verisci/env` README](packages/env/README.md).
+Environment variables are listed in [`.env.example`](.env.example). `pnpm dev`
+and `pnpm test` run without an env file; `pnpm build` needs `APP_ENV`
+(`APP_ENV=local pnpm build`, or set it in `apps/web/.env.local`). How workspaces
+declare and validate them is in the [`@verisci/env` README](packages/env/README.md).
 
 ## Commands
 
@@ -50,7 +50,7 @@ Every PR into `develop` or `main`, and every push to them, runs
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) with two parallel jobs:
 
 - `ts`: `biome ci`, `typecheck`, `test:coverage` (report uploaded as an
-  artifact), `build`
+  artifact), `build` (with `APP_ENV=local`)
 - `contracts`: Soldeer install, `forge fmt --check` and NatSpec,
   `forge build --sizes`, `forge test` with the `ci` profile (5000 fuzz runs)
 

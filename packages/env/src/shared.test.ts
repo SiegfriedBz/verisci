@@ -17,6 +17,12 @@ describe("createSharedEnv", () => {
     expect(createSharedEnv({ APP_ENV: "" }).APP_ENV).toBe("local");
   });
 
+  it.each([{}, { APP_ENV: "" }])("requires APP_ENV in a production build (given %o)", (appEnv) => {
+    const error = catchEnvError(() => createSharedEnv({ NODE_ENV: "production", ...appEnv }));
+
+    expect(error.issues.map((issue) => issue.variable)).toEqual(["APP_ENV"]);
+  });
+
   it("defaults NODE_ENV to development when unset", () => {
     expect(createSharedEnv({}).NODE_ENV).toBe("development");
   });

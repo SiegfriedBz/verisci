@@ -52,7 +52,7 @@ describe("defineEnv", () => {
   it.each(["1", "true"])("skips validation when SKIP_ENV_VALIDATION is %s", (flag) => {
     expect(() =>
       defineEnv({
-        server: sharedSchema,
+        server: sharedSchema(),
         runtimeEnv: { APP_ENV: "prod", SKIP_ENV_VALIDATION: flag },
       }),
     ).not.toThrow();
@@ -61,7 +61,7 @@ describe("defineEnv", () => {
   it.each([["0"], [undefined]])("still validates when SKIP_ENV_VALIDATION is %s", (flag) => {
     expect(() =>
       defineEnv({
-        server: sharedSchema,
+        server: sharedSchema(),
         runtimeEnv: { APP_ENV: "prod", SKIP_ENV_VALIDATION: flag },
       }),
     ).toThrow(EnvError);
@@ -69,7 +69,7 @@ describe("defineEnv", () => {
 
   it("leaves the given runtimeEnv untouched", () => {
     const runtimeEnv = { APP_ENV: "" };
-    defineEnv({ server: sharedSchema, runtimeEnv });
+    defineEnv({ server: sharedSchema(), runtimeEnv });
 
     expect(runtimeEnv).toEqual({ APP_ENV: "" });
   });

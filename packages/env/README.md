@@ -19,10 +19,18 @@ No other workspace.
 | Variable | Values | Default |
 | --- | --- | --- |
 | `NODE_ENV` | `development`, `test`, `production` | `development` |
-| `APP_ENV` | `local`, `staging` (`develop`), `production` (`main`) | `local` |
+| `APP_ENV` | `local` (not deployed: a dev machine or CI), `staging` (`develop`), `production` (`main`) | `local`, except in a production build |
 
-`APP_ENV` is set per host environment, never inferred from the branch. Empty
-strings count as unset, so `APP_ENV=` gets the default.
+`NODE_ENV` is set by the tools (`next dev`, `next build`, Vitest); never set it
+by hand or use it to pick configuration. `APP_ENV` says where the app is
+deployed, which is a separate question: a staging deploy is a production build
+(`NODE_ENV=production`, `APP_ENV=staging`).
+
+When `NODE_ENV` is `production`, `APP_ENV` has no default: a production build
+must say where it deploys, so a host that forgets it fails instead of quietly
+running as `local`. Set it per host environment (on Vercel: Production →
+`production`, Preview → `staging`), and `APP_ENV=local` for a local
+`pnpm build`. Empty strings count as unset.
 
 ## Declaring a workspace's variables
 
@@ -53,7 +61,7 @@ Add each new variable to the root [`.env.example`](../../.env.example) in the sa
 | --- | --- |
 | `defineEnv({ server, extends?, runtimeEnv? })` | Validates `runtimeEnv` (default `process.env`, never mutated) and returns a typed, read-only object; throws `EnvError` |
 | `EnvError` | `message` lists each variable and the schema's message; `issues` is `{ variable, message }[]`. Never contains a value |
-| `sharedSchema` | The Zod schemas for `NODE_ENV` and `APP_ENV` |
+| `sharedSchema(runtimeEnv?)` | The Zod schemas for `NODE_ENV` and `APP_ENV`; `APP_ENV` is required when `runtimeEnv.NODE_ENV` is `production` |
 | `sharedEnv` | The shared variables, validated from `process.env` |
 | `createSharedEnv(runtimeEnv?)` | Builds the shared env from a given object, for tests and scripts |
 
