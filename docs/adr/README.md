@@ -55,6 +55,17 @@ Inngest, Vercel, tooling) live in [`docs/domain.md`](../domain.md).
 | --- | --- |
 | [0019. Server reads and actions return typed results](0019-server-reads-return-typed-results.md) | Never throw expected failures to the client, never swallow them into empty data |
 
+## Open questions
+
+Not decided yet. Each becomes an ADR in the plan that first needs the answer; the leaning is a starting point, not a decision.
+
+| Question | Leaning | Decided in |
+| --- | --- | --- |
+| How does the UI list a paper's ratings? | The contract indexes request ids by target (`ratingsOf`), the authority for existence and scores ([0010](0010-contract-owns-scores-dkg-owns-content.md)); the DKG serves R-KA content on demand. `eth_getLogs` is ruled out ([domain](../domain.md)); an indexer only if reads outgrow view calls. | contracts plan |
+| How do users authenticate? | Wallet connection via Reown AppKit + wagmi, as in the previous repo; on-chain requests need nothing more. Server actions that spend money (upload URLs, [0017](0017-pdf-to-target-ka-pipeline.md)) need a SIWE (EIP-4361) session to rate-limit per address. | first web plan with a wallet |
+| Where do alerts go? | One channel the maintainer reads (chat bot webhook) behind a single `notify()`; a scheduled function checks wallet balances and orphans ([0011](0011-rating-requests-are-free-on-testnet.md), [0013](0013-all-writes-converge.md), [0016](0016-a-cron-reconciler-recovers-stuck-requests.md)); an external uptime check polls the node's `/api/status`. | agents plan |
+| Is the contract upgradeable? | No proxy on testnet: fixes redeploy, and the app reads a list of contract addresses (current plus read-only past ones). Ids include the contract address, so deployments never collide ([0012](0012-asset-names-derive-from-request-id.md)). | contracts plan |
+
 ## Adding an ADR
 
 1. Take the next number (`0022`, …) and name the file `NNNN-kebab-title.md`.
@@ -62,6 +73,7 @@ Inngest, Vercel, tooling) live in [`docs/domain.md`](../domain.md).
    then `## Context`, `## Decision`, `## Consequences`. Keep it under a page.
 3. Add a row to its group's table, and commit it with the plan that took the decision
    (scope `docs`, or the workspace it governs).
+4. If it answers an open question, remove that row in the same commit.
 
 Never edit an accepted ADR's decision. To change it, write a new ADR that supersedes it,
 and set the old one's status to `Superseded by NNNN` (the only edit an accepted ADR gets).
