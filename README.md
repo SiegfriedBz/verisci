@@ -55,6 +55,11 @@ Every PR into `develop` or `main`, and every push to them, runs
 - `contracts`: Soldeer install, `forge fmt --check` and NatSpec,
   `forge build --sizes`, `forge test` with the `ci` profile (5000 fuzz runs)
 
+## Decisions and domain facts
+
+Architecture decisions are in [`docs/adr/`](docs/adr/README.md); facts about the DKG,
+chain, Inngest, Vercel and tooling are in [`docs/domain.md`](docs/domain.md).
+
 ## Workspaces
 
 | Workspace | What it is | Depends on |

@@ -22,15 +22,15 @@ No other workspace.
 | `APP_ENV` | `local` (not deployed: a dev machine or CI), `staging` (`develop`), `production` (`main`) | `local`, except in a production build |
 
 `NODE_ENV` is set by the tools (`next dev`, `next build`, Vitest); never set it
-by hand or use it to pick configuration. `APP_ENV` says where the app is
-deployed, which is a separate question: a staging deploy is a production build
-(`NODE_ENV=production`, `APP_ENV=staging`).
+by hand. When `NODE_ENV` is `production`, `APP_ENV` has no default. Set it per
+host environment (on Vercel: Production → `production`, Preview → `staging`),
+and `APP_ENV=local` in the root `.env.local` for a local `pnpm build`. Empty
+strings count as unset.
 
-When `NODE_ENV` is `production`, `APP_ENV` has no default: a production build
-must say where it deploys, so a host that forgets it fails instead of quietly
-running as `local`. Set it per host environment (on Vercel: Production →
-`production`, Preview → `staging`), and `APP_ENV=local` in the root `.env.local`
-for a local `pnpm build`. Empty strings count as unset.
+Why the environments are split this way is
+[ADR 0008](../../docs/adr/0008-environment-isolation.md); why each workspace
+declares its own variables and why `APP_ENV` is required in production builds is
+[ADR 0009](../../docs/adr/0009-env-declared-where-it-is-read.md).
 
 ## Declaring a workspace's variables
 
