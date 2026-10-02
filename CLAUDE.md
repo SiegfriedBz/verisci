@@ -28,6 +28,10 @@ Toolchain: Node 24.21.0 (`.nvmrc`), pnpm 10.34.6 via Corepack, Foundry 1.8.4. If
   env, dkg, contracts; web → all five. Import only workspaces declared in `package.json`.
 - **core does no IO**: no `fetch`, no `node:*`, no `@verisci/*`. IO lives in adapter
   packages. Biome enforces this in `packages/core/biome.json`.
+- Relative imports keep the `.ts` extension (`./shared.ts`); `allowImportingTsExtensions`
+  is on in `tsconfig.base.json` because nothing emits.
+- Environment variables: each workspace declares what it reads in `src/env.ts` with
+  `defineEnv` from `@verisci/env`, and adds it to `.env.example` in the same PR.
 - Pin every dependency exactly (`pnpm add -E`). No ESLint or Prettier: Biome does both.
 - Coverage thresholds live in the root `vitest.config.ts` (path globs); Vitest 5 forbids
   coverage settings in project configs.
@@ -39,7 +43,8 @@ Toolchain: Node 24.21.0 (`.nvmrc`), pnpm 10.34.6 via Corepack, Foundry 1.8.4. If
 1. `/plan-feature <name>` writes `docs/plans/NNN-<name>.md` (gitignored local notes).
 2. `/implement <NNN>` branches from `origin/develop`, writes the tests first and shows them
    failing, then implements until green, committing in small steps.
-3. `/review-branch` runs the read-only reviewer, blocks on stale docs, then drafts the PR.
+3. `/review-branch` runs CI's checks, tests and builds, then the read-only reviewer; it
+   blocks on any failure or stale docs, then drafts the PR.
 
 Branches: `<type>/<NNN>-<slug>` from `develop`. Feature PRs target `develop` and are
 squash-merged; releases go `develop` → `main` with a merge commit.

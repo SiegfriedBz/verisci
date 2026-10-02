@@ -1,2 +1,13 @@
-/** Package name; a placeholder export until real code lands. */
-export const envName = "@verisci/env";
+export {
+  type DefineEnvOptions,
+  defineEnv,
+  EnvError,
+  type EnvIssue,
+  type RuntimeEnv,
+} from "./define-env.ts";
+export {
+  createSharedEnv,
+  type SharedEnv,
+  sharedEnv,
+  sharedSchema,
+} from "./shared.ts";

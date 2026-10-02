@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@next/env": "16.3.8",
     "@verisci/agents": "workspace:*",
     "@verisci/contracts": "workspace:*",
     "@verisci/core": "workspace:*",
