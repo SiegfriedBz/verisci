@@ -19,3 +19,4 @@ All five packages: `@verisci/env`, `@verisci/core`, `@verisci/dkg`,
 | `pnpm --filter @verisci/web build` | Production build |
 | `pnpm --filter @verisci/web start` | Serves the production build |
 | `pnpm --filter @verisci/web typecheck` | Generates Next's types (`next typegen`), then runs `tsc` |
+| `pnpm --filter @verisci/web test` | Runs its Vitest project (`vitest run`) |

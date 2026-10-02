@@ -13,5 +13,6 @@ Status: placeholder.
 | Command | What it does |
 | --- | --- |
 | `pnpm --filter @verisci/dkg typecheck` | Typechecks the package |
+| `pnpm --filter @verisci/dkg test` | Runs its Vitest project (`vitest run`) |
 
 Ships TypeScript source (`src/index.ts`), with no build step.

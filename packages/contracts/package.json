@@ -7,10 +7,15 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check": "forge fmt --check && if [ -n \"$(find src -name '*.sol')\" ]; then solhint --disc --noPoster 'src/**/*.sol'; fi",
+    "test": "vitest run && forge test"
   },
   "dependencies": {
     "@verisci/core": "workspace:*",
     "@verisci/env": "workspace:*"
+  },
+  "devDependencies": {
+    "solhint": "6.2.4"
   }
 }

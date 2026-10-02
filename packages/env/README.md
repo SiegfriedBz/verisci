@@ -13,5 +13,6 @@ No other workspace.
 | Command | What it does |
 | --- | --- |
 | `pnpm --filter @verisci/env typecheck` | Typechecks the package |
+| `pnpm --filter @verisci/env test` | Runs its Vitest project (`vitest run`) |
 
 Ships TypeScript source (`src/index.ts`), with no build step.

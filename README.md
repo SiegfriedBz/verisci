@@ -1,25 +1,52 @@
 # verisci
 
+[![CI](https://github.com/SiegfriedBz/verisci/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/SiegfriedBz/verisci/actions/workflows/ci.yml)
+
 A pnpm and Turborepo monorepo: a Next.js app and five internal packages.
 Packages ship TypeScript source, with no build step; Next.js compiles them
 through `transpilePackages`.
 
 ## Requirements
 
-- Node 24 (see `.nvmrc`). `pnpm install` refuses any other major version.
+- Node 24.15 or later within 24.x; `.nvmrc` pins 24.21.0, which CI uses.
+  `pnpm install` refuses anything outside `>=24.15 <25`.
 - Corepack, which provides the pnpm version pinned in `packageManager`.
+- [Foundry](https://getfoundry.sh) 1.8.4 (`foundryup --install 1.8.4`). Needed for
+  `packages/contracts`, and by `pnpm check` and `pnpm test`, which call `forge`.
 
 ## Getting started
 
 ```sh
 corepack enable
 pnpm install
-pnpm typecheck   # every workspace
-pnpm build       # builds apps/web
+(cd packages/contracts && forge soldeer install)   # Solidity dependencies
 pnpm dev         # starts apps/web on http://localhost:3000
 ```
 
-Root scripts run through Turbo, which caches results by input.
+## Commands
+
+| Command | What it does |
+| --- | --- |
+| `pnpm check` | Biome format, lint and import order; then `forge fmt --check` and the NatSpec check in `packages/contracts` |
+| `pnpm check:fix` | Biome rewrites what it can fix safely |
+| `pnpm typecheck` | `tsc` in every workspace |
+| `pnpm test` | Vitest in every workspace, plus `forge test` in `packages/contracts` |
+| `pnpm test:coverage` | Vitest across all workspaces with coverage thresholds: `core` ≥ 90% branches, the others ≥ 70% lines. Until real code lands, only files imported by tests count (see `vitest.config.ts`) |
+| `pnpm vitest related <file> --run` | Only the tests that touch `<file>` |
+| `pnpm build` | Builds `apps/web` |
+
+`typecheck`, `test` and `build` run through Turbo, which caches results by
+input. Biome and coverage run once at the root.
+
+## CI
+
+Every PR into `develop` or `main`, and every push to them, runs
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) with two parallel jobs:
+
+- `ts`: `biome ci`, `typecheck`, `test:coverage` (report uploaded as an
+  artifact), `build`
+- `contracts`: Soldeer install, `forge fmt --check` and NatSpec,
+  `forge build --sizes`, `forge test` with the `ci` profile (5000 fuzz runs)
 
 ## Workspaces
 
