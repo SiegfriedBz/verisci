@@ -5,15 +5,14 @@
 
 ## Context
 
-Mints can fail fast on quorum (`storage_ack_insufficient`, `CORE_TEMPORARILY_UNAVAILABLE`), and retrying a couple of minutes later usually works. Inngest's default backoff starts in seconds: one production run of the previous repo spent all three of its attempts within six minutes against peers that needed longer to recover. The previous repo then threw `RetryAfterError` from inside `step.run` to space retries, which hides the delay in an error path and in the SDK's retry semantics.
+Mints can fail fast on quorum (`storage_ack_insufficient`, `CORE_TEMPORARILY_UNAVAILABLE`), and a retry a couple of minutes later usually works. Inngest's default retries come within seconds: one production run of the previous repo spent all three attempts in six minutes. That repo then threw `RetryAfterError` inside `step.run`, which hides the delay in an error path.
 
 ## Decision
 
 - Retry delays are an explicit `step.sleep` in the function body, never a `RetryAfterError` thrown inside `step.run`.
-- Starting values, measured in the previous repo's production runs: wait 2 minutes after a quorum failure, 5 attempts, and a 45-minute finish budget for a run containing a DKG write. The agents plan may tune them and records why.
+- Starting values, from the previous repo's production runs: wait 2 minutes after a quorum failure, 5 attempts, and a 45-minute budget for a run that writes to the DKG. The agents plan may tune them, and records why.
 
 ## Consequences
 
-- The delay between attempts is visible in the code, testable, and shown in the run timeline.
-- The function body carries its own retry loop for these cases instead of relying on step retries.
-- After the last attempt the request stays pending and the reconciler takes over ([0020](0020-a-cron-reconciler-recovers-stuck-requests.md)).
+- The delay is visible in the code, testable, and shown in the run timeline.
+- After the last attempt the request stays pending, and the reconciler takes over ([0020](0020-a-cron-reconciler-recovers-stuck-requests.md)).

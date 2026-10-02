@@ -19,7 +19,7 @@ No other workspace.
 | Variable | Values | Default |
 | --- | --- | --- |
 | `NODE_ENV` | `development`, `test`, `production` | `development` |
-| `APP_ENV` | `local` (not deployed: a dev machine or CI), `staging` (`develop`), `production` (`main`) | `local`, except in a production build |
+| `APP_ENV` | `local` (not deployed: a dev machine or CI), `staging` (`develop` and previews), `production` (`main`) | `local`, except in a production build |
 
 `NODE_ENV` is set by the tools (`next dev`, `next build`, Vitest); never set it
 by hand. When `NODE_ENV` is `production`, `APP_ENV` has no default. Set it per

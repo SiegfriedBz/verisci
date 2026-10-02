@@ -2,6 +2,45 @@
 
 [![CI](https://github.com/SiegfriedBz/verisci/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/SiegfriedBz/verisci/actions/workflows/ci.yml)
 
+verisci gives scientific papers an open quality rating that anyone can request,
+read and verify.
+
+## Why
+
+How much to trust a paper is usually inferred from where it was published, and
+the reviews behind that judgement are rarely public. verisci attaches the
+rating to the paper itself, in the open: each rating is a public record on the
+OriginTrail Decentralized Knowledge Graph (DKG), and its score is written on
+chain, so neither can be quietly changed. A rating starts as a rough machine
+score and is meant to grow stronger through human review and, later, wet-lab
+replication ([ADR 0012](docs/adr/0012-ratings-evolve-in-three-phases.md)).
+
+Status: early. The foundations (monorepo, tooling, CI, decisions) are in place;
+no user-facing feature has shipped yet. Everything runs on testnets.
+
+## How it works
+
+- **A paper becomes a Target KA.** A PDF is parsed, its metadata extracted, and
+  it is published to the DKG as a Knowledge Asset
+  ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)).
+- **Anyone can request a rating on chain.** The oracle scores the paper,
+  publishes the rating as its own Rating KA (R-KA) and records the score on the
+  contract ([ADR 0011](docs/adr/0011-a-rating-is-a-separate-r-ka.md),
+  [ADR 0014](docs/adr/0014-contract-owns-scores-dkg-owns-content.md)).
+- **Every write is safe to retry.** Each step checks what is already done
+  before acting, so a retry never duplicates anything
+  ([ADR 0007](docs/adr/0007-all-writes-converge.md)).
+- **A cron job finishes or cancels anything stuck**, from the contract's own
+  list of pending requests
+  ([ADR 0020](docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md)).
+- **Staging and production are kept apart**, with their own contracts, graphs
+  and wallets ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)).
+
+Terms: a **KA** (Knowledge Asset) is a record on the DKG; the **oracle** is
+verisci's backend account that scores requests and writes results on chain.
+
+## The repo
+
 A pnpm and Turborepo monorepo: a Next.js app and five internal packages.
 Packages ship TypeScript source, with no build step; Next.js compiles them
 through `transpilePackages`.

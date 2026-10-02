@@ -24,6 +24,9 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
 - **Unverified: a second `vm/publish` while a mint is in flight.** An asset being minted
   still reads as stored; whether the daemon refuses a publish for it or mints twice is not
   known. Until checked, assume it could mint twice ([ADR 0008](adr/0008-mints-are-async-polled-in-short-steps.md)).
+- **Unverified: reading KAs from other context graphs.** Whether our node can read a
+  KA published to another node's context graph is not checked on V10; rating a target
+  verisci did not publish depends on it ([ADR 0011](adr/0011-a-rating-is-a-separate-r-ka.md)).
 - **Mint time varies from about 5 s to over 300 s.** A mint can also fail fast on quorum
   (`storage_ack_insufficient`, `CORE_TEMPORARILY_UNAVAILABLE`); retrying after a couple of
   minutes usually works ([ADR 0009](adr/0009-retries-are-spaced-with-step-sleep.md)).

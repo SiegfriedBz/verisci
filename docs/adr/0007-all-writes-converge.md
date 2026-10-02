@@ -5,17 +5,16 @@
 
 ## Context
 
-Publishing a Knowledge Asset on the DKG node is two daemon calls: a store (`POST /api/knowledge-assets`) and a mint (`…/{name}/vm/publish`); a rating then ends with the oracle's on-chain `fulfil`. Any of the three can succeed while its response is lost, so every retry may be repeating a write that already happened. The daemon refuses a second `vm/publish` on a minted name, and a second `fulfil` reverts with `NotPending`, wasting gas. The previous repo made the mint and the fulfil read state first; its store generated a fresh subject UUID on each attempt.
+Publishing a Knowledge Asset is two daemon calls, a store and a mint; a rating then ends with the oracle's on-chain `fulfil` (or a `cancel`). Any of them can succeed while its response is lost, so a retry may repeat a write that already happened. The daemon refuses a second mint of a minted name, and the contract reverts a second `fulfil`. The previous repo's store generated new ids on every attempt.
 
 ## Decision
 
 - Publishing is always store, then mint, as two separate steps.
 - Every write reads the current state first and treats "already done" as success:
-  - **store:** if the asset is stored or minted, skip, and reuse the stored content (subject ids included) instead of generating new ones;
-  - **mint:** read the asset's `state` (missing, stored, minted), never infer it from which UAL field is present; if minted, return the existing UAL;
-  - **fulfil:** read the request on chain, inside the oracle function's serialized step ([0019](0019-oracle-transactions-are-serialized.md)); if it is already fulfilled with this R-KA, return success without sending a transaction. If the send still reverts with `NotPending` (an owner action landed in between), read again: fulfilled with this R-KA is done; cancelled or unknown stops the run and logs the asset as an orphan; fulfilled with a *different* R-KA should never happen and raises an alert;
-  - **cancel:** read the same way, in the same step; a request that is no longer pending is done, with no transaction sent.
-- A blind `vm/publish` on a minted name, or a `fulfil` or `cancel` on a settled request, is an error, and the code never sends one.
+  - **store:** if the asset exists, reuse its stored content (ids included) instead of generating new content;
+  - **mint:** read the asset's `state` (never infer it from which UAL field is present); if minted, return its UAL;
+  - **fulfil and cancel:** read the request on chain, inside the oracle's serialized step ([0019](0019-oracle-transactions-are-serialized.md)); if it is already settled, send nothing.
+- The code never sends a blind mint on a minted name, or a `fulfil` or `cancel` on a settled request.
 
 ## Consequences
 

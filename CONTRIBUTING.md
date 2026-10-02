@@ -14,8 +14,10 @@ other services can target it.
 | `develop` | Staging | testnets | squash-merged feature PRs |
 | `main` | Production | testnets, until a payment plan allows mainnet | release PRs from `develop` |
 
-Each environment has its own secrets, contract deployments, context graph and
-webhook endpoints; only the DKG node host is shared
+Each environment has its own contract, context graph, webhook, oracle wallet and
+Inngest environment. The DKG node is shared: one node wallet and one admin token
+serve both graphs, so a guard in the dkg package refuses the production graph
+outside production
 ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)). Mainnet
 waits on a payment plan
 ([ADR 0015](docs/adr/0015-rating-requests-are-free-on-testnet.md)). Both
