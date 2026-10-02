@@ -18,5 +18,9 @@ packages/contracts/dependencies/
 .env*
 !.env.example
 
+# Claude Code personal overrides
+.claude/settings.local.json
+CLAUDE.local.md
+
 # Plans are local working notes
 docs/plans/
