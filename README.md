@@ -26,8 +26,8 @@ pnpm dev         # starts apps/web on http://localhost:3000
 
 Environment variables are listed in [`.env.example`](.env.example). `pnpm dev`
 and `pnpm test` run without an env file; `pnpm build` needs `APP_ENV`
-(`APP_ENV=local pnpm build`, or set it in `apps/web/.env.local`). How workspaces
-declare and validate them is in the [`@verisci/env` README](packages/env/README.md).
+(`APP_ENV=local pnpm build`). How workspaces declare and validate them is in the
+[`@verisci/env` README](packages/env/README.md).
 
 ## Commands
 
