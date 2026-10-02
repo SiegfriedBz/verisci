@@ -2,9 +2,15 @@ import { agentsName } from "@verisci/agents";
 import { contractsName } from "@verisci/contracts";
 import { coreName } from "@verisci/core";
 import { dkgName } from "@verisci/dkg";
-import { envName } from "@verisci/env";
+import { sharedEnv } from "@verisci/env";
 
-const packages = [envName, coreName, dkgName, contractsName, agentsName];
+const packages = [
+  `@verisci/env (${sharedEnv.APP_ENV})`,
+  coreName,
+  dkgName,
+  contractsName,
+  agentsName,
+];
 
 export default function Home() {
   return (
