@@ -47,7 +47,8 @@ keeps branches in build order.
   Several workspaces → the main one, or omit the scope.
 - **Summary**: imperative, lowercase, no full stop, ≤ 72 characters.
   "add the UAL parser", not "Added UAL parser." or "UAL parser".
-- **Body** (optional, wrapped at 72): *why*, not *what* — the diff shows what.
+- **Body** (optional, wrapped at 72 on branch commits; squash commits take
+  the full-width PR description): *why*, not *what* — the diff shows what.
 
 ```text
 feat(core): parse UALs into chain id, agent address and token id
@@ -90,6 +91,10 @@ touches is true again.
   Checklist (tests, `pnpm check`/`typecheck`/`test` pass, READMEs, comments,
   TSDoc and NatSpec updated as described in [Docs](#docs), no secrets).
   Claude drafts it; you edit and paste it.
+- **Full width**: PR titles and descriptions have no hard line breaks inside
+  a paragraph or bullet; each one is a single line, and GitHub wraps it.
+  This also applies to the squash commit, whose body is the description;
+  the 72-column wrap applies only to commits written on a branch.
 - **Base** = `develop` (the default branch).
 - **Merge** with "Squash and merge", with the default squash message set to
   "Pull request title and description".
