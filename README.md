@@ -15,7 +15,7 @@ chain, so neither can be quietly changed. A rating starts as a rough machine
 score and is meant to grow stronger through human review and, later, wet-lab
 replication ([ADR 0012](docs/adr/0012-ratings-evolve-in-three-phases.md)).
 
-Status: early. verisci is a rebuild of an earlier private prototype,
+Status: early. verisci is a rebuild of an earlier prototype,
 desci-rating-dapp, which ran both flows (publish a paper, rate it) end to end on
 Base Sepolia. This repo starts again from clean foundations (monorepo, tooling,
 CI), and its ADRs and domain facts record what the prototype taught us. No
