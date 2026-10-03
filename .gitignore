@@ -1,1 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build output and caches
+.next/
+.turbo/
+dist/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Foundry
+packages/contracts/out/
+packages/contracts/cache/
+packages/contracts/dependencies/
+
+# Environment
+.env*
+!.env.example
+
+# Claude Code personal overrides
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Plans are local working notes
 docs/plans/

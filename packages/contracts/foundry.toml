@@ -1,0 +1,29 @@
+[profile.default]
+src = "src"
+test = "test"
+script = "script"
+out = "out"
+libs = ["dependencies"]
+solc_version = "0.8.37"
+evm_version = "prague"
+
+[profile.default.fuzz]
+runs = 256
+
+[profile.default.invariant]
+runs = 64
+
+[profile.ci.fuzz]
+runs = 5000
+
+[profile.ci.invariant]
+runs = 256
+depth = 50
+
+# remappings.txt is written by hand: update its path when bumping forge-std.
+[soldeer]
+remappings_generate = false
+recursive_deps = false
+
+[dependencies]
+forge-std = "1.17.0"

@@ -1,0 +1,30 @@
+{
+  "$schema": "../../node_modules/@biomejs/biome/configuration_schema.json",
+  "root": false,
+  "extends": "//",
+  "linter": {
+    "rules": {
+      "style": {
+        "noRestrictedGlobals": {
+          "level": "error",
+          "options": {
+            "deniedGlobals": {
+              "fetch": "core does no IO: put this in an adapter package"
+            }
+          }
+        },
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "patterns": [
+              {
+                "group": ["node:*", "@verisci/*"],
+                "message": "core does no IO: put this in an adapter package"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
