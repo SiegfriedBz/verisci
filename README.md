@@ -31,14 +31,15 @@ no user-facing feature has shipped yet. Everything runs on testnets.
 - **Every write is safe to retry.** Each step checks what is already done
   before acting, so a retry never duplicates anything
   ([ADR 0007](docs/adr/0007-all-writes-converge.md)).
-- **A cron job finishes or cancels anything stuck**, from the contract's own
-  list of pending requests
+- **A cron job restarts anything stuck**, from the contract's own list of
+  pending requests, and that request's run finishes or cancels it
   ([ADR 0020](docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md)).
 - **Staging and production are kept apart**, with their own contracts, graphs
   and oracle wallets; only the DKG node is shared ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)).
 
-Terms: a **KA** (Knowledge Asset) is a record on the DKG, minted and owned by
-verisci's DKG node; the **oracle** is verisci's account that records rating
+Terms: a **KA** (Knowledge Asset) is a record on the DKG; the ones verisci
+publishes (Target KAs and every R-KA) are minted and owned by its DKG node. The
+**oracle** is verisci's account that records rating
 results on the contract.
 
 ## The repo

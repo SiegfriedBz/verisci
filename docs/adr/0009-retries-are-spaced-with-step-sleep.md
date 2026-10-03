@@ -15,4 +15,4 @@ Mints can fail fast on quorum (`storage_ack_insufficient`, `CORE_TEMPORARILY_UNA
 ## Consequences
 
 - The delay is visible in the code, testable, and shown in the run timeline.
-- After the last attempt the request stays pending, and the reconciler takes over ([0020](0020-a-cron-reconciler-recovers-stuck-requests.md)).
+- After the last attempt a rating request stays pending, and the reconciler takes over; a failed publish is recovered by submitting the PDF again ([0010](0010-pdf-to-target-ka-pipeline.md)) ([0020](0020-a-cron-reconciler-recovers-stuck-requests.md)).
