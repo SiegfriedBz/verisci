@@ -2,7 +2,7 @@
 
 ## Summary
 
-<!-- What and why, 2–3 sentences. Link the plan if there is one. -->
+<!-- What and why, 2–3 sentences. Plans are local, so say what the plan aimed at; never reference the plan file. -->
 
 ## Changes
 
