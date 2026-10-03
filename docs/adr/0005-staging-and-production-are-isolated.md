@@ -9,10 +9,10 @@ verisci runs in production (`main`) and staging (`develop`), each at a stable UR
 
 ## Decision
 
-- Production and staging each have their own contract, context graph (`…/verisci-prod` vs `…/verisci`), Alchemy webhook and secret, oracle wallet and Inngest environment. Feature previews and local development use staging's contract and context graph, but not its oracle key, which only `develop` holds, nor its webhook or Inngest environment (each preview gets its own branch environment, [domain](../domain.md)); a developer running the rating functions locally uses their own contract and key ([0019](0019-oracle-transactions-are-serialized.md)).
+- Production and staging each have their own contract, context graph (`…/verisci-prod` vs `…/verisci`), Alchemy webhook and secret, oracle wallet and Inngest environment. Feature previews and local development use staging's contract and context graph, but not its oracle key, which only `develop` holds, nor its webhook or Inngest environment (each preview branch gets its own Inngest branch environment, [domain](../domain.md)); a developer running the rating functions locally uses their own contract and key ([0019](0019-oracle-transactions-are-serialized.md)).
 - The DKG node host is shared: one node, one node wallet and one admin token serve both graphs ([0006](0006-dkg-node-runs-on-a-dedicated-host.md)).
 - `APP_ENV` names the environment: `local`, `staging` or `production` ([0004](0004-each-workspace-declares-its-env.md)). A per-environment variable is one name, with one value per Vercel scope.
-- The dkg env module refuses a `-prod` context graph unless `APP_ENV=production`, and requires one when it is. Enforced when the dkg package lands.
+- The dkg env module refuses a `-prod` context graph unless `APP_ENV=production`, and requires one when it is. Enforced when the dkg env module lands.
 
 ## Consequences
 
