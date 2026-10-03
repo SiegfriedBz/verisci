@@ -60,11 +60,11 @@ In the order a request lives: requested, named, ingested, scored, fulfilled, and
 | ADR | Decision |
 | --- | --- |
 | [0015. Rating requests are free on testnet](0015-rating-requests-are-free-on-testnet.md) | Requesters pay only their gas; a per-requester cap and a throttle bound spend; superseded before mainnet |
-| [0016. Asset names derive from the on-chain request id](0016-asset-names-derive-from-request-id.md) | Each request gets its own id, bound to requester and target; R-KA names and recovery derive from it, never from a browser |
+| [0016. Asset names derive from the on-chain request id](0016-asset-names-derive-from-request-id.md) | Each request gets its own id, bound to requester and target; a rating's R-KA name and recovery derive from its phase-1 request id, never from a browser |
 | [0017. Chain events are ingested at least once](0017-chain-events-are-ingested-at-least-once.md) | Signed webhooks, one event per request id, ack only after hand-off, removed logs ignored; the reconciler heals misses |
 | [0018. The phase-1 scorer has a fixed output contract](0018-phase-1-scorer-output-contract.md) | `{ score, rationale, observed, missing }`, schema-validated, computed once and read back; the model is configuration |
 | [0019. Oracle transactions are serialized](0019-oracle-transactions-are-serialized.md) | One function sends every oracle transaction, one at a time, replacing stuck ones; only `main` and `develop` hold the production and staging oracle keys |
-| [0020. A cron reconciler recovers stuck requests](0020-a-cron-reconciler-recovers-stuck-requests.md) | One singleton run per request finishes what is left; a cron restarts stuck requests from the contract's pending set; cancels past a maximum age |
+| [0020. A cron reconciler recovers stuck requests](0020-a-cron-reconciler-recovers-stuck-requests.md) | One singleton run per request finishes what is left, and past a maximum age fulfils if minted or cancels; a cron only restarts stuck requests from the contract's pending set |
 
 ## App
 

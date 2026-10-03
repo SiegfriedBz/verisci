@@ -16,6 +16,6 @@ A rating is requested on chain, then scored by our workflow, stored and minted b
 
 ## Consequences
 
-- Given a request id, any process can compute the R-KA's name and read the state on chain and on the daemon, so recovery needs no browser ([0020](0020-a-cron-reconciler-recovers-stuck-requests.md)).
+- Given a rating's phase-1 request id, any process can compute the R-KA's name and read the state on chain and on the daemon, so recovery needs no browser ([0020](0020-a-cron-reconciler-recovers-stuck-requests.md)).
 - A retried store or mint targets the same name instead of creating a duplicate.
 - Two deployments never produce the same id ([0005](0005-staging-and-production-are-isolated.md)), and several ratings per paper are possible ([0013](0013-several-ratings-per-paper.md)).
