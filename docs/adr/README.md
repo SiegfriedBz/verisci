@@ -25,6 +25,7 @@ flow before the rating flow that builds on it.
 | [0004. Each workspace declares its own env variables](0004-each-workspace-declares-its-env.md) | `defineEnv` per workspace; fails fast, never shows values; `APP_ENV` required in production builds |
 | [0005. Staging and production use separate resources](0005-staging-and-production-are-isolated.md) | Separate contract, graph, webhook, oracle wallet and Inngest environment per environment; the DKG node (its wallet and admin token) is shared, so a `-prod` guard protects production |
 | [0006. The DKG node runs on a dedicated host](0006-dkg-node-runs-on-a-dedicated-host.md) | DKG daemon, GROBID and RPC proxy on their own host behind Caddy, every route but `/api/status` authenticated; node keys backed up off the host |
+| [0023. The contract is not upgradeable](0023-contract-is-not-upgradeable.md) | No proxy: a fix redeploys; the app reads the current address and past ones read-only; ids never collide across deployments |
 
 ## Writing to the DKG
 
@@ -52,6 +53,7 @@ A PDF becomes a Target KA.
 | [0012. Ratings evolve in three phases](0012-ratings-evolve-in-three-phases.md) | Machine score, then human review, then wet-lab; one score per phase, written once |
 | [0013. A paper can have several ratings](0013-several-ratings-per-paper.md) | A rating is identified by its phase-1 request id and its R-KA's UAL; rating count is a number |
 | [0014. The contract owns scores, the DKG owns content](0014-contract-owns-scores-dkg-owns-content.md) | The UI shows the contract's score and flags a gap with the DKG |
+| [0022. The contract indexes ratings by target](0022-contract-indexes-ratings-by-target.md) | Request ids listed per target UAL, oldest first, by view call; an indexer only if view calls stop being enough |
 
 ## Rating flow
 
@@ -78,10 +80,8 @@ Not decided yet. Each becomes an ADR in the plan that first needs the answer; th
 
 | Question | Leaning | Decided in |
 | --- | --- | --- |
-| How does the UI list a paper's ratings? | The contract indexes request ids by target (`ratingsOf`); the DKG serves R-KA content on demand ([0014](0014-contract-owns-scores-dkg-owns-content.md)). An indexer only if view calls stop being enough. | contracts plan |
 | How do users authenticate? | Wallet connection (Reown AppKit + wagmi). A submission is authorized by its EIP-712 signature ([0010](0010-pdf-to-target-ka-pipeline.md)), and rate limits key on the signing address; a SIWE session only if sign-in sessions are ever needed. | first web plan with a wallet |
 | Where do alerts go? | One chat-bot channel behind a single `notify()`, fed by a scheduled check (wallet balances, orphans, age of the oldest pending request) and an uptime check on the node's `/api/status`. | agents plan |
-| Is the contract upgradeable? | No proxy on testnet: a fix redeploys, and the app reads a list of contract addresses (current plus past, read-only). Ids include the contract address, so deployments never collide ([0016](0016-asset-names-derive-from-request-id.md)). | contracts plan |
 | Where does mutable app state live? | Nowhere authoritative: the chain and the DKG hold the truth. Rate-limit counters go in one small key-value store (Upstash Redis); losing it only resets the limits. | first web plan with a wallet |
 | Who may request phases 2 and 3? | Anyone, not only the phase-1 requester. Whoever requests, our node writes the R-KA update, since it owns the R-KA ([0012](0012-ratings-evolve-in-three-phases.md)). Also open: whether a later phase's request gets its own id or reuses the rating's. | phase-2 plan |
 | Who holds the DKG node's credential? | Caddy keeps the daemon's admin token on the host and checks one credential per environment, so each can be revoked alone. The `-prod` guard stays ([0005](0005-staging-and-production-are-isolated.md)). | dkg plan |
