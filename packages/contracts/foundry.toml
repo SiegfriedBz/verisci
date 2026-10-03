@@ -12,6 +12,7 @@ runs = 256
 
 [profile.default.invariant]
 runs = 64
+depth = 50
 
 [profile.ci.fuzz]
 runs = 5000
@@ -27,3 +28,4 @@ recursive_deps = false
 
 [dependencies]
 forge-std = "1.17.0"
+"@openzeppelin-contracts" = "5.7.0"

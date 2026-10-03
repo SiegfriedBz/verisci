@@ -15,7 +15,8 @@ layout, toolchain versions and commands.
   deploying is the user's call.
 - `out/`, `cache/`, `dependencies/`, `soldeer.lock` and future `broadcast/`,
   `deployments/`, `src/generated/` are generated; change the source and regenerate.
-- `Counter` is a placeholder: replace it with the first real contract.
-- The rating contract follows ADRs 0012 (one score per phase), 0015 (per-requester cap),
-  0016 (request id scheme) and 0020 (pending set, cancel reasons). See
-  [`docs/adr/`](../../docs/adr/README.md).
+- `src/RatingController.sol` is the rating contract. Its invariants live in
+  `test/RatingController.inv.t.sol`, driven by `test/handlers/RatingHandler.sol`.
+- It follows ADRs 0012 (one score per phase), 0015 (per-requester cap), 0016 (request id
+  scheme), 0020 (pending set, cancel reasons), 0022 (ratings indexed by target) and 0023
+  (not upgradeable: a fix is a redeploy). See [`docs/adr/`](../../docs/adr/README.md).

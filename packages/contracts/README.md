@@ -3,8 +3,41 @@
 Solidity contracts (Foundry), plus the TypeScript side that the other
 workspaces import.
 
-Status: placeholder. `Counter` (contract, tests and deploy script) proves the
-toolchain end to end; replace it with the first real contract.
+Status: `RatingController` v2 is written and tested; no deploy script, ABI
+export or TypeScript bindings yet.
+
+## RatingController
+
+Records phase-1 rating requests on chain and the oracle's answers. It is not
+upgradeable: a fix is a redeploy, and the app reads past deployments read-only
+([ADR 0023](../../docs/adr/0023-contract-is-not-upgradeable.md)).
+
+- **Request.** Anyone calls `requestPhase1(targetUal)` with a UAL of 1 to 256
+  bytes and gets a `requestId`, the `keccak256` of the chain id, the contract
+  address, a nonce, the requester and the UAL's hash, so ids never collide
+  across requests or deployments
+  ([ADR 0016](../../docs/adr/0016-asset-names-derive-from-request-id.md)).
+  A requester can have at most `maxPendingPerRequester` pending requests
+  (3 at deployment; [ADR 0015](../../docs/adr/0015-rating-requests-are-free-on-testnet.md)).
+- **Fulfil.** Only `oracleAgent` calls `fulfilPhase1(requestId, score, rKaUal)`,
+  with a score from 0 to 100 and the R-KA's UAL. The record holds the phase-1
+  score only; a later phase gets its own field in a later contract version
+  ([ADR 0012](../../docs/adr/0012-ratings-evolve-in-three-phases.md)).
+- **Cancel.** `cancelRequest(requestId, reason)`: the oracle with `MaxAge` or
+  `InvalidTarget`, the owner with `Owner`. A requester cannot cancel
+  ([ADR 0020](../../docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md)).
+- **Read.** `getRequest(requestId)` returns the full record (status `None` for
+  an unknown id). `pendingCount()` and `pendingRequestIds(offset, limit)` page
+  through the pending set, whose order is not stable; `ratingsCountOf(targetUal)`
+  and `ratingsOf(targetUal, offset, limit)` page through a target's request ids,
+  oldest first ([ADR 0022](../../docs/adr/0022-contract-indexes-ratings-by-target.md)).
+  No log scan is needed.
+- **Admin.** The owner (OpenZeppelin `Ownable2Step`: `transferOwnership`, then
+  `acceptOwnership`) sets `oracleAgent` and `maxPendingPerRequester`.
+
+Errors are custom errors, never revert strings; every state change emits an
+event (`Phase1Requested`, `Phase1Fulfilled`, `RequestCancelled`,
+`OracleAgentUpdated`, `MaxPendingPerRequesterUpdated`).
 
 ## Depends on
 
@@ -14,11 +47,11 @@ toolchain end to end; replace it with the first real contract.
 
 ```text
 src/            # .sol contracts (Foundry) and index.ts (TypeScript side)
-test/           # Foundry tests, *.t.sol
-script/         # Foundry scripts, *.s.sol
+test/           # Foundry tests: *.t.sol unit and fuzz, *.inv.t.sol invariants, handlers/
+script/         # Foundry scripts, *.s.sol (none yet)
 foundry.toml    # compiler, fuzz and invariant profiles
 soldeer.lock    # pinned Solidity dependencies
-remappings.txt  # written by hand: forge-std/ → dependencies/forge-std-<version>/src/
+remappings.txt  # written by hand: one line per dependency → dependencies/<name>-<version>/
 ```
 
 `out/`, `cache/` and `dependencies/` are generated and gitignored.
@@ -36,10 +69,11 @@ its exact command here.
 | Foundry | 1.8.4 | `.github/workflows/ci.yml` (`foundry-toolchain`); install locally with `foundryup --install 1.8.4` |
 | solc | 0.8.37 | `foundry.toml` (`solc_version`) |
 | forge-std | 1.17.0 | `foundry.toml` `[dependencies]` and `soldeer.lock`, via Soldeer |
+| OpenZeppelin Contracts | 5.7.0 | `foundry.toml` `[dependencies]` and `soldeer.lock`, via Soldeer |
 | solhint | 6.2.4 | `package.json` |
 
-To bump forge-std: `forge soldeer install forge-std~<version>`, then update
-the path in `remappings.txt`.
+To bump a dependency: `forge soldeer install <name>~<version>` (`forge-std`,
+`@openzeppelin-contracts`), then update its path in `remappings.txt`.
 
 ## NatSpec
 
@@ -59,6 +93,5 @@ overlap with `forge fmt`.
 | `pnpm --filter @verisci/contracts typecheck` | Typechecks the TypeScript side |
 | `forge build --sizes` | Compiles and reports contract sizes |
 | `FOUNDRY_PROFILE=ci forge test` | Tests with the CI fuzz and invariant runs |
-| `forge script script/Counter.s.sol` | Dry-runs the deploy script (add `--rpc-url` and `--broadcast` to deploy) |
 
 The TypeScript side ships as source (`src/index.ts`), with no build step.
