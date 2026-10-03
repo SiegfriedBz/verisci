@@ -9,7 +9,7 @@ A rating is requested on chain, then scored by our workflow, stored and minted b
 
 ## Decision
 
-- The v2 contract gives every request its own id: the hash of the chain id, the contract address, a counter, the requester and the target UAL. A retry is a new request.
+- The v2 contract gives every rating request (phase 1) its own id: the hash of the chain id, the contract address, a counter, the requester and the target UAL. A retry is a new request. Whether a later phase's request gets its own id is left to the phase-2 plan.
 - Because the id hashes the requester and target, a reorg that reorders requests can never pair one request's rating with another.
 - The rating's R-KA name derives from its phase-1 request id ([0011](0011-a-rating-is-a-separate-r-ka.md)). Target KAs are named from their PDF instead ([0010](0010-pdf-to-target-ka-pipeline.md)).
 - Nothing load-bearing lives in a browser: client storage may cache, never decide.
