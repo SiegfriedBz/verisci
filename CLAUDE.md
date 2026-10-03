@@ -38,6 +38,12 @@ Toolchain: Node 24.21.0 (`.nvmrc`), pnpm 10.34.6 via Corepack, Foundry 1.8.4. If
 - Solidity: solc 0.8.37, forge-std via Soldeer (never `forge install`, never git
   submodules), full NatSpec on every contract, function, event and error.
 
+## Decisions and facts
+
+Read [`docs/adr/README.md`](docs/adr/README.md) (decisions already taken) and
+[`docs/domain.md`](docs/domain.md) (DKG, chain, Inngest, Vercel, tooling facts) before
+planning; cite them rather than re-arguing them.
+
 ## Workflow
 
 1. `/plan-feature <name>` writes `docs/plans/NNN-<name>.md` (gitignored local notes).

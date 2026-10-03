@@ -12,11 +12,16 @@ other services can target it.
 | Branch | Environment | Networks | Receives |
 | --- | --- | --- | --- |
 | `develop` | Staging | testnets | squash-merged feature PRs |
-| `main` | Production | production networks | release PRs from `develop` |
+| `main` | Production | testnets, until a payment plan allows mainnet | release PRs from `develop` |
 
-Each environment has its own secrets, contract deployments and webhook
-endpoints; nothing is shared between them. Both branches are protected: PRs
-only, CI green, never deleted.
+Each environment has its own contract, context graph, webhook, oracle wallet and
+Inngest environment. The DKG node is shared: one node wallet and one admin token
+serve both graphs, so a guard in the dkg package will refuse the production
+graph outside production (enforced once its env module lands)
+([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)). Mainnet
+waits on a payment plan
+([ADR 0015](docs/adr/0015-rating-requests-are-free-on-testnet.md)). Both
+branches are protected: PRs only, CI green, never deleted.
 
 ## Branches
 
@@ -51,10 +56,10 @@ keeps branches in build order.
   the full-width PR description): *why*, not *what* — the diff shows what.
 
 ```text
-feat(core): parse UALs into chain id, agent address and token id
+feat(core): parse both UAL shapes
 
-The middle segment is the node's agent wallet, not a contract, so the
-parser names it dkgAgentAddress to stop the old confusion recurring.
+V10 UALs carry the author's wallet where older ones carry the storage
+contract, so the parser accepts both instead of assuming our node.
 ```
 
 Commit small and often on the branch: each commit should build and pass its

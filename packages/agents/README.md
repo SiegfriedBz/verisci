@@ -1,6 +1,7 @@
 # @verisci/agents
 
-Agents that combine `core` logic with the `dkg` and `contracts` adapters.
+Inngest workflows that combine `core` logic with the `dkg` and `contracts` adapters;
+`apps/web` only serves them ([ADR 0003](../../docs/adr/0003-inngest-workflows-live-in-agents.md)).
 
 Status: placeholder.
 

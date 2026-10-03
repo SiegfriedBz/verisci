@@ -2,6 +2,51 @@
 
 [![CI](https://github.com/SiegfriedBz/verisci/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/SiegfriedBz/verisci/actions/workflows/ci.yml)
 
+verisci gives scientific papers an open quality rating that anyone can request,
+read and verify.
+
+## Why
+
+How much to trust a paper is usually inferred from where it was published, and
+the reviews behind that judgement are rarely public. verisci attaches the
+rating to the paper itself, in the open: each rating is a public record on the
+OriginTrail Decentralized Knowledge Graph (DKG), and its score is written on
+chain, so neither can be quietly changed. A rating starts as a rough machine
+score and is meant to grow stronger through human review and, later, wet-lab
+replication ([ADR 0012](docs/adr/0012-ratings-evolve-in-three-phases.md)).
+
+Status: early. verisci is a rebuild of an earlier prototype,
+desci-rating-dapp, which ran both flows (publish a paper, rate it) end to end on
+Base Sepolia. This repo starts again from clean foundations (monorepo, tooling,
+CI), and its ADRs and domain facts record what the prototype taught us. No
+user-facing feature has shipped here yet. Everything runs on testnets.
+
+## How it works
+
+- **A paper becomes a Target KA.** Its submitter signs it with their wallet; the
+  PDF is parsed, its metadata extracted, and it is published to the DKG as a
+  Knowledge Asset that records who submitted it
+  ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)).
+- **Anyone can request a rating on chain.** verisci scores the paper, our DKG
+  node publishes the rating as its own Rating KA (R-KA), and the oracle records
+  the score on the contract ([ADR 0011](docs/adr/0011-a-rating-is-a-separate-r-ka.md),
+  [ADR 0014](docs/adr/0014-contract-owns-scores-dkg-owns-content.md)).
+- **Every write is safe to retry.** Each step checks what is already done
+  before acting, so a retry never duplicates anything
+  ([ADR 0007](docs/adr/0007-all-writes-converge.md)).
+- **A cron job restarts anything stuck**, from the contract's own list of
+  pending requests, and that request's run finishes or cancels it
+  ([ADR 0020](docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md)).
+- **Staging and production are kept apart**, with their own contracts, graphs
+  and oracle wallets; only the DKG node is shared ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)).
+
+Terms: a **KA** (Knowledge Asset) is a record on the DKG; the ones verisci
+publishes (Target KAs and every R-KA) are minted and owned by its DKG node. The
+**oracle** is verisci's account that records rating
+results on the contract.
+
+## The repo
+
 A pnpm and Turborepo monorepo: a Next.js app and five internal packages.
 Packages ship TypeScript source, with no build step; Next.js compiles them
 through `transpilePackages`.
@@ -55,6 +100,11 @@ Every PR into `develop` or `main`, and every push to them, runs
 - `contracts`: Soldeer install, `forge fmt --check` and NatSpec,
   `forge build --sizes`, `forge test` with the `ci` profile (5000 fuzz runs)
 
+## Decisions and domain facts
+
+Architecture decisions are in [`docs/adr/`](docs/adr/README.md); facts about the DKG,
+chain, Inngest, Vercel and tooling are in [`docs/domain.md`](docs/domain.md).
+
 ## Workspaces
 
 | Workspace | What it is | Depends on |
@@ -64,7 +114,7 @@ Every PR into `develop` or `main`, and every push to them, runs
 | [`packages/core`](packages/core/README.md) | Domain logic, no IO | none |
 | [`packages/dkg`](packages/dkg/README.md) | DKG adapter | core, env |
 | [`packages/contracts`](packages/contracts/README.md) | Solidity contracts and their TypeScript side | core, env |
-| [`packages/agents`](packages/agents/README.md) | Agents | core, env, dkg, contracts |
+| [`packages/agents`](packages/agents/README.md) | Inngest workflows | core, env, dkg, contracts |
 
 Each workspace may only import the workspaces it declares. pnpm does not
 hoist undeclared workspace packages, so breaking this rule fails `pnpm
@@ -72,7 +122,8 @@ typecheck`.
 
 ## Environments
 
-`develop` is staging (testnets) and `main` is production. Feature
+`develop` is staging and `main` is production, both on testnets for now, with
+separate resources ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)). Feature
 PRs target `develop`; release PRs move `develop` into `main`. Details are in
 [CONTRIBUTING.md](CONTRIBUTING.md#environments).
 

@@ -13,7 +13,7 @@ One sentence: what a user or caller can do after this ships.
 
 ## Design
 
-Files to add or change, public signatures, and which ADRs apply.
+Files to add or change, public signatures, and which ADRs apply (`docs/adr/`).
 
 ## Out of scope
 

@@ -16,3 +16,6 @@ layout, toolchain versions and commands.
 - `out/`, `cache/`, `dependencies/`, `soldeer.lock` and future `broadcast/`,
   `deployments/`, `src/generated/` are generated; change the source and regenerate.
 - `Counter` is a placeholder: replace it with the first real contract.
+- The rating contract follows ADRs 0012 (one score per phase), 0015 (per-requester cap),
+  0016 (request id scheme) and 0020 (pending set, cancel reasons). See
+  [`docs/adr/`](../../docs/adr/README.md).
