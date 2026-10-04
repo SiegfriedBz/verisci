@@ -232,7 +232,7 @@ contract RatingControllerTest is Test {
     function test_Fulfil_RevertsWhenCancelled() public {
         bytes32 id = _request(alice);
         vm.startPrank(oracle);
-        controller.cancelRequest(id, IRatingController.CancelReason.MaxAge);
+        controller.cancelRequest(id, IRatingController.CancelReason.Expired);
         vm.expectRevert(
             abi.encodeWithSelector(IRatingController.NotPending.selector, IRatingController.Status.Cancelled)
         );
@@ -265,13 +265,13 @@ contract RatingControllerTest is Test {
         assertEq(controller.pendingCountOf(alice), 0);
     }
 
-    function test_Cancel_ByOracleWithMaxAge() public {
+    function test_Cancel_ByOracleWithExpired() public {
         bytes32 id = _request(alice);
         vm.expectEmit(address(controller));
-        emit IRatingController.RequestCancelled(id, IRatingController.CancelReason.MaxAge);
+        emit IRatingController.RequestCancelled(id, IRatingController.CancelReason.Expired);
         vm.prank(oracle);
-        controller.cancelRequest(id, IRatingController.CancelReason.MaxAge);
-        _assertCancelled(id, IRatingController.CancelReason.MaxAge);
+        controller.cancelRequest(id, IRatingController.CancelReason.Expired);
+        _assertCancelled(id, IRatingController.CancelReason.Expired);
     }
 
     function test_Cancel_ByOracleWithInvalidTarget() public {
@@ -294,10 +294,10 @@ contract RatingControllerTest is Test {
         bytes32 id = _request(alice);
         vm.prank(owner);
         vm.expectRevert(IRatingController.NotOracle.selector);
-        controller.cancelRequest(id, IRatingController.CancelReason.MaxAge);
+        controller.cancelRequest(id, IRatingController.CancelReason.Expired);
         vm.prank(alice);
         vm.expectRevert(IRatingController.NotOracle.selector);
-        controller.cancelRequest(id, IRatingController.CancelReason.MaxAge);
+        controller.cancelRequest(id, IRatingController.CancelReason.Expired);
     }
 
     function test_Cancel_RevertsWhenOracleGivesNoReason() public {
@@ -323,13 +323,13 @@ contract RatingControllerTest is Test {
         vm.expectRevert(
             abi.encodeWithSelector(IRatingController.NotPending.selector, IRatingController.Status.Fulfilled)
         );
-        controller.cancelRequest(id, IRatingController.CancelReason.MaxAge);
+        controller.cancelRequest(id, IRatingController.CancelReason.Expired);
     }
 
     function testFuzz_Cancel_RevertsOnUnknownRequest(bytes32 id) public {
         vm.prank(oracle);
         vm.expectRevert(IRatingController.UnknownRequest.selector);
-        controller.cancelRequest(id, IRatingController.CancelReason.MaxAge);
+        controller.cancelRequest(id, IRatingController.CancelReason.Expired);
     }
 
     // --- admin ---

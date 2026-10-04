@@ -14,10 +14,12 @@ interface IRatingController {
         Cancelled
     }
 
-    /// @notice Why a request was cancelled.
+    /// @notice Why a request was cancelled: `Expired` when it stayed pending past the maximum age
+    ///         (ADR 0020), `InvalidTarget` when its target UAL is not a Target KA that can be rated.
+    ///         `None` until then.
     enum CancelReason {
         None,
-        MaxAge,
+        Expired,
         InvalidTarget
     }
 

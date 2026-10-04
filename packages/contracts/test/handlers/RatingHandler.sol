@@ -66,7 +66,7 @@ contract RatingHandler is CommonBase, StdUtils {
         bytes32 id = _anyId(idSeed);
         if (id == bytes32(0)) return;
         IRatingController.CancelReason reason =
-            invalidTarget ? IRatingController.CancelReason.InvalidTarget : IRatingController.CancelReason.MaxAge;
+            invalidTarget ? IRatingController.CancelReason.InvalidTarget : IRatingController.CancelReason.Expired;
         vm.prank(oracle);
         try controller.cancelRequest(id, reason) {
             _record(id, IRatingController.Status.Cancelled, 0, "");

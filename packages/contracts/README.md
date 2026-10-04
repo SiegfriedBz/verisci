@@ -26,8 +26,9 @@ it. A fix is a redeploy, and the app reads past deployments read-only
   score only; a later phase gets its own field in a later contract version
   ([ADR 0012](../../docs/adr/0012-ratings-evolve-in-three-phases.md)).
 - **Cancel.** Only `oracleAgent` calls `cancelRequest(requestId, reason)`, with
-  the reason the request stopped: `MaxAge` or `InvalidTarget`. In an emergency
-  the owner replaces the oracle, and the new oracle cancels
+  the reason the request stopped: `Expired` (pending past the maximum age) or
+  `InvalidTarget`. In an emergency the owner replaces the oracle, and the new
+  oracle cancels
   ([ADR 0020](../../docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md),
   [ADR 0024](../../docs/adr/0024-only-the-oracle-cancels-requests.md)).
 - **Read.** `getRatingRequest(requestId)` returns the full `RatingRequest`
