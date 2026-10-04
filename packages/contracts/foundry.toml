@@ -12,6 +12,7 @@ runs = 256
 
 [profile.default.invariant]
 runs = 64
+depth = 50
 
 [profile.ci.fuzz]
 runs = 5000
@@ -20,10 +21,11 @@ runs = 5000
 runs = 256
 depth = 50
 
-# remappings.txt is written by hand: update its path when bumping forge-std.
+# remappings.txt is written by hand: update a dependency's path there when bumping it.
 [soldeer]
 remappings_generate = false
 recursive_deps = false
 
 [dependencies]
 forge-std = "1.17.0"
+"@openzeppelin-contracts" = "5.7.0"
