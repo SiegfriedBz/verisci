@@ -418,6 +418,19 @@ contract RatingControllerTest is Test {
         controller.setMaxPendingPerRequester(5);
     }
 
+    function testFuzz_RenounceOwnership_RevertsForAnyone(address caller) public {
+        vm.prank(caller);
+        vm.expectRevert(IRatingController.RenounceOwnershipDisabled.selector);
+        controller.renounceOwnership();
+    }
+
+    function test_RenounceOwnership_KeepsOwner() public {
+        vm.prank(owner);
+        vm.expectRevert(IRatingController.RenounceOwnershipDisabled.selector);
+        controller.renounceOwnership();
+        assertEq(controller.owner(), owner);
+    }
+
     // --- views ---
 
     function testFuzz_GetRequest_UnknownIsZeroed(bytes32 id) public view {

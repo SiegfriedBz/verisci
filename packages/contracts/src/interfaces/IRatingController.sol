@@ -108,6 +108,9 @@ interface IRatingController {
     /// @notice The cap is zero.
     error InvalidCap();
 
+    /// @notice Ownership moves only by two-step transfer; the contract always has an owner.
+    error RenounceOwnershipDisabled();
+
     /// @notice Requests a phase-1 rating of `targetUal`.
     /// @param targetUal The UAL of the Target KA to rate.
     /// @return requestId The new request id.

@@ -143,6 +143,13 @@ contract RatingController is IRatingController, Ownable2Step {
         }
     }
 
+    /// @notice Reverts with `RenounceOwnershipDisabled` for every caller. The contract always has an
+    ///         owner, who can replace the oracle in an emergency (ADR 0024); ownership moves by
+    ///         `transferOwnership` then `acceptOwnership`.
+    function renounceOwnership() public pure override {
+        revert RenounceOwnershipDisabled();
+    }
+
     function _setOracleAgent(address oracleAgent_) private {
         if (oracleAgent_ == address(0)) revert ZeroAddress();
         oracleAgent = oracleAgent_;

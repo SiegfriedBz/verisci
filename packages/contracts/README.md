@@ -39,12 +39,36 @@ it. A fix is a redeploy, and the app reads past deployments read-only
   requests settle. `requestCountOf(targetUal)` and
   `requestIdsOf(targetUal, offset, limit)` do the same for a target's request
   ids, oldest first ([ADR 0022](../../docs/adr/0022-contract-indexes-ratings-by-target.md)).
-- **Admin.** The owner (OpenZeppelin `Ownable2Step`: `transferOwnership`, then
-  `acceptOwnership`) sets `oracleAgent` and `maxPendingPerRequester`.
+- **Admin.** The owner sets `oracleAgent` and `maxPendingPerRequester`.
+  Ownership moves in two steps (OpenZeppelin `Ownable2Step`:
+  `transferOwnership`, then `acceptOwnership`), and the contract always has an
+  owner: `renounceOwnership` reverts with `RenounceOwnershipDisabled`.
 
 Failures revert with custom errors, and every state change emits an event
 (`Phase1Requested`, `Phase1Fulfilled`, `RequestCancelled`,
 `OracleAgentUpdated`, `MaxPendingPerRequesterUpdated`).
+
+### Life of a request
+
+```text
+                 requestPhase1 (anyone)
+                         │  checks: UAL not empty, under the cap
+                         │  id = hash(chain, contract, nonce, requester, UAL)
+                         ▼
+   ┌──────────────── Pending ────────────────┐
+   │   in _pendingRequestIds  (reconciler)   │
+   │   in _requestIdsOf[UAL]  (UI)           │
+   │   pendingCountOf[requester] + 1         │
+   └─────────────────────────────────────────┘
+        │ fulfilPhase1 (oracle)        │ cancelRequest (oracle)
+        │ score ≤ 100, R-KA set        │ Expired | InvalidTarget
+        ▼                              ▼
+    Fulfilled                      Cancelled
+        └──────── final: leaves the pending set, frees a cap slot,
+                  stays in _requestIdsOf, never changes again
+
+   owner: setOracleAgent, setMaxPendingPerRequester, two-step ownership transfer
+```
 
 ## Depends on
 
