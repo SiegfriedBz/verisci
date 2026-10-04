@@ -7,8 +7,10 @@ Status: `RatingController` v2, written and tested.
 
 ## RatingController
 
-Records phase-1 rating requests on chain and the oracle's answers. A fix is a
-redeploy, and the app reads past deployments read-only
+Records phase-1 rating requests on chain and the oracle's answers. Its public
+API (types, events, errors and function signatures, with their NatSpec) is
+`src/interfaces/IRatingController.sol`; `src/RatingController.sol` implements
+it. A fix is a redeploy, and the app reads past deployments read-only
 ([ADR 0023](../../docs/adr/0023-contract-is-not-upgradeable.md)).
 
 - **Request.** Anyone calls `requestPhase1(targetUal)` with a non-empty UAL
@@ -46,8 +48,9 @@ Failures revert with custom errors, and every state change emits an event
 
 ```text
 src/            # .sol contracts (Foundry) and index.ts (TypeScript side)
+src/interfaces/ # contract interfaces: types, events, errors, NatSpec
 test/           # Foundry tests: *.t.sol unit and fuzz, *.inv.t.sol invariants, handlers/
-script/         # Foundry scripts, *.s.sol (none yet)
+script/         # Foundry scripts, *.s.sol
 foundry.toml    # compiler, fuzz and invariant profiles
 soldeer.lock    # pinned Solidity dependencies
 remappings.txt  # written by hand: one line per dependency → dependencies/<name>-<version>/

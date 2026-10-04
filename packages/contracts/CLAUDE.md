@@ -15,7 +15,10 @@ layout, toolchain versions and commands.
   deploying is the user's call.
 - `out/`, `cache/`, `dependencies/`, `soldeer.lock` and future `broadcast/`,
   `deployments/`, `src/generated/` are generated; change the source and regenerate.
-- `src/RatingController.sol` is the rating contract. Its invariants live in
+- Contracts follow the Solidity style guide's order of layout. Types, events and errors
+  go in an interface (`src/interfaces/I<Name>.sol`) with their NatSpec; the contract
+  implements it and uses `@inheritdoc`.
+- `src/RatingController.sol` implements `IRatingController`. Its invariants live in
   `test/RatingController.inv.t.sol`, driven by `test/handlers/RatingHandler.sol`.
 - It follows ADRs 0012 (one score per phase), 0015 (per-requester cap), 0016 (request id
   scheme), 0020 (pending set, cancel reasons), 0022 (ratings indexed by target) and 0023

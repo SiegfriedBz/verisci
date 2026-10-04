@@ -4,6 +4,7 @@ pragma solidity 0.8.37;
 import {CommonBase} from "forge-std/Base.sol";
 import {StdUtils} from "forge-std/StdUtils.sol";
 import {RatingController} from "../../src/RatingController.sol";
+import {IRatingController} from "../../src/interfaces/IRatingController.sol";
 
 /// @title RatingHandler
 /// @notice Drives RatingController through random requests, fulfils, cancels and cap changes
@@ -19,7 +20,7 @@ contract RatingHandler is CommonBase, StdUtils {
     /// @notice What a request looked like when it left `Pending`.
     struct Settled {
         bool recorded;
-        RatingController.Status status;
+        IRatingController.Status status;
         uint8 score;
         bytes32 rKaHash;
     }
@@ -57,18 +58,18 @@ contract RatingHandler is CommonBase, StdUtils {
         vm.prank(oracle);
         // Invalid scores and settled ids must revert and leave state untouched.
         try controller.fulfilPhase1(id, score, rKa) {
-            _record(id, RatingController.Status.Fulfilled, score, rKa);
+            _record(id, IRatingController.Status.Fulfilled, score, rKa);
         } catch {}
     }
 
     function cancelByOracle(uint256 idSeed, bool invalidTarget) external {
         bytes32 id = _anyId(idSeed);
         if (id == bytes32(0)) return;
-        RatingController.CancelReason reason =
-            invalidTarget ? RatingController.CancelReason.InvalidTarget : RatingController.CancelReason.MaxAge;
+        IRatingController.CancelReason reason =
+            invalidTarget ? IRatingController.CancelReason.InvalidTarget : IRatingController.CancelReason.MaxAge;
         vm.prank(oracle);
         try controller.cancelRequest(id, reason) {
-            _record(id, RatingController.Status.Cancelled, 0, "");
+            _record(id, IRatingController.Status.Cancelled, 0, "");
         } catch {}
     }
 
@@ -76,15 +77,14 @@ contract RatingHandler is CommonBase, StdUtils {
         bytes32 id = _anyId(idSeed);
         if (id == bytes32(0)) return;
         vm.prank(owner);
-        try controller.cancelRequest(id, RatingController.CancelReason.Owner) {
-            _record(id, RatingController.Status.Cancelled, 0, "");
+        try controller.cancelRequest(id, IRatingController.CancelReason.Owner) {
+            _record(id, IRatingController.Status.Cancelled, 0, "");
         } catch {}
     }
 
     function setCap(uint256 max) external {
-        max = bound(max, 1, 5);
         vm.prank(owner);
-        controller.setMaxPendingPerRequester(max);
+        controller.setMaxPendingPerRequester(uint8(bound(max, 1, 5)));
     }
 
     // --- ghost accessors ---
@@ -118,7 +118,7 @@ contract RatingHandler is CommonBase, StdUtils {
     }
 
     /// @dev Records what a successful settle should have stored; settling twice is a violation.
-    function _record(bytes32 id, RatingController.Status status, uint8 score, string memory rKa) internal {
+    function _record(bytes32 id, IRatingController.Status status, uint8 score, string memory rKa) internal {
         if (_settled[id].recorded) {
             ++settledTwice;
             return;

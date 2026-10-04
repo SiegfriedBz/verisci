@@ -3,6 +3,7 @@ pragma solidity 0.8.37;
 
 import {Test} from "forge-std/Test.sol";
 import {RatingController} from "../src/RatingController.sol";
+import {IRatingController} from "../src/interfaces/IRatingController.sol";
 import {RatingHandler} from "./handlers/RatingHandler.sol";
 
 /// @title RatingControllerInvariantTest
@@ -24,7 +25,7 @@ contract RatingControllerInvariantTest is Test {
     function invariant_PendingSetMatchesPendingStatus() public view {
         uint256 pendingByStatus;
         for (uint256 i; i < handler.idCount(); ++i) {
-            if (controller.getRequest(handler.idAt(i)).status == RatingController.Status.Pending) {
+            if (controller.getRequest(handler.idAt(i)).status == IRatingController.Status.Pending) {
                 ++pendingByStatus;
             }
         }
@@ -32,7 +33,7 @@ contract RatingControllerInvariantTest is Test {
 
         bytes32[] memory pending = controller.pendingRequestIds(0, type(uint256).max);
         for (uint256 i; i < pending.length; ++i) {
-            assertEq(uint8(controller.getRequest(pending[i]).status), uint8(RatingController.Status.Pending));
+            assertEq(uint8(controller.getRequest(pending[i]).status), uint8(IRatingController.Status.Pending));
         }
     }
 
@@ -52,7 +53,7 @@ contract RatingControllerInvariantTest is Test {
             bytes32 id = handler.idAt(i);
             RatingHandler.Settled memory s = handler.settled(id);
             if (!s.recorded) continue;
-            RatingController.Request memory r = controller.getRequest(id);
+            IRatingController.Request memory r = controller.getRequest(id);
             assertEq(uint8(r.status), uint8(s.status));
             assertEq(r.phase1Score, s.score);
             assertEq(keccak256(bytes(r.rKaUal)), s.rKaHash);

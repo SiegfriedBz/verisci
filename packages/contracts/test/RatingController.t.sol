@@ -4,6 +4,7 @@ pragma solidity 0.8.37;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Test} from "forge-std/Test.sol";
 import {RatingController} from "../src/RatingController.sol";
+import {IRatingController} from "../src/interfaces/IRatingController.sol";
 
 /// @title RatingControllerTest
 /// @notice Unit and fuzz tests for RatingController.
@@ -25,12 +26,12 @@ contract RatingControllerTest is Test {
 
     // --- helpers ---
 
-    function _expectedId(uint256 chainId, address at, uint256 nonce, address requester, string memory targetUal)
+    function _expectedId(uint256 chainId, address deployedAt, uint256 nonce, address requester, string memory targetUal)
         internal
         pure
         returns (bytes32)
     {
-        return keccak256(abi.encode(chainId, at, nonce, requester, keccak256(bytes(targetUal))));
+        return keccak256(abi.encode(chainId, deployedAt, nonce, requester, keccak256(bytes(targetUal))));
     }
 
     function _request(address requester) internal returns (bytes32) {
@@ -62,19 +63,19 @@ contract RatingControllerTest is Test {
 
     function test_Constructor_EmitsConfig() public {
         vm.expectEmit();
-        emit RatingController.OracleAgentUpdated(oracle);
+        emit IRatingController.OracleAgentUpdated(oracle);
         vm.expectEmit();
-        emit RatingController.MaxPendingPerRequesterUpdated(3);
+        emit IRatingController.MaxPendingPerRequesterUpdated(3);
         new RatingController(oracle, 3);
     }
 
     function test_Constructor_RevertsOnZeroCap() public {
-        vm.expectRevert(RatingController.InvalidCap.selector);
+        vm.expectRevert(IRatingController.InvalidCap.selector);
         new RatingController(oracle, 0);
     }
 
     function test_Constructor_RevertsOnZeroOracle() public {
-        vm.expectRevert(RatingController.ZeroAddress.selector);
+        vm.expectRevert(IRatingController.ZeroAddress.selector);
         new RatingController(address(0), 3);
     }
 
@@ -84,11 +85,11 @@ contract RatingControllerTest is Test {
         vm.warp(1_700_000_000);
         bytes32 id = _request(alice);
 
-        RatingController.Request memory r = controller.getRequest(id);
+        IRatingController.Request memory r = controller.getRequest(id);
         assertEq(r.requester, alice);
         assertEq(r.requestedAt, 1_700_000_000);
-        assertEq(uint8(r.status), uint8(RatingController.Status.Pending));
-        assertEq(uint8(r.cancelReason), uint8(RatingController.CancelReason.None));
+        assertEq(uint8(r.status), uint8(IRatingController.Status.Pending));
+        assertEq(uint8(r.cancelReason), uint8(IRatingController.CancelReason.None));
         assertEq(r.phase1Score, 0);
         assertEq(r.targetUal, TARGET);
         assertEq(r.rKaUal, "");
@@ -105,7 +106,7 @@ contract RatingControllerTest is Test {
         vm.warp(1_700_000_000);
         bytes32 expected = _expectedId(block.chainid, address(controller), 0, alice, TARGET);
         vm.expectEmit(address(controller));
-        emit RatingController.Phase1Requested(expected, alice, keccak256(bytes(TARGET)), TARGET, 1_700_000_000);
+        emit IRatingController.Phase1Requested(expected, alice, keccak256(bytes(TARGET)), TARGET, 1_700_000_000);
         _request(alice);
     }
 
@@ -157,7 +158,7 @@ contract RatingControllerTest is Test {
     }
 
     function test_Request_RevertsOnEmptyTarget() public {
-        vm.expectRevert(RatingController.EmptyTargetUal.selector);
+        vm.expectRevert(IRatingController.EmptyTargetUal.selector);
         controller.requestPhase1("");
     }
 
@@ -174,7 +175,7 @@ contract RatingControllerTest is Test {
         _request(alice);
 
         vm.prank(alice);
-        vm.expectRevert(RatingController.TooManyPending.selector);
+        vm.expectRevert(IRatingController.TooManyPending.selector);
         controller.requestPhase1(TARGET);
 
         // Each requester has their own cap.
@@ -192,12 +193,12 @@ contract RatingControllerTest is Test {
         bytes32 id = _request(alice);
 
         vm.expectEmit(address(controller));
-        emit RatingController.Phase1Fulfilled(id, score, RKA);
+        emit IRatingController.Phase1Fulfilled(id, score, RKA);
         vm.prank(oracle);
         controller.fulfilPhase1(id, score, RKA);
 
-        RatingController.Request memory r = controller.getRequest(id);
-        assertEq(uint8(r.status), uint8(RatingController.Status.Fulfilled));
+        IRatingController.Request memory r = controller.getRequest(id);
+        assertEq(uint8(r.status), uint8(IRatingController.Status.Fulfilled));
         assertEq(r.phase1Score, score);
         assertEq(r.rKaUal, RKA);
         assertEq(controller.pendingCount(), 0);
@@ -208,13 +209,13 @@ contract RatingControllerTest is Test {
         vm.assume(caller != oracle);
         bytes32 id = _request(alice);
         vm.prank(caller);
-        vm.expectRevert(RatingController.NotOracle.selector);
+        vm.expectRevert(IRatingController.NotOracle.selector);
         controller.fulfilPhase1(id, 42, RKA);
     }
 
     function testFuzz_Fulfil_RevertsOnUnknownRequest(bytes32 id) public {
         vm.prank(oracle);
-        vm.expectRevert(RatingController.UnknownRequest.selector);
+        vm.expectRevert(IRatingController.UnknownRequest.selector);
         controller.fulfilPhase1(id, 42, RKA);
     }
 
@@ -222,7 +223,7 @@ contract RatingControllerTest is Test {
         bytes32 id = _request(alice);
         _fulfil(id);
         vm.prank(oracle);
-        vm.expectRevert(RatingController.NotPending.selector);
+        vm.expectRevert(IRatingController.NotPending.selector);
         controller.fulfilPhase1(id, 7, "other");
     }
 
@@ -230,22 +231,22 @@ contract RatingControllerTest is Test {
         score = uint8(bound(score, 101, 255));
         bytes32 id = _request(alice);
         vm.prank(oracle);
-        vm.expectRevert(RatingController.InvalidScore.selector);
+        vm.expectRevert(IRatingController.InvalidScore.selector);
         controller.fulfilPhase1(id, score, RKA);
     }
 
     function test_Fulfil_RevertsOnEmptyRKa() public {
         bytes32 id = _request(alice);
         vm.prank(oracle);
-        vm.expectRevert(RatingController.EmptyRKaUal.selector);
+        vm.expectRevert(IRatingController.EmptyRKaUal.selector);
         controller.fulfilPhase1(id, 42, "");
     }
 
     // --- cancelRequest ---
 
-    function _assertCancelled(bytes32 id, RatingController.CancelReason reason) internal view {
-        RatingController.Request memory r = controller.getRequest(id);
-        assertEq(uint8(r.status), uint8(RatingController.Status.Cancelled));
+    function _assertCancelled(bytes32 id, IRatingController.CancelReason reason) internal view {
+        IRatingController.Request memory r = controller.getRequest(id);
+        assertEq(uint8(r.status), uint8(IRatingController.Status.Cancelled));
         assertEq(uint8(r.cancelReason), uint8(reason));
         assertEq(controller.pendingCount(), 0);
         assertEq(controller.pendingCountOf(alice), 0);
@@ -254,63 +255,63 @@ contract RatingControllerTest is Test {
     function test_Cancel_ByOracleWithMaxAge() public {
         bytes32 id = _request(alice);
         vm.expectEmit(address(controller));
-        emit RatingController.RequestCancelled(id, RatingController.CancelReason.MaxAge);
+        emit IRatingController.RequestCancelled(id, IRatingController.CancelReason.MaxAge);
         vm.prank(oracle);
-        controller.cancelRequest(id, RatingController.CancelReason.MaxAge);
-        _assertCancelled(id, RatingController.CancelReason.MaxAge);
+        controller.cancelRequest(id, IRatingController.CancelReason.MaxAge);
+        _assertCancelled(id, IRatingController.CancelReason.MaxAge);
     }
 
     function test_Cancel_ByOracleWithInvalidTarget() public {
         bytes32 id = _request(alice);
         vm.prank(oracle);
-        controller.cancelRequest(id, RatingController.CancelReason.InvalidTarget);
-        _assertCancelled(id, RatingController.CancelReason.InvalidTarget);
+        controller.cancelRequest(id, IRatingController.CancelReason.InvalidTarget);
+        _assertCancelled(id, IRatingController.CancelReason.InvalidTarget);
     }
 
     function test_Cancel_ByOwnerWithOwner() public {
         bytes32 id = _request(alice);
         vm.expectEmit(address(controller));
-        emit RatingController.RequestCancelled(id, RatingController.CancelReason.Owner);
+        emit IRatingController.RequestCancelled(id, IRatingController.CancelReason.Owner);
         vm.prank(owner);
-        controller.cancelRequest(id, RatingController.CancelReason.Owner);
-        _assertCancelled(id, RatingController.CancelReason.Owner);
+        controller.cancelRequest(id, IRatingController.CancelReason.Owner);
+        _assertCancelled(id, IRatingController.CancelReason.Owner);
     }
 
     function testFuzz_Cancel_RevertsForAnyoneElse(address caller, uint8 rawReason) public {
         vm.assume(caller != oracle && caller != owner);
-        RatingController.CancelReason reason = RatingController.CancelReason(bound(rawReason, 0, 3));
+        IRatingController.CancelReason reason = IRatingController.CancelReason(bound(rawReason, 0, 3));
         bytes32 id = _request(alice);
         vm.prank(caller);
-        vm.expectRevert(RatingController.NotOracleOrOwner.selector);
+        vm.expectRevert(IRatingController.NotOracleOrOwner.selector);
         controller.cancelRequest(id, reason);
     }
 
     function test_Cancel_RequesterCannotCancel() public {
         bytes32 id = _request(alice);
         vm.prank(alice);
-        vm.expectRevert(RatingController.NotOracleOrOwner.selector);
-        controller.cancelRequest(id, RatingController.CancelReason.Owner);
+        vm.expectRevert(IRatingController.NotOracleOrOwner.selector);
+        controller.cancelRequest(id, IRatingController.CancelReason.Owner);
     }
 
     function test_Cancel_RevertsWhenOracleUsesOwnerOrNone() public {
         bytes32 id = _request(alice);
         vm.startPrank(oracle);
-        vm.expectRevert(RatingController.InvalidCancelReason.selector);
-        controller.cancelRequest(id, RatingController.CancelReason.Owner);
-        vm.expectRevert(RatingController.InvalidCancelReason.selector);
-        controller.cancelRequest(id, RatingController.CancelReason.None);
+        vm.expectRevert(IRatingController.InvalidCancelReason.selector);
+        controller.cancelRequest(id, IRatingController.CancelReason.Owner);
+        vm.expectRevert(IRatingController.InvalidCancelReason.selector);
+        controller.cancelRequest(id, IRatingController.CancelReason.None);
         vm.stopPrank();
     }
 
     function test_Cancel_RevertsWhenOwnerUsesAnotherReason() public {
         bytes32 id = _request(alice);
         vm.startPrank(owner);
-        vm.expectRevert(RatingController.InvalidCancelReason.selector);
-        controller.cancelRequest(id, RatingController.CancelReason.MaxAge);
-        vm.expectRevert(RatingController.InvalidCancelReason.selector);
-        controller.cancelRequest(id, RatingController.CancelReason.InvalidTarget);
-        vm.expectRevert(RatingController.InvalidCancelReason.selector);
-        controller.cancelRequest(id, RatingController.CancelReason.None);
+        vm.expectRevert(IRatingController.InvalidCancelReason.selector);
+        controller.cancelRequest(id, IRatingController.CancelReason.MaxAge);
+        vm.expectRevert(IRatingController.InvalidCancelReason.selector);
+        controller.cancelRequest(id, IRatingController.CancelReason.InvalidTarget);
+        vm.expectRevert(IRatingController.InvalidCancelReason.selector);
+        controller.cancelRequest(id, IRatingController.CancelReason.None);
         vm.stopPrank();
     }
 
@@ -318,14 +319,14 @@ contract RatingControllerTest is Test {
         bytes32 id = _request(alice);
         _fulfil(id);
         vm.prank(owner);
-        vm.expectRevert(RatingController.NotPending.selector);
-        controller.cancelRequest(id, RatingController.CancelReason.Owner);
+        vm.expectRevert(IRatingController.NotPending.selector);
+        controller.cancelRequest(id, IRatingController.CancelReason.Owner);
     }
 
     function testFuzz_Cancel_RevertsOnUnknownRequest(bytes32 id) public {
         vm.prank(owner);
-        vm.expectRevert(RatingController.UnknownRequest.selector);
-        controller.cancelRequest(id, RatingController.CancelReason.Owner);
+        vm.expectRevert(IRatingController.UnknownRequest.selector);
+        controller.cancelRequest(id, IRatingController.CancelReason.Owner);
     }
 
     // --- admin ---
@@ -335,13 +336,13 @@ contract RatingControllerTest is Test {
         bytes32 id = _request(alice);
 
         vm.expectEmit(address(controller));
-        emit RatingController.OracleAgentUpdated(next);
+        emit IRatingController.OracleAgentUpdated(next);
         vm.prank(owner);
         controller.setOracleAgent(next);
         assertEq(controller.oracleAgent(), next);
 
         vm.prank(oracle);
-        vm.expectRevert(RatingController.NotOracle.selector);
+        vm.expectRevert(IRatingController.NotOracle.selector);
         controller.fulfilPhase1(id, 42, RKA);
 
         vm.prank(next);
@@ -350,7 +351,7 @@ contract RatingControllerTest is Test {
 
     function test_SetOracleAgent_RevertsOnZero() public {
         vm.prank(owner);
-        vm.expectRevert(RatingController.ZeroAddress.selector);
+        vm.expectRevert(IRatingController.ZeroAddress.selector);
         controller.setOracleAgent(address(0));
     }
 
@@ -361,10 +362,10 @@ contract RatingControllerTest is Test {
         controller.setOracleAgent(bob);
     }
 
-    function testFuzz_SetMaxPending_UpdatesCap(uint256 max) public {
-        max = bound(max, 1, type(uint256).max);
+    function testFuzz_SetMaxPending_UpdatesCap(uint8 max) public {
+        max = uint8(bound(max, 1, type(uint8).max));
         vm.expectEmit(address(controller));
-        emit RatingController.MaxPendingPerRequesterUpdated(max);
+        emit IRatingController.MaxPendingPerRequesterUpdated(max);
         vm.prank(owner);
         controller.setMaxPendingPerRequester(max);
         assertEq(controller.maxPendingPerRequester(), max);
@@ -372,7 +373,7 @@ contract RatingControllerTest is Test {
 
     function test_SetMaxPending_RevertsOnZero() public {
         vm.prank(owner);
-        vm.expectRevert(RatingController.InvalidCap.selector);
+        vm.expectRevert(IRatingController.InvalidCap.selector);
         controller.setMaxPendingPerRequester(0);
     }
 
@@ -396,7 +397,7 @@ contract RatingControllerTest is Test {
         _fulfil(first);
 
         vm.prank(alice);
-        vm.expectRevert(RatingController.TooManyPending.selector);
+        vm.expectRevert(IRatingController.TooManyPending.selector);
         controller.requestPhase1(TARGET);
     }
 
@@ -417,11 +418,11 @@ contract RatingControllerTest is Test {
     // --- views ---
 
     function testFuzz_GetRequest_UnknownIsZeroed(bytes32 id) public view {
-        RatingController.Request memory r = controller.getRequest(id);
+        IRatingController.Request memory r = controller.getRequest(id);
         assertEq(r.requester, address(0));
         assertEq(r.requestedAt, 0);
-        assertEq(uint8(r.status), uint8(RatingController.Status.None));
-        assertEq(uint8(r.cancelReason), uint8(RatingController.CancelReason.None));
+        assertEq(uint8(r.status), uint8(IRatingController.Status.None));
+        assertEq(uint8(r.cancelReason), uint8(IRatingController.CancelReason.None));
         assertEq(r.phase1Score, 0);
         assertEq(r.targetUal, "");
         assertEq(r.rKaUal, "");
