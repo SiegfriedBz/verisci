@@ -433,7 +433,7 @@ contract RatingControllerTest is Test {
 
     // --- views ---
 
-    function testFuzz_GetRequest_UnknownIsZeroed(bytes32 id) public view {
+    function testFuzz_GetRatingRequest_UnknownIsZeroed(bytes32 id) public view {
         IRatingController.RatingRequest memory r = controller.getRatingRequest(id);
         assertEq(r.requester, address(0));
         assertEq(r.requestedAt, 0);
