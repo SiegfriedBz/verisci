@@ -108,7 +108,8 @@ interface IRatingController {
     /// @notice The cap is zero.
     error InvalidCap();
 
-    /// @notice Ownership moves only by two-step transfer; the contract always has an owner.
+    /// @notice `renounceOwnership` was called; ownership moves only by two-step transfer, so the
+    ///         contract always has an owner.
     error RenounceOwnershipDisabled();
 
     /// @notice Requests a phase-1 rating of `targetUal`.
@@ -143,7 +144,7 @@ interface IRatingController {
     /// @return count The number of requests made.
     function nonce() external view returns (uint256 count);
 
-    /// @notice The only address that can fulfil requests.
+    /// @notice The only address that can fulfil or cancel requests.
     /// @return oracle The oracle address.
     function oracleAgent() external view returns (address oracle);
 

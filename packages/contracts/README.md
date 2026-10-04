@@ -38,7 +38,7 @@ it. A fix is a redeploy, and the app reads past deployments read-only
   index `offset`, so a long list is read in chunks; the order changes as
   requests settle. `requestCountOf(targetUal)` and
   `requestIdsOf(targetUal, offset, limit)` do the same for a target's request
-  ids, oldest first ([ADR 0022](../../docs/adr/0022-contract-indexes-ratings-by-target.md)).
+  ids, oldest first ([ADR 0022](../../docs/adr/0022-contract-indexes-request-ids-by-target.md)).
 - **Admin.** The owner sets `oracleAgent` and `maxPendingPerRequester`.
   Ownership moves in two steps (OpenZeppelin `Ownable2Step`:
   `transferOwnership`, then `acceptOwnership`), and the contract always has an
@@ -80,7 +80,6 @@ Failures revert with custom errors, and every state change emits an event
 src/            # .sol contracts (Foundry) and index.ts (TypeScript side)
 src/interfaces/ # contract interfaces: types, events, errors, NatSpec
 test/           # Foundry tests: *.t.sol unit and fuzz, *.inv.t.sol invariants, handlers/
-script/         # Foundry scripts, *.s.sol
 foundry.toml    # compiler, fuzz and invariant profiles
 soldeer.lock    # pinned Solidity dependencies
 remappings.txt  # written by hand: one line per dependency → dependencies/<name>-<version>/

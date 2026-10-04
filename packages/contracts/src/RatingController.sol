@@ -35,7 +35,7 @@ contract RatingController is IRatingController, Ownable2Step {
     mapping(bytes32 targetUalHash => bytes32[] requestIds) private _requestIdsOf;
 
     /// @notice Deploys the controller, owned by the deployer.
-    /// @param oracleAgent_ The address allowed to fulfil requests.
+    /// @param oracleAgent_ The address allowed to fulfil and cancel requests.
     /// @param maxPendingPerRequester_ The initial per-requester pending cap (ADR 0015).
     constructor(address oracleAgent_, uint8 maxPendingPerRequester_) Ownable(msg.sender) {
         _setOracleAgent(oracleAgent_);

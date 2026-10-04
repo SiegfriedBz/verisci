@@ -276,6 +276,8 @@ contract RatingControllerTest is Test {
 
     function test_Cancel_ByOracleWithInvalidTarget() public {
         bytes32 id = _requestBy(alice);
+        vm.expectEmit(address(controller));
+        emit IRatingController.RequestCancelled(id, IRatingController.CancelReason.InvalidTarget);
         vm.prank(oracle);
         controller.cancelRequest(id, IRatingController.CancelReason.InvalidTarget);
         _assertCancelled(id, IRatingController.CancelReason.InvalidTarget);
@@ -350,6 +352,19 @@ contract RatingControllerTest is Test {
 
         vm.prank(next);
         controller.fulfilPhase1(id, 42, RKA);
+    }
+
+    function test_SetOracleAgent_OldOracleCannotCancel() public {
+        bytes32 id = _requestBy(alice);
+        vm.prank(owner);
+        controller.setOracleAgent(bob);
+
+        vm.prank(oracle);
+        vm.expectRevert(IRatingController.NotOracle.selector);
+        controller.cancelRequest(id, IRatingController.CancelReason.Expired);
+
+        vm.prank(bob);
+        controller.cancelRequest(id, IRatingController.CancelReason.Expired);
     }
 
     function test_SetOracleAgent_RevertsOnZero() public {

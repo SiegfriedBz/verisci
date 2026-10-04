@@ -21,7 +21,7 @@ runs = 5000
 runs = 256
 depth = 50
 
-# remappings.txt is written by hand: update its path when bumping forge-std.
+# remappings.txt is written by hand: update a dependency's path there when bumping it.
 [soldeer]
 remappings_generate = false
 recursive_deps = false
