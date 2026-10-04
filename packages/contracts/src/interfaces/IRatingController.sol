@@ -77,7 +77,9 @@ interface IRatingController {
     error EmptyTargetUal();
 
     /// @notice The requester already has `maxPendingPerRequester` pending requests.
-    error TooManyPending();
+    /// @param pending The requester's pending requests.
+    /// @param max The cap.
+    error TooManyPending(uint256 pending, uint8 max);
 
     /// @notice The caller is not the oracle.
     error NotOracle();
@@ -86,7 +88,8 @@ interface IRatingController {
     error UnknownRequest();
 
     /// @notice The request is not pending.
-    error NotPending();
+    /// @param status Its current status, `Fulfilled` or `Cancelled`.
+    error NotPending(Status status);
 
     /// @notice The score is above 100.
     error InvalidScore();

@@ -45,7 +45,8 @@ contract RatingController is IRatingController, Ownable2Step {
     /// @inheritdoc IRatingController
     function requestPhase1(string calldata targetUal) external returns (bytes32 requestId) {
         if (bytes(targetUal).length == 0) revert EmptyTargetUal();
-        if (pendingCountOf[msg.sender] >= maxPendingPerRequester) revert TooManyPending();
+        uint256 pending = pendingCountOf[msg.sender];
+        if (pending >= maxPendingPerRequester) revert TooManyPending(pending, maxPendingPerRequester);
 
         bytes32 targetUalHash = keccak256(bytes(targetUal));
         requestId = keccak256(abi.encode(block.chainid, address(this), nonce++, msg.sender, targetUalHash));
@@ -164,7 +165,7 @@ contract RatingController is IRatingController, Ownable2Step {
     function _pendingRatingRequest(bytes32 requestId) private view returns (RatingRequest storage request) {
         request = _ratingRequests[requestId];
         if (request.status == Status.None) revert UnknownRequest();
-        if (request.status != Status.Pending) revert NotPending();
+        if (request.status != Status.Pending) revert NotPending(request.status);
     }
 
     /// @dev Clamps `[offset, offset + limit)` to `[0, length)` without overflowing.

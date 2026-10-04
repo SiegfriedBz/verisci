@@ -175,7 +175,7 @@ contract RatingControllerTest is Test {
         _request(alice);
 
         vm.prank(alice);
-        vm.expectRevert(IRatingController.TooManyPending.selector);
+        vm.expectRevert(abi.encodeWithSelector(IRatingController.TooManyPending.selector, 3, 3));
         controller.requestPhase1(TARGET);
 
         // Each requester has their own cap.
@@ -223,8 +223,21 @@ contract RatingControllerTest is Test {
         bytes32 id = _request(alice);
         _fulfil(id);
         vm.prank(oracle);
-        vm.expectRevert(IRatingController.NotPending.selector);
+        vm.expectRevert(
+            abi.encodeWithSelector(IRatingController.NotPending.selector, IRatingController.Status.Fulfilled)
+        );
         controller.fulfilPhase1(id, 7, "other");
+    }
+
+    function test_Fulfil_RevertsWhenCancelled() public {
+        bytes32 id = _request(alice);
+        vm.startPrank(oracle);
+        controller.cancelRequest(id, IRatingController.CancelReason.MaxAge);
+        vm.expectRevert(
+            abi.encodeWithSelector(IRatingController.NotPending.selector, IRatingController.Status.Cancelled)
+        );
+        controller.fulfilPhase1(id, 42, RKA);
+        vm.stopPrank();
     }
 
     function testFuzz_Fulfil_RevertsOnScoreAbove100(uint8 score) public {
@@ -307,7 +320,9 @@ contract RatingControllerTest is Test {
         bytes32 id = _request(alice);
         _fulfil(id);
         vm.prank(oracle);
-        vm.expectRevert(IRatingController.NotPending.selector);
+        vm.expectRevert(
+            abi.encodeWithSelector(IRatingController.NotPending.selector, IRatingController.Status.Fulfilled)
+        );
         controller.cancelRequest(id, IRatingController.CancelReason.MaxAge);
     }
 
@@ -385,7 +400,7 @@ contract RatingControllerTest is Test {
         _fulfil(first);
 
         vm.prank(alice);
-        vm.expectRevert(IRatingController.TooManyPending.selector);
+        vm.expectRevert(abi.encodeWithSelector(IRatingController.TooManyPending.selector, 2, 1));
         controller.requestPhase1(TARGET);
     }
 
