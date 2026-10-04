@@ -20,7 +20,7 @@ contract RatingControllerTest is Test {
 
     function setUp() public {
         vm.prank(owner);
-        controller = new RatingController(oracle);
+        controller = new RatingController(oracle, 3);
     }
 
     // --- helpers ---
@@ -65,12 +65,17 @@ contract RatingControllerTest is Test {
         emit RatingController.OracleAgentUpdated(oracle);
         vm.expectEmit();
         emit RatingController.MaxPendingPerRequesterUpdated(3);
-        new RatingController(oracle);
+        new RatingController(oracle, 3);
+    }
+
+    function test_Constructor_RevertsOnZeroCap() public {
+        vm.expectRevert(RatingController.InvalidCap.selector);
+        new RatingController(oracle, 0);
     }
 
     function test_Constructor_RevertsOnZeroOracle() public {
         vm.expectRevert(RatingController.ZeroAddress.selector);
-        new RatingController(address(0));
+        new RatingController(address(0), 3);
     }
 
     // --- requestPhase1 ---
@@ -112,7 +117,7 @@ contract RatingControllerTest is Test {
     }
 
     function testFuzz_Request_IdMatchesScheme(address requester, string calldata targetUal, uint64 chainId) public {
-        vm.assume(bytes(targetUal).length > 0 && bytes(targetUal).length <= 256);
+        vm.assume(bytes(targetUal).length > 0);
         vm.chainId(chainId);
         uint256 nonce = controller.nonce();
 
@@ -141,8 +146,8 @@ contract RatingControllerTest is Test {
         assumeNotForgeAddress(atB);
         vm.assume(atA.code.length == 0 && atB.code.length == 0);
 
-        deployCodeTo("RatingController.sol:RatingController", abi.encode(oracle), atA);
-        deployCodeTo("RatingController.sol:RatingController", abi.encode(oracle), atB);
+        deployCodeTo("RatingController.sol:RatingController", abi.encode(oracle, 3), atA);
+        deployCodeTo("RatingController.sol:RatingController", abi.encode(oracle, 3), atB);
 
         vm.prank(alice);
         bytes32 idA = RatingController(atA).requestPhase1(TARGET);
@@ -156,16 +161,11 @@ contract RatingControllerTest is Test {
         controller.requestPhase1("");
     }
 
-    function test_Request_AcceptsTargetOf256Bytes() public {
-        controller.requestPhase1(_ualOfLength(256));
-        assertEq(controller.pendingCount(), 1);
-    }
-
-    function testFuzz_Request_RevertsOnTargetOver256Bytes(uint256 length) public {
-        length = bound(length, 257, 2048);
+    function testFuzz_Request_AcceptsAnyNonEmptyTarget(uint256 length) public {
+        length = bound(length, 1, 2048);
         string memory ual = _ualOfLength(length);
-        vm.expectRevert(RatingController.TargetUalTooLong.selector);
-        controller.requestPhase1(ual);
+        bytes32 id = controller.requestPhase1(ual);
+        assertEq(controller.getRequest(id).targetUal, ual);
     }
 
     function test_Request_RevertsPastCapUntilOneSettles() public {

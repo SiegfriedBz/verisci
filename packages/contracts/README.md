@@ -11,13 +11,14 @@ Records phase-1 rating requests on chain and the oracle's answers. A fix is a
 redeploy, and the app reads past deployments read-only
 ([ADR 0023](../../docs/adr/0023-contract-is-not-upgradeable.md)).
 
-- **Request.** Anyone calls `requestPhase1(targetUal)` with a UAL of 1 to 256
-  bytes and gets a `requestId`, the `keccak256` of the chain id, the contract
+- **Request.** Anyone calls `requestPhase1(targetUal)` with a non-empty UAL
+  and gets a `requestId`, the `keccak256` of the chain id, the contract
   address, a nonce, the requester and the UAL's hash, so every request on every
   deployment gets its own id
   ([ADR 0016](../../docs/adr/0016-asset-names-derive-from-request-id.md)).
-  A requester can have at most `maxPendingPerRequester` pending requests
-  (3 at deployment; [ADR 0015](../../docs/adr/0015-rating-requests-are-free-on-testnet.md)).
+  A requester can have at most `maxPendingPerRequester` pending requests,
+  passed to the constructor and changed by the owner
+  ([ADR 0015](../../docs/adr/0015-rating-requests-are-free-on-testnet.md)).
 - **Fulfil.** Only `oracleAgent` calls `fulfilPhase1(requestId, score, rKaUal)`,
   with a score from 0 to 100 and the R-KA's UAL. The record holds the phase-1
   score only; a later phase gets its own field in a later contract version

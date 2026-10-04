@@ -15,7 +15,7 @@ contract RatingControllerInvariantTest is Test {
         address owner = makeAddr("owner");
         address oracle = makeAddr("oracle");
         vm.prank(owner);
-        controller = new RatingController(oracle);
+        controller = new RatingController(oracle, 3);
         handler = new RatingHandler(controller, owner, oracle);
         targetContract(address(handler));
     }

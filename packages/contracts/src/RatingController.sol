@@ -44,9 +44,6 @@ contract RatingController is Ownable2Step {
         string rKaUal;
     }
 
-    /// @notice Longest target UAL accepted, in bytes.
-    uint256 public constant MAX_TARGET_UAL_LENGTH = 256;
-
     /// @notice Highest phase-1 score.
     uint8 public constant MAX_SCORE = 100;
 
@@ -106,9 +103,6 @@ contract RatingController is Ownable2Step {
     /// @notice The target UAL is empty.
     error EmptyTargetUal();
 
-    /// @notice The target UAL is longer than 256 bytes.
-    error TargetUalTooLong();
-
     /// @notice The requester already has `maxPendingPerRequester` pending requests.
     error TooManyPending();
 
@@ -139,20 +133,19 @@ contract RatingController is Ownable2Step {
     /// @notice The cap is zero.
     error InvalidCap();
 
-    /// @notice Deploys the controller, owned by the deployer, with a pending cap of 3 (ADR 0015).
+    /// @notice Deploys the controller, owned by the deployer.
     /// @param oracleAgent_ The address allowed to fulfil requests.
-    constructor(address oracleAgent_) Ownable(msg.sender) {
+    /// @param maxPendingPerRequester_ The initial per-requester pending cap (ADR 0015).
+    constructor(address oracleAgent_, uint8 maxPendingPerRequester_) Ownable(msg.sender) {
         _setOracleAgent(oracleAgent_);
-        _setMaxPendingPerRequester(3);
+        _setMaxPendingPerRequester(maxPendingPerRequester_);
     }
 
     /// @notice Requests a phase-1 rating of `targetUal`.
     /// @param targetUal The UAL of the Target KA to rate.
     /// @return requestId The new request id.
     function requestPhase1(string calldata targetUal) external returns (bytes32 requestId) {
-        uint256 length = bytes(targetUal).length;
-        if (length == 0) revert EmptyTargetUal();
-        if (length > MAX_TARGET_UAL_LENGTH) revert TargetUalTooLong();
+        if (bytes(targetUal).length == 0) revert EmptyTargetUal();
         if (pendingCountOf[msg.sender] >= maxPendingPerRequester) revert TooManyPending();
 
         bytes32 targetUalHash = keccak256(bytes(targetUal));
