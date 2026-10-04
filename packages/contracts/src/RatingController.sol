@@ -26,7 +26,7 @@ contract RatingController is IRatingController, Ownable2Step {
     /// @inheritdoc IRatingController
     mapping(address requester => uint256 count) public pendingCountOf;
 
-    mapping(bytes32 requestId => Request request) private _requests;
+    mapping(bytes32 requestId => RatingRequest request) private _ratingRequests;
 
     /// @dev Pending request ids, which the reconciler lists to recover stuck requests (ADR 0020).
     EnumerableSet.Bytes32Set private _pendingRequestIds;
@@ -53,7 +53,7 @@ contract RatingController is IRatingController, Ownable2Step {
         // forge-lint: disable-next-line(unsafe-typecast)
         uint64 requestedAt = uint64(block.timestamp);
 
-        _requests[requestId] = Request({
+        _ratingRequests[requestId] = RatingRequest({
             requester: msg.sender,
             requestedAt: requestedAt,
             status: Status.Pending,
@@ -72,7 +72,7 @@ contract RatingController is IRatingController, Ownable2Step {
     /// @inheritdoc IRatingController
     function fulfilPhase1(bytes32 requestId, uint8 score, string calldata rKaUal) external {
         if (msg.sender != oracleAgent) revert NotOracle();
-        Request storage request = _pendingRequest(requestId);
+        RatingRequest storage request = _pendingRatingRequest(requestId);
         if (score > MAX_SCORE) revert InvalidScore();
         if (bytes(rKaUal).length == 0) revert EmptyRKaUal();
 
@@ -92,7 +92,7 @@ contract RatingController is IRatingController, Ownable2Step {
         // The oracle cancels for operational reasons, the owner only as `Owner`.
         bool allowed = reason == CancelReason.Owner ? byOwner : (reason != CancelReason.None && byOracle);
         if (!allowed) revert InvalidCancelReason();
-        Request storage request = _pendingRequest(requestId);
+        RatingRequest storage request = _pendingRatingRequest(requestId);
 
         request.status = Status.Cancelled;
         request.cancelReason = reason;
@@ -112,8 +112,8 @@ contract RatingController is IRatingController, Ownable2Step {
     }
 
     /// @inheritdoc IRatingController
-    function getRequest(bytes32 requestId) external view returns (Request memory request) {
-        return _requests[requestId];
+    function getRatingRequest(bytes32 requestId) external view returns (RatingRequest memory request) {
+        return _ratingRequests[requestId];
     }
 
     /// @inheritdoc IRatingController
@@ -165,8 +165,8 @@ contract RatingController is IRatingController, Ownable2Step {
         --pendingCountOf[requester];
     }
 
-    function _pendingRequest(bytes32 requestId) private view returns (Request storage request) {
-        request = _requests[requestId];
+    function _pendingRatingRequest(bytes32 requestId) private view returns (RatingRequest storage request) {
+        request = _ratingRequests[requestId];
         if (request.status == Status.None) revert UnknownRequest();
         if (request.status != Status.Pending) revert NotPending();
     }

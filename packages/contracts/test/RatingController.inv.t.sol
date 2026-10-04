@@ -25,7 +25,7 @@ contract RatingControllerInvariantTest is Test {
     function invariant_PendingSetMatchesPendingStatus() public view {
         uint256 pendingByStatus;
         for (uint256 i; i < handler.idCount(); ++i) {
-            if (controller.getRequest(handler.idAt(i)).status == IRatingController.Status.Pending) {
+            if (controller.getRatingRequest(handler.idAt(i)).status == IRatingController.Status.Pending) {
                 ++pendingByStatus;
             }
         }
@@ -33,7 +33,7 @@ contract RatingControllerInvariantTest is Test {
 
         bytes32[] memory pending = controller.pendingRequestIds(0, type(uint256).max);
         for (uint256 i; i < pending.length; ++i) {
-            assertEq(uint8(controller.getRequest(pending[i]).status), uint8(IRatingController.Status.Pending));
+            assertEq(uint8(controller.getRatingRequest(pending[i]).status), uint8(IRatingController.Status.Pending));
         }
     }
 
@@ -53,7 +53,7 @@ contract RatingControllerInvariantTest is Test {
             bytes32 id = handler.idAt(i);
             RatingHandler.Settled memory s = handler.settled(id);
             if (!s.recorded) continue;
-            IRatingController.Request memory r = controller.getRequest(id);
+            IRatingController.RatingRequest memory r = controller.getRatingRequest(id);
             assertEq(uint8(r.status), uint8(s.status));
             assertEq(r.phase1Score, s.score);
             assertEq(keccak256(bytes(r.rKaUal)), s.rKaHash);
@@ -63,7 +63,7 @@ contract RatingControllerInvariantTest is Test {
     /// Every stored score is at most 100.
     function invariant_ScoresAtMost100() public view {
         for (uint256 i; i < handler.idCount(); ++i) {
-            assertLe(controller.getRequest(handler.idAt(i)).phase1Score, 100);
+            assertLe(controller.getRatingRequest(handler.idAt(i)).phase1Score, 100);
         }
     }
 }

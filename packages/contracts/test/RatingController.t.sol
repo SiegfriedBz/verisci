@@ -85,7 +85,7 @@ contract RatingControllerTest is Test {
         vm.warp(1_700_000_000);
         bytes32 id = _request(alice);
 
-        IRatingController.Request memory r = controller.getRequest(id);
+        IRatingController.RatingRequest memory r = controller.getRatingRequest(id);
         assertEq(r.requester, alice);
         assertEq(r.requestedAt, 1_700_000_000);
         assertEq(uint8(r.status), uint8(IRatingController.Status.Pending));
@@ -166,7 +166,7 @@ contract RatingControllerTest is Test {
         length = bound(length, 1, 2048);
         string memory ual = _ualOfLength(length);
         bytes32 id = controller.requestPhase1(ual);
-        assertEq(controller.getRequest(id).targetUal, ual);
+        assertEq(controller.getRatingRequest(id).targetUal, ual);
     }
 
     function test_Request_RevertsPastCapUntilOneSettles() public {
@@ -197,7 +197,7 @@ contract RatingControllerTest is Test {
         vm.prank(oracle);
         controller.fulfilPhase1(id, score, RKA);
 
-        IRatingController.Request memory r = controller.getRequest(id);
+        IRatingController.RatingRequest memory r = controller.getRatingRequest(id);
         assertEq(uint8(r.status), uint8(IRatingController.Status.Fulfilled));
         assertEq(r.phase1Score, score);
         assertEq(r.rKaUal, RKA);
@@ -245,7 +245,7 @@ contract RatingControllerTest is Test {
     // --- cancelRequest ---
 
     function _assertCancelled(bytes32 id, IRatingController.CancelReason reason) internal view {
-        IRatingController.Request memory r = controller.getRequest(id);
+        IRatingController.RatingRequest memory r = controller.getRatingRequest(id);
         assertEq(uint8(r.status), uint8(IRatingController.Status.Cancelled));
         assertEq(uint8(r.cancelReason), uint8(reason));
         assertEq(controller.pendingCount(), 0);
@@ -418,7 +418,7 @@ contract RatingControllerTest is Test {
     // --- views ---
 
     function testFuzz_GetRequest_UnknownIsZeroed(bytes32 id) public view {
-        IRatingController.Request memory r = controller.getRequest(id);
+        IRatingController.RatingRequest memory r = controller.getRatingRequest(id);
         assertEq(r.requester, address(0));
         assertEq(r.requestedAt, 0);
         assertEq(uint8(r.status), uint8(IRatingController.Status.None));

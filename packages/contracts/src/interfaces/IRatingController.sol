@@ -22,7 +22,8 @@ interface IRatingController {
         Owner
     }
 
-    /// @notice One phase-1 rating request.
+    /// @notice A rating request: who asked, for which target, and where it stands; the phase-1
+    ///         score and R-KA once fulfilled. It becomes a rating when fulfilled (ADR 0013).
     /// @param requester The address that requested the rating.
     /// @param requestedAt The block timestamp of the request.
     /// @param status Where the request is in its life.
@@ -30,7 +31,7 @@ interface IRatingController {
     /// @param phase1Score The phase-1 score, 0 to 100, once fulfilled.
     /// @param targetUal The UAL of the rated Target KA.
     /// @param rKaUal The UAL of the rating's R-KA, once fulfilled.
-    struct Request {
+    struct RatingRequest {
         address requester;
         uint64 requestedAt;
         Status status;
@@ -152,10 +153,10 @@ interface IRatingController {
     /// @return count Their pending requests.
     function pendingCountOf(address requester) external view returns (uint256 count);
 
-    /// @notice Returns a request; an unknown id returns a zeroed record with status `None`.
+    /// @notice Returns a rating request; an unknown id returns a zeroed record with status `None`.
     /// @param requestId The request id.
-    /// @return request The request.
-    function getRequest(bytes32 requestId) external view returns (Request memory request);
+    /// @return request The rating request.
+    function getRatingRequest(bytes32 requestId) external view returns (RatingRequest memory request);
 
     /// @notice Returns the number of pending requests.
     /// @return count The number of pending requests.
