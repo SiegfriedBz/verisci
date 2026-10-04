@@ -50,9 +50,6 @@ contract RatingController is Ownable2Step {
     /// @notice Highest phase-1 score.
     uint8 public constant MAX_SCORE = 100;
 
-    /// @notice Per-requester pending cap set at deployment (ADR 0015).
-    uint256 public constant DEFAULT_MAX_PENDING_PER_REQUESTER = 3;
-
     /// @notice Number of requests made so far; hashed into each request id.
     uint256 public nonce;
 
@@ -142,11 +139,11 @@ contract RatingController is Ownable2Step {
     /// @notice The cap is zero.
     error InvalidCap();
 
-    /// @notice Deploys the controller, owned by the deployer.
+    /// @notice Deploys the controller, owned by the deployer, with a pending cap of 3 (ADR 0015).
     /// @param oracleAgent_ The address allowed to fulfil requests.
     constructor(address oracleAgent_) Ownable(msg.sender) {
         _setOracleAgent(oracleAgent_);
-        _setMaxPendingPerRequester(DEFAULT_MAX_PENDING_PER_REQUESTER);
+        _setMaxPendingPerRequester(3);
     }
 
     /// @notice Requests a phase-1 rating of `targetUal`.
