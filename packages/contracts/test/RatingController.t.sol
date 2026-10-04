@@ -428,24 +428,24 @@ contract RatingControllerTest is Test {
         assertEq(r.rKaUal, "");
     }
 
-    function test_PendingRequestIds_Pages() public {
+    function test_PendingRequestIds_ReturnsRange() public {
         bytes32 a = _request(alice);
         bytes32 b = _request(bob);
         bytes32 c = _request(owner);
 
         assertEq(controller.pendingCount(), 3);
-        bytes32[] memory page = controller.pendingRequestIds(1, 1);
-        assertEq(page.length, 1);
-        assertEq(page[0], b);
+        bytes32[] memory ids = controller.pendingRequestIds(1, 1);
+        assertEq(ids.length, 1);
+        assertEq(ids[0], b);
 
-        page = controller.pendingRequestIds(0, 10);
-        assertEq(page.length, 3);
-        assertEq(page[0], a);
-        assertEq(page[2], c);
+        ids = controller.pendingRequestIds(0, 10);
+        assertEq(ids.length, 3);
+        assertEq(ids[0], a);
+        assertEq(ids[2], c);
 
-        page = controller.pendingRequestIds(2, type(uint256).max);
-        assertEq(page.length, 1);
-        assertEq(page[0], c);
+        ids = controller.pendingRequestIds(2, type(uint256).max);
+        assertEq(ids.length, 1);
+        assertEq(ids[0], c);
     }
 
     function testFuzz_PendingRequestIds_OffsetPastEndIsEmpty(uint256 offset, uint256 limit) public {
@@ -454,7 +454,7 @@ contract RatingControllerTest is Test {
         assertEq(controller.pendingRequestIds(offset, limit).length, 0);
     }
 
-    function test_RatingsOf_PagesOldestFirstAndKeepsSettled() public {
+    function test_RatingsOf_ReturnsRangeOldestFirstAndKeepsSettled() public {
         bytes32 a = _request(alice);
         bytes32 b = _request(bob);
         bytes32 c = _request(alice);
@@ -463,14 +463,14 @@ contract RatingControllerTest is Test {
         controller.requestPhase1("did:dkg:otp:20430/0xabc/9");
 
         assertEq(controller.ratingsCountOf(TARGET), 3);
-        bytes32[] memory page = controller.ratingsOf(TARGET, 0, 2);
-        assertEq(page.length, 2);
-        assertEq(page[0], a);
-        assertEq(page[1], b);
+        bytes32[] memory ids = controller.ratingsOf(TARGET, 0, 2);
+        assertEq(ids.length, 2);
+        assertEq(ids[0], a);
+        assertEq(ids[1], b);
 
-        page = controller.ratingsOf(TARGET, 2, type(uint256).max);
-        assertEq(page.length, 1);
-        assertEq(page[0], c);
+        ids = controller.ratingsOf(TARGET, 2, type(uint256).max);
+        assertEq(ids.length, 1);
+        assertEq(ids[0], c);
 
         assertEq(controller.ratingsCountOf("unknown"), 0);
     }

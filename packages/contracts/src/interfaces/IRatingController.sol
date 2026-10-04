@@ -161,11 +161,11 @@ interface IRatingController {
     /// @return count The number of pending requests.
     function pendingCount() external view returns (uint256 count);
 
-    /// @notice Returns a page of pending request ids.
+    /// @notice Returns up to `limit` pending request ids, starting at index `offset`.
     /// @dev Removing an id moves the last one into its slot, so the order changes as requests settle.
     /// @param offset The index of the first id.
     /// @param limit The maximum number of ids.
-    /// @return ids The page of ids.
+    /// @return ids The pending request ids in that range.
     function pendingRequestIds(uint256 offset, uint256 limit) external view returns (bytes32[] memory ids);
 
     /// @notice Returns the number of requests made for a target.
@@ -173,11 +173,12 @@ interface IRatingController {
     /// @return count The number of requests.
     function ratingsCountOf(string calldata targetUal) external view returns (uint256 count);
 
-    /// @notice Returns a page of a target's request ids, oldest first.
+    /// @notice Returns up to `limit` of a target's request ids, oldest first, starting at index
+    ///         `offset`.
     /// @param targetUal The target UAL.
     /// @param offset The index of the first id.
     /// @param limit The maximum number of ids.
-    /// @return ids The page of ids.
+    /// @return ids The target's request ids in that range.
     function ratingsOf(string calldata targetUal, uint256 offset, uint256 limit)
         external
         view

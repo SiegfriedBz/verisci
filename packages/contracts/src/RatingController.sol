@@ -123,7 +123,7 @@ contract RatingController is IRatingController, Ownable2Step {
 
     /// @inheritdoc IRatingController
     function pendingRequestIds(uint256 offset, uint256 limit) external view returns (bytes32[] memory ids) {
-        (uint256 start, uint256 end) = _pageBounds(_pending.length(), offset, limit);
+        (uint256 start, uint256 end) = _rangeBounds(_pending.length(), offset, limit);
         return _pending.values(start, end);
     }
 
@@ -139,7 +139,7 @@ contract RatingController is IRatingController, Ownable2Step {
         returns (bytes32[] memory ids)
     {
         bytes32[] storage all = _ratingsOf[keccak256(bytes(targetUal))];
-        (uint256 start, uint256 end) = _pageBounds(all.length, offset, limit);
+        (uint256 start, uint256 end) = _rangeBounds(all.length, offset, limit);
         ids = new bytes32[](end - start);
         for (uint256 i; i < ids.length; ++i) {
             ids[i] = all[start + i];
@@ -172,7 +172,7 @@ contract RatingController is IRatingController, Ownable2Step {
     }
 
     /// @dev Clamps `[offset, offset + limit)` to `[0, length)` without overflowing.
-    function _pageBounds(uint256 length, uint256 offset, uint256 limit)
+    function _rangeBounds(uint256 length, uint256 offset, uint256 limit)
         private
         pure
         returns (uint256 start, uint256 end)

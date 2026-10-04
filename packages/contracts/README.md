@@ -29,10 +29,12 @@ it. A fix is a redeploy, and the app reads past deployments read-only
   `InvalidTarget`, the owner with `Owner`
   ([ADR 0020](../../docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md)).
 - **Read.** `getRequest(requestId)` returns the full record (status `None` for
-  an unknown id). `pendingCount()` and `pendingRequestIds(offset, limit)` page
-  through the pending set, whose order changes as requests settle;
-  `ratingsCountOf(targetUal)` and `ratingsOf(targetUal, offset, limit)` page
-  through a target's request ids, oldest first ([ADR 0022](../../docs/adr/0022-contract-indexes-ratings-by-target.md)).
+  an unknown id). `pendingCount()` counts the pending requests, and
+  `pendingRequestIds(offset, limit)` returns up to `limit` of their ids from
+  index `offset`, so a long list is read in chunks; the order changes as
+  requests settle. `ratingsCountOf(targetUal)` and
+  `ratingsOf(targetUal, offset, limit)` do the same for a target's request ids,
+  oldest first ([ADR 0022](../../docs/adr/0022-contract-indexes-ratings-by-target.md)).
 - **Admin.** The owner (OpenZeppelin `Ownable2Step`: `transferOwnership`, then
   `acceptOwnership`) sets `oracleAgent` and `maxPendingPerRequester`.
 

@@ -4,8 +4,9 @@ Each file records one decision already taken: why, what, and what it costs. Plan
 them instead of re-arguing them. Facts about the systems verisci runs on (DKG, chain,
 Inngest, Vercel, tooling) live in [`docs/domain.md`](../domain.md).
 
-An ADR states the decision and its reason. The mechanics (timeouts, fee bumps, paging,
-exact checks) belong in the plan that builds them, where code and tests confirm them.
+An ADR states the decision and its reason. The mechanics (timeouts, fee bumps, reading
+lists in chunks, exact checks) belong in the plan that builds them, where code and tests
+confirm them.
 
 Numbers follow reading order: tools, environments, how writes behave, then the publish
 flow before the rating flow that builds on it.
