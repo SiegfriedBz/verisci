@@ -29,7 +29,7 @@ contract RatingController is IRatingController, Ownable2Step {
     mapping(bytes32 requestId => Request request) private _requests;
 
     /// @dev Pending request ids, which the reconciler lists to recover stuck requests (ADR 0020).
-    EnumerableSet.Bytes32Set private _pending;
+    EnumerableSet.Bytes32Set private _pendingRequestIds;
 
     /// @dev Request ids per `keccak256(targetUal)`, oldest first (ADR 0022).
     mapping(bytes32 targetUalHash => bytes32[] requestIds) private _ratingsOf;
@@ -63,7 +63,7 @@ contract RatingController is IRatingController, Ownable2Step {
             rKaUal: ""
         });
         ++pendingCountOf[msg.sender];
-        _pending.add(requestId);
+        _pendingRequestIds.add(requestId);
         _ratingsOf[targetUalHash].push(requestId);
 
         emit Phase1Requested(requestId, msg.sender, targetUalHash, targetUal, requestedAt);
@@ -118,13 +118,13 @@ contract RatingController is IRatingController, Ownable2Step {
 
     /// @inheritdoc IRatingController
     function pendingCount() external view returns (uint256 count) {
-        return _pending.length();
+        return _pendingRequestIds.length();
     }
 
     /// @inheritdoc IRatingController
     function pendingRequestIds(uint256 offset, uint256 limit) external view returns (bytes32[] memory ids) {
-        (uint256 start, uint256 end) = _rangeBounds(_pending.length(), offset, limit);
-        return _pending.values(start, end);
+        (uint256 start, uint256 end) = _rangeBounds(_pendingRequestIds.length(), offset, limit);
+        return _pendingRequestIds.values(start, end);
     }
 
     /// @inheritdoc IRatingController
@@ -161,7 +161,7 @@ contract RatingController is IRatingController, Ownable2Step {
 
     /// @dev Takes a request out of the pending set and frees one slot of its requester's cap.
     function _settle(bytes32 requestId, address requester) private {
-        _pending.remove(requestId);
+        _pendingRequestIds.remove(requestId);
         --pendingCountOf[requester];
     }
 
