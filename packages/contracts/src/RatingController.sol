@@ -86,12 +86,8 @@ contract RatingController is IRatingController, Ownable2Step {
 
     /// @inheritdoc IRatingController
     function cancelRequest(bytes32 requestId, CancelReason reason) external {
-        bool byOracle = msg.sender == oracleAgent;
-        bool byOwner = msg.sender == owner();
-        if (!byOracle && !byOwner) revert NotOracleOrOwner();
-        // The oracle cancels for operational reasons, the owner only as `Owner`.
-        bool allowed = reason == CancelReason.Owner ? byOwner : (reason != CancelReason.None && byOracle);
-        if (!allowed) revert InvalidCancelReason();
+        if (msg.sender != oracleAgent) revert NotOracle();
+        if (reason == CancelReason.None) revert InvalidCancelReason();
         RatingRequest storage request = _pendingRatingRequest(requestId);
 
         request.status = Status.Cancelled;

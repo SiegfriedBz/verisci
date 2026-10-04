@@ -268,65 +268,53 @@ contract RatingControllerTest is Test {
         _assertCancelled(id, IRatingController.CancelReason.InvalidTarget);
     }
 
-    function test_Cancel_ByOwnerWithOwner() public {
-        bytes32 id = _request(alice);
-        vm.expectEmit(address(controller));
-        emit IRatingController.RequestCancelled(id, IRatingController.CancelReason.Owner);
-        vm.prank(owner);
-        controller.cancelRequest(id, IRatingController.CancelReason.Owner);
-        _assertCancelled(id, IRatingController.CancelReason.Owner);
-    }
-
-    function testFuzz_Cancel_RevertsForAnyoneElse(address caller, uint8 rawReason) public {
-        vm.assume(caller != oracle && caller != owner);
-        IRatingController.CancelReason reason = IRatingController.CancelReason(bound(rawReason, 0, 3));
+    function testFuzz_Cancel_RevertsForAnyoneButTheOracle(address caller, uint8 rawReason) public {
+        vm.assume(caller != oracle);
+        IRatingController.CancelReason reason = IRatingController.CancelReason(bound(rawReason, 0, 2));
         bytes32 id = _request(alice);
         vm.prank(caller);
-        vm.expectRevert(IRatingController.NotOracleOrOwner.selector);
+        vm.expectRevert(IRatingController.NotOracle.selector);
         controller.cancelRequest(id, reason);
     }
 
-    function test_Cancel_RequesterCannotCancel() public {
+    function test_Cancel_RevertsForOwnerAndRequester() public {
         bytes32 id = _request(alice);
+        vm.prank(owner);
+        vm.expectRevert(IRatingController.NotOracle.selector);
+        controller.cancelRequest(id, IRatingController.CancelReason.MaxAge);
         vm.prank(alice);
-        vm.expectRevert(IRatingController.NotOracleOrOwner.selector);
-        controller.cancelRequest(id, IRatingController.CancelReason.Owner);
+        vm.expectRevert(IRatingController.NotOracle.selector);
+        controller.cancelRequest(id, IRatingController.CancelReason.MaxAge);
     }
 
-    function test_Cancel_RevertsWhenOracleUsesOwnerOrNone() public {
+    function test_Cancel_RevertsWhenOracleGivesNoReason() public {
         bytes32 id = _request(alice);
-        vm.startPrank(oracle);
-        vm.expectRevert(IRatingController.InvalidCancelReason.selector);
-        controller.cancelRequest(id, IRatingController.CancelReason.Owner);
+        vm.prank(oracle);
         vm.expectRevert(IRatingController.InvalidCancelReason.selector);
         controller.cancelRequest(id, IRatingController.CancelReason.None);
-        vm.stopPrank();
     }
 
-    function test_Cancel_RevertsWhenOwnerUsesAnotherReason() public {
+    function test_Cancel_OwnerSwapsOracleInAnEmergency() public {
         bytes32 id = _request(alice);
         vm.startPrank(owner);
-        vm.expectRevert(IRatingController.InvalidCancelReason.selector);
-        controller.cancelRequest(id, IRatingController.CancelReason.MaxAge);
-        vm.expectRevert(IRatingController.InvalidCancelReason.selector);
+        controller.setOracleAgent(owner);
         controller.cancelRequest(id, IRatingController.CancelReason.InvalidTarget);
-        vm.expectRevert(IRatingController.InvalidCancelReason.selector);
-        controller.cancelRequest(id, IRatingController.CancelReason.None);
         vm.stopPrank();
+        _assertCancelled(id, IRatingController.CancelReason.InvalidTarget);
     }
 
     function test_Cancel_RevertsWhenNotPending() public {
         bytes32 id = _request(alice);
         _fulfil(id);
-        vm.prank(owner);
+        vm.prank(oracle);
         vm.expectRevert(IRatingController.NotPending.selector);
-        controller.cancelRequest(id, IRatingController.CancelReason.Owner);
+        controller.cancelRequest(id, IRatingController.CancelReason.MaxAge);
     }
 
     function testFuzz_Cancel_RevertsOnUnknownRequest(bytes32 id) public {
-        vm.prank(owner);
+        vm.prank(oracle);
         vm.expectRevert(IRatingController.UnknownRequest.selector);
-        controller.cancelRequest(id, IRatingController.CancelReason.Owner);
+        controller.cancelRequest(id, IRatingController.CancelReason.MaxAge);
     }
 
     // --- admin ---

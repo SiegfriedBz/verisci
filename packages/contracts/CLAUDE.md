@@ -21,5 +21,5 @@ layout, toolchain versions and commands.
 - `src/RatingController.sol` implements `IRatingController`. Its invariants live in
   `test/RatingController.inv.t.sol`, driven by `test/handlers/RatingHandler.sol`.
 - It follows ADRs 0012 (one score per phase), 0015 (per-requester cap), 0016 (request id
-  scheme), 0020 (pending set, cancel reasons), 0022 (ratings indexed by target) and 0023
-  (a fix is a redeploy). See [`docs/adr/`](../../docs/adr/README.md).
+  scheme), 0020 (pending set, cancel reasons), 0022 (ratings indexed by target), 0023
+  (a fix is a redeploy) and 0024 (only the oracle cancels). See [`docs/adr/`](../../docs/adr/README.md).

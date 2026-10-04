@@ -73,15 +73,6 @@ contract RatingHandler is CommonBase, StdUtils {
         } catch {}
     }
 
-    function cancelByOwner(uint256 idSeed) external {
-        bytes32 id = _anyId(idSeed);
-        if (id == bytes32(0)) return;
-        vm.prank(owner);
-        try controller.cancelRequest(id, IRatingController.CancelReason.Owner) {
-            _record(id, IRatingController.Status.Cancelled, 0, "");
-        } catch {}
-    }
-
     function setCap(uint256 max) external {
         vm.prank(owner);
         controller.setMaxPendingPerRequester(uint8(bound(max, 1, 5)));

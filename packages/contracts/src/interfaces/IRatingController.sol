@@ -18,8 +18,7 @@ interface IRatingController {
     enum CancelReason {
         None,
         MaxAge,
-        InvalidTarget,
-        Owner
+        InvalidTarget
     }
 
     /// @notice A rating request: who asked, for which target, and where it stands; the phase-1
@@ -83,9 +82,6 @@ interface IRatingController {
     /// @notice The caller is not the oracle.
     error NotOracle();
 
-    /// @notice The caller is neither the oracle nor the owner.
-    error NotOracleOrOwner();
-
     /// @notice No request has this id.
     error UnknownRequest();
 
@@ -98,7 +94,7 @@ interface IRatingController {
     /// @notice The R-KA UAL is empty.
     error EmptyRKaUal();
 
-    /// @notice The caller may not cancel with this reason.
+    /// @notice The cancel reason is `None`.
     error InvalidCancelReason();
 
     /// @notice The address is zero.
@@ -118,8 +114,7 @@ interface IRatingController {
     /// @param rKaUal The UAL of the rating's R-KA.
     function fulfilPhase1(bytes32 requestId, uint8 score, string calldata rKaUal) external;
 
-    /// @notice Cancels a pending request: the oracle with `MaxAge` or `InvalidTarget`, the owner
-    ///         with `Owner`.
+    /// @notice Cancels a pending request, with the reason it stopped (ADR 0024). Oracle only.
     /// @param requestId The request to cancel.
     /// @param reason Why it is cancelled.
     function cancelRequest(bytes32 requestId, CancelReason reason) external;

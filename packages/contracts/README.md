@@ -25,9 +25,11 @@ it. A fix is a redeploy, and the app reads past deployments read-only
   with a score from 0 to 100 and the R-KA's UAL. The record holds the phase-1
   score only; a later phase gets its own field in a later contract version
   ([ADR 0012](../../docs/adr/0012-ratings-evolve-in-three-phases.md)).
-- **Cancel.** `cancelRequest(requestId, reason)`: the oracle with `MaxAge` or
-  `InvalidTarget`, the owner with `Owner`
-  ([ADR 0020](../../docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md)).
+- **Cancel.** Only `oracleAgent` calls `cancelRequest(requestId, reason)`, with
+  the reason the request stopped: `MaxAge` or `InvalidTarget`. In an emergency
+  the owner replaces the oracle, and the new oracle cancels
+  ([ADR 0020](../../docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md),
+  [ADR 0024](../../docs/adr/0024-only-the-oracle-cancels-requests.md)).
 - **Read.** `getRatingRequest(requestId)` returns the full `RatingRequest`
   record (status `None` for an unknown id). `pendingCount()` counts the
   pending requests, and
