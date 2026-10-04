@@ -7,8 +7,6 @@ import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet
 /// @title RatingController
 /// @author verisci
 /// @notice Records phase-1 rating requests for target UALs and the oracle's answers.
-/// @dev Not upgradeable: a fix is a redeploy (ADR 0023). Ids hash the chain id and this
-///      contract's address, so ids from two deployments never collide (ADR 0016).
 contract RatingController is Ownable2Step {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
@@ -69,7 +67,7 @@ contract RatingController is Ownable2Step {
 
     mapping(bytes32 requestId => Request request) private _requests;
 
-    /// @dev Pending request ids, so recovery reads current state, not logs (ADR 0020).
+    /// @dev Pending request ids, which the reconciler lists to recover stuck requests (ADR 0020).
     EnumerableSet.Bytes32Set private _pending;
 
     /// @dev Request ids per `keccak256(targetUal)`, oldest first (ADR 0022).
@@ -245,7 +243,7 @@ contract RatingController is Ownable2Step {
     }
 
     /// @notice Returns a page of pending request ids.
-    /// @dev The order is not stable: removing an id moves the last one into its slot.
+    /// @dev Removing an id moves the last one into its slot, so the order changes as requests settle.
     /// @param offset The index of the first id.
     /// @param limit The maximum number of ids.
     /// @return ids The page of ids.

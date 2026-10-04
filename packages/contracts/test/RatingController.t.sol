@@ -177,7 +177,7 @@ contract RatingControllerTest is Test {
         vm.expectRevert(RatingController.TooManyPending.selector);
         controller.requestPhase1(TARGET);
 
-        // Another requester is not affected.
+        // Each requester has their own cap.
         _request(bob);
 
         _fulfil(first);

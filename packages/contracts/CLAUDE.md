@@ -19,4 +19,4 @@ layout, toolchain versions and commands.
   `test/RatingController.inv.t.sol`, driven by `test/handlers/RatingHandler.sol`.
 - It follows ADRs 0012 (one score per phase), 0015 (per-requester cap), 0016 (request id
   scheme), 0020 (pending set, cancel reasons), 0022 (ratings indexed by target) and 0023
-  (not upgradeable: a fix is a redeploy). See [`docs/adr/`](../../docs/adr/README.md).
+  (a fix is a redeploy). See [`docs/adr/`](../../docs/adr/README.md).

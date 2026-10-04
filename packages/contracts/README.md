@@ -3,19 +3,18 @@
 Solidity contracts (Foundry), plus the TypeScript side that the other
 workspaces import.
 
-Status: `RatingController` v2 is written and tested; no deploy script, ABI
-export or TypeScript bindings yet.
+Status: `RatingController` v2, written and tested.
 
 ## RatingController
 
-Records phase-1 rating requests on chain and the oracle's answers. It is not
-upgradeable: a fix is a redeploy, and the app reads past deployments read-only
+Records phase-1 rating requests on chain and the oracle's answers. A fix is a
+redeploy, and the app reads past deployments read-only
 ([ADR 0023](../../docs/adr/0023-contract-is-not-upgradeable.md)).
 
 - **Request.** Anyone calls `requestPhase1(targetUal)` with a UAL of 1 to 256
   bytes and gets a `requestId`, the `keccak256` of the chain id, the contract
-  address, a nonce, the requester and the UAL's hash, so ids never collide
-  across requests or deployments
+  address, a nonce, the requester and the UAL's hash, so every request on every
+  deployment gets its own id
   ([ADR 0016](../../docs/adr/0016-asset-names-derive-from-request-id.md)).
   A requester can have at most `maxPendingPerRequester` pending requests
   (3 at deployment; [ADR 0015](../../docs/adr/0015-rating-requests-are-free-on-testnet.md)).
@@ -24,19 +23,18 @@ upgradeable: a fix is a redeploy, and the app reads past deployments read-only
   score only; a later phase gets its own field in a later contract version
   ([ADR 0012](../../docs/adr/0012-ratings-evolve-in-three-phases.md)).
 - **Cancel.** `cancelRequest(requestId, reason)`: the oracle with `MaxAge` or
-  `InvalidTarget`, the owner with `Owner`. A requester cannot cancel
+  `InvalidTarget`, the owner with `Owner`
   ([ADR 0020](../../docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md)).
 - **Read.** `getRequest(requestId)` returns the full record (status `None` for
   an unknown id). `pendingCount()` and `pendingRequestIds(offset, limit)` page
-  through the pending set, whose order is not stable; `ratingsCountOf(targetUal)`
-  and `ratingsOf(targetUal, offset, limit)` page through a target's request ids,
-  oldest first ([ADR 0022](../../docs/adr/0022-contract-indexes-ratings-by-target.md)).
-  No log scan is needed.
+  through the pending set, whose order changes as requests settle;
+  `ratingsCountOf(targetUal)` and `ratingsOf(targetUal, offset, limit)` page
+  through a target's request ids, oldest first ([ADR 0022](../../docs/adr/0022-contract-indexes-ratings-by-target.md)).
 - **Admin.** The owner (OpenZeppelin `Ownable2Step`: `transferOwnership`, then
   `acceptOwnership`) sets `oracleAgent` and `maxPendingPerRequester`.
 
-Errors are custom errors, never revert strings; every state change emits an
-event (`Phase1Requested`, `Phase1Fulfilled`, `RequestCancelled`,
+Failures revert with custom errors, and every state change emits an event
+(`Phase1Requested`, `Phase1Fulfilled`, `RequestCancelled`,
 `OracleAgentUpdated`, `MaxPendingPerRequesterUpdated`).
 
 ## Depends on
