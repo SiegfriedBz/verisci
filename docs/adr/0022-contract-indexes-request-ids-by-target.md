@@ -1,4 +1,4 @@
-# 0022. The contract indexes ratings by target
+# 0022. The contract indexes request ids by target
 
 - Status: Accepted
 - Date: 2026-10-03

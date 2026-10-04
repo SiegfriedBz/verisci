@@ -8,8 +8,9 @@ An ADR states the decision and its reason. The mechanics (timeouts, fee bumps, r
 lists in chunks, exact checks) belong in the plan that builds them, where code and tests
 confirm them.
 
-Numbers follow reading order: tools, environments, how writes behave, then the publish
-flow before the rating flow that builds on it.
+Groups follow reading order: tools, environments, how writes behave, then the publish
+flow before the rating flow that builds on it. Numbers follow the order decisions were
+taken, so a later ADR can sit in an earlier group.
 
 ## Tools
 
@@ -54,7 +55,7 @@ A PDF becomes a Target KA.
 | [0012. Ratings evolve in three phases](0012-ratings-evolve-in-three-phases.md) | Machine score, then human review, then wet-lab; one score per phase, written once |
 | [0013. A paper can have several ratings](0013-several-ratings-per-paper.md) | A rating is identified by its phase-1 request id and its R-KA's UAL; rating count is a number |
 | [0014. The contract owns scores, the DKG owns content](0014-contract-owns-scores-dkg-owns-content.md) | The UI shows the contract's score and flags a gap with the DKG |
-| [0022. The contract indexes ratings by target](0022-contract-indexes-ratings-by-target.md) | Request ids listed per target UAL, oldest first, by view call; an indexer only if view calls stop being enough |
+| [0022. The contract indexes request ids by target](0022-contract-indexes-request-ids-by-target.md) | Request ids listed per target UAL, oldest first, by view call; an indexer only if view calls stop being enough |
 
 ## Rating flow
 
@@ -68,7 +69,7 @@ In the order a request lives: requested, named, ingested, scored, fulfilled, and
 | [0018. The phase-1 scorer has a fixed output contract](0018-phase-1-scorer-output-contract.md) | `{ score, rationale, observed, missing }`, schema-validated, computed once and read back; the model is configuration |
 | [0019. Oracle transactions are serialized](0019-oracle-transactions-are-serialized.md) | One function sends every oracle transaction, one at a time, replacing stuck ones; only `main` and `develop` hold the production and staging oracle keys |
 | [0020. A cron reconciler recovers stuck requests](0020-a-cron-reconciler-recovers-stuck-requests.md) | One singleton run per request finishes what is left, and past a maximum age fulfils if minted or cancels; a cron only restarts stuck requests from the contract's pending set (amended by [0024](0024-only-the-oracle-cancels-requests.md)) |
-| [0024. Only the oracle cancels requests](0024-only-the-oracle-cancels-requests.md) | Cancel reasons say why (maximum age, invalid target); the owner replaces the oracle in an emergency; supersedes the "owner" reason of 0020 |
+| [0024. Only the oracle cancels requests](0024-only-the-oracle-cancels-requests.md) | Cancel reasons say why (maximum age, invalid target); the owner replaces the oracle in an emergency; amends the "owner" reason of 0020 |
 
 ## App
 
@@ -90,7 +91,7 @@ Not decided yet. Each becomes an ADR in the plan that first needs the answer; th
 
 ## Adding an ADR
 
-1. Take the next number (`0022`, …) and name the file `NNNN-kebab-title.md`.
+1. Take the next free number (one above the highest file in this folder) and name the file `NNNN-kebab-title.md`.
 2. Put it in the group it belongs to (or a new one). Numbers are permanent once merged, so a new ADR takes the next number even if its group comes earlier.
 3. Use the same headings as the others: a title `# NNNN. Title`, then `Status` and `Date`, then `## Context`, `## Decision`, `## Consequences`. Keep it short: the decision and why, not the mechanics.
 4. Add a row to its group's table, and commit it on the branch of the plan that took the decision (scope `docs`, or the workspace it governs). If it answers an open question, remove that row in the same commit.
