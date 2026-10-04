@@ -68,6 +68,7 @@ In the order a request lives: requested, named, ingested, scored, fulfilled, and
 | [0018. The phase-1 scorer has a fixed output contract](0018-phase-1-scorer-output-contract.md) | `{ score, rationale, observed, missing }`, schema-validated, computed once and read back; the model is configuration |
 | [0019. Oracle transactions are serialized](0019-oracle-transactions-are-serialized.md) | One function sends every oracle transaction, one at a time, replacing stuck ones; only `main` and `develop` hold the production and staging oracle keys |
 | [0020. A cron reconciler recovers stuck requests](0020-a-cron-reconciler-recovers-stuck-requests.md) | One singleton run per request finishes what is left, and past a maximum age fulfils if minted or cancels; a cron only restarts stuck requests from the contract's pending set |
+| [0024. Only the oracle cancels requests](0024-only-the-oracle-cancels-requests.md) | Cancel reasons say why (maximum age, invalid target); the owner replaces the oracle in an emergency; supersedes the "owner" reason of 0020 |
 
 ## App
 
