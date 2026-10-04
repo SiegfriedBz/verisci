@@ -34,7 +34,7 @@ contract RatingControllerTest is Test {
         return keccak256(abi.encode(chainId, deployedAt, nonce, requester, keccak256(bytes(targetUal))));
     }
 
-    function _request(address requester) internal returns (bytes32) {
+    function _requestBy(address requester) internal returns (bytes32) {
         vm.prank(requester);
         return controller.requestPhase1(TARGET);
     }
@@ -83,7 +83,7 @@ contract RatingControllerTest is Test {
 
     function test_Request_StoresPendingRequest() public {
         vm.warp(1_700_000_000);
-        bytes32 id = _request(alice);
+        bytes32 id = _requestBy(alice);
 
         IRatingController.RatingRequest memory r = controller.getRatingRequest(id);
         assertEq(r.requester, alice);
@@ -107,12 +107,12 @@ contract RatingControllerTest is Test {
         bytes32 expected = _expectedId(block.chainid, address(controller), 0, alice, TARGET);
         vm.expectEmit(address(controller));
         emit IRatingController.Phase1Requested(expected, alice, keccak256(bytes(TARGET)), TARGET, 1_700_000_000);
-        _request(alice);
+        _requestBy(alice);
     }
 
     function test_Request_SameRequesterAndTargetGetDistinctIds() public {
-        bytes32 first = _request(alice);
-        bytes32 second = _request(alice);
+        bytes32 first = _requestBy(alice);
+        bytes32 second = _requestBy(alice);
         assertNotEq(first, second);
         assertEq(controller.requestCountOf(TARGET), 2);
     }
@@ -132,10 +132,10 @@ contract RatingControllerTest is Test {
         vm.assume(chainA != chainB);
         uint256 snapshot = vm.snapshotState();
         vm.chainId(chainA);
-        bytes32 idA = _request(alice);
+        bytes32 idA = _requestBy(alice);
         vm.revertToState(snapshot);
         vm.chainId(chainB);
-        bytes32 idB = _request(alice);
+        bytes32 idB = _requestBy(alice);
         assertNotEq(idA, idB);
     }
 
@@ -170,19 +170,19 @@ contract RatingControllerTest is Test {
     }
 
     function test_Request_RevertsPastCapUntilOneSettles() public {
-        bytes32 first = _request(alice);
-        _request(alice);
-        _request(alice);
+        bytes32 first = _requestBy(alice);
+        _requestBy(alice);
+        _requestBy(alice);
 
         vm.prank(alice);
         vm.expectRevert(abi.encodeWithSelector(IRatingController.TooManyPending.selector, 3, 3));
         controller.requestPhase1(TARGET);
 
         // Each requester has their own cap.
-        _request(bob);
+        _requestBy(bob);
 
         _fulfil(first);
-        _request(alice);
+        _requestBy(alice);
         assertEq(controller.pendingCountOf(alice), 3);
     }
 
@@ -190,7 +190,7 @@ contract RatingControllerTest is Test {
 
     function testFuzz_Fulfil_RecordsScoreAndRKa(uint8 score) public {
         score = uint8(bound(score, 0, 100));
-        bytes32 id = _request(alice);
+        bytes32 id = _requestBy(alice);
 
         vm.expectEmit(address(controller));
         emit IRatingController.Phase1Fulfilled(id, score, RKA);
@@ -207,7 +207,7 @@ contract RatingControllerTest is Test {
 
     function testFuzz_Fulfil_RevertsWhenNotOracle(address caller) public {
         vm.assume(caller != oracle);
-        bytes32 id = _request(alice);
+        bytes32 id = _requestBy(alice);
         vm.prank(caller);
         vm.expectRevert(IRatingController.NotOracle.selector);
         controller.fulfilPhase1(id, 42, RKA);
@@ -220,7 +220,7 @@ contract RatingControllerTest is Test {
     }
 
     function test_Fulfil_RevertsWhenNotPending() public {
-        bytes32 id = _request(alice);
+        bytes32 id = _requestBy(alice);
         _fulfil(id);
         vm.prank(oracle);
         vm.expectRevert(
@@ -230,7 +230,7 @@ contract RatingControllerTest is Test {
     }
 
     function test_Fulfil_RevertsWhenCancelled() public {
-        bytes32 id = _request(alice);
+        bytes32 id = _requestBy(alice);
         vm.startPrank(oracle);
         controller.cancelRequest(id, IRatingController.CancelReason.Expired);
         vm.expectRevert(
@@ -242,14 +242,14 @@ contract RatingControllerTest is Test {
 
     function testFuzz_Fulfil_RevertsOnScoreAbove100(uint8 score) public {
         score = uint8(bound(score, 101, 255));
-        bytes32 id = _request(alice);
+        bytes32 id = _requestBy(alice);
         vm.prank(oracle);
         vm.expectRevert(IRatingController.InvalidScore.selector);
         controller.fulfilPhase1(id, score, RKA);
     }
 
     function test_Fulfil_RevertsOnEmptyRKa() public {
-        bytes32 id = _request(alice);
+        bytes32 id = _requestBy(alice);
         vm.prank(oracle);
         vm.expectRevert(IRatingController.EmptyRKaUal.selector);
         controller.fulfilPhase1(id, 42, "");
@@ -266,7 +266,7 @@ contract RatingControllerTest is Test {
     }
 
     function test_Cancel_ByOracleWithExpired() public {
-        bytes32 id = _request(alice);
+        bytes32 id = _requestBy(alice);
         vm.expectEmit(address(controller));
         emit IRatingController.RequestCancelled(id, IRatingController.CancelReason.Expired);
         vm.prank(oracle);
@@ -275,7 +275,7 @@ contract RatingControllerTest is Test {
     }
 
     function test_Cancel_ByOracleWithInvalidTarget() public {
-        bytes32 id = _request(alice);
+        bytes32 id = _requestBy(alice);
         vm.prank(oracle);
         controller.cancelRequest(id, IRatingController.CancelReason.InvalidTarget);
         _assertCancelled(id, IRatingController.CancelReason.InvalidTarget);
@@ -284,14 +284,14 @@ contract RatingControllerTest is Test {
     function testFuzz_Cancel_RevertsForAnyoneButTheOracle(address caller, uint8 rawReason) public {
         vm.assume(caller != oracle);
         IRatingController.CancelReason reason = IRatingController.CancelReason(bound(rawReason, 0, 2));
-        bytes32 id = _request(alice);
+        bytes32 id = _requestBy(alice);
         vm.prank(caller);
         vm.expectRevert(IRatingController.NotOracle.selector);
         controller.cancelRequest(id, reason);
     }
 
     function test_Cancel_RevertsForOwnerAndRequester() public {
-        bytes32 id = _request(alice);
+        bytes32 id = _requestBy(alice);
         vm.prank(owner);
         vm.expectRevert(IRatingController.NotOracle.selector);
         controller.cancelRequest(id, IRatingController.CancelReason.Expired);
@@ -301,14 +301,14 @@ contract RatingControllerTest is Test {
     }
 
     function test_Cancel_RevertsWhenOracleGivesNoReason() public {
-        bytes32 id = _request(alice);
+        bytes32 id = _requestBy(alice);
         vm.prank(oracle);
         vm.expectRevert(IRatingController.InvalidCancelReason.selector);
         controller.cancelRequest(id, IRatingController.CancelReason.None);
     }
 
     function test_Cancel_OwnerSwapsOracleInAnEmergency() public {
-        bytes32 id = _request(alice);
+        bytes32 id = _requestBy(alice);
         vm.startPrank(owner);
         controller.setOracleAgent(owner);
         controller.cancelRequest(id, IRatingController.CancelReason.InvalidTarget);
@@ -317,7 +317,7 @@ contract RatingControllerTest is Test {
     }
 
     function test_Cancel_RevertsWhenNotPending() public {
-        bytes32 id = _request(alice);
+        bytes32 id = _requestBy(alice);
         _fulfil(id);
         vm.prank(oracle);
         vm.expectRevert(
@@ -336,7 +336,7 @@ contract RatingControllerTest is Test {
 
     function testFuzz_SetOracleAgent_ReplacesOracle(address next) public {
         vm.assume(next != address(0) && next != oracle);
-        bytes32 id = _request(alice);
+        bytes32 id = _requestBy(alice);
 
         vm.expectEmit(address(controller));
         emit IRatingController.OracleAgentUpdated(next);
@@ -388,9 +388,9 @@ contract RatingControllerTest is Test {
     }
 
     function test_SetMaxPending_LoweringOnlyBlocksNewRequests() public {
-        bytes32 first = _request(alice);
-        _request(alice);
-        _request(alice);
+        bytes32 first = _requestBy(alice);
+        _requestBy(alice);
+        _requestBy(alice);
 
         vm.prank(owner);
         controller.setMaxPendingPerRequester(1);
@@ -445,9 +445,9 @@ contract RatingControllerTest is Test {
     }
 
     function test_PendingRequestIds_ReturnsRange() public {
-        bytes32 a = _request(alice);
-        bytes32 b = _request(bob);
-        bytes32 c = _request(owner);
+        bytes32 a = _requestBy(alice);
+        bytes32 b = _requestBy(bob);
+        bytes32 c = _requestBy(owner);
 
         assertEq(controller.pendingCount(), 3);
         bytes32[] memory ids = controller.pendingRequestIds(1, 1);
@@ -465,15 +465,15 @@ contract RatingControllerTest is Test {
     }
 
     function testFuzz_PendingRequestIds_OffsetPastEndIsEmpty(uint256 offset, uint256 limit) public {
-        _request(alice);
+        _requestBy(alice);
         offset = bound(offset, 1, type(uint256).max);
         assertEq(controller.pendingRequestIds(offset, limit).length, 0);
     }
 
     function test_RequestIdsOf_ReturnsRangeOldestFirstAndKeepsSettled() public {
-        bytes32 a = _request(alice);
-        bytes32 b = _request(bob);
-        bytes32 c = _request(alice);
+        bytes32 a = _requestBy(alice);
+        bytes32 b = _requestBy(bob);
+        bytes32 c = _requestBy(alice);
         _fulfil(a);
         vm.prank(alice);
         controller.requestPhase1("did:dkg:otp:20430/0xabc/9");
@@ -492,7 +492,7 @@ contract RatingControllerTest is Test {
     }
 
     function testFuzz_RequestIdsOf_OffsetPastEndIsEmpty(uint256 offset, uint256 limit) public {
-        _request(alice);
+        _requestBy(alice);
         offset = bound(offset, 1, type(uint256).max);
         assertEq(controller.requestIdsOf(TARGET, offset, limit).length, 0);
     }
