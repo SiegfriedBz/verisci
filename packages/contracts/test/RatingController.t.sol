@@ -98,8 +98,8 @@ contract RatingControllerTest is Test {
         assertEq(controller.pendingCountOf(alice), 1);
         assertEq(controller.pendingCount(), 1);
         assertEq(controller.pendingRequestIds(0, 10)[0], id);
-        assertEq(controller.ratingsCountOf(TARGET), 1);
-        assertEq(controller.ratingsOf(TARGET, 0, 10)[0], id);
+        assertEq(controller.requestCountOf(TARGET), 1);
+        assertEq(controller.requestIdsOf(TARGET, 0, 10)[0], id);
     }
 
     function test_Request_EmitsPhase1Requested() public {
@@ -114,7 +114,7 @@ contract RatingControllerTest is Test {
         bytes32 first = _request(alice);
         bytes32 second = _request(alice);
         assertNotEq(first, second);
-        assertEq(controller.ratingsCountOf(TARGET), 2);
+        assertEq(controller.requestCountOf(TARGET), 2);
     }
 
     function testFuzz_Request_IdMatchesScheme(address requester, string calldata targetUal, uint64 chainId) public {
@@ -454,7 +454,7 @@ contract RatingControllerTest is Test {
         assertEq(controller.pendingRequestIds(offset, limit).length, 0);
     }
 
-    function test_RatingsOf_ReturnsRangeOldestFirstAndKeepsSettled() public {
+    function test_RequestIdsOf_ReturnsRangeOldestFirstAndKeepsSettled() public {
         bytes32 a = _request(alice);
         bytes32 b = _request(bob);
         bytes32 c = _request(alice);
@@ -462,22 +462,22 @@ contract RatingControllerTest is Test {
         vm.prank(alice);
         controller.requestPhase1("did:dkg:otp:20430/0xabc/9");
 
-        assertEq(controller.ratingsCountOf(TARGET), 3);
-        bytes32[] memory ids = controller.ratingsOf(TARGET, 0, 2);
+        assertEq(controller.requestCountOf(TARGET), 3);
+        bytes32[] memory ids = controller.requestIdsOf(TARGET, 0, 2);
         assertEq(ids.length, 2);
         assertEq(ids[0], a);
         assertEq(ids[1], b);
 
-        ids = controller.ratingsOf(TARGET, 2, type(uint256).max);
+        ids = controller.requestIdsOf(TARGET, 2, type(uint256).max);
         assertEq(ids.length, 1);
         assertEq(ids[0], c);
 
-        assertEq(controller.ratingsCountOf("unknown"), 0);
+        assertEq(controller.requestCountOf("unknown"), 0);
     }
 
-    function testFuzz_RatingsOf_OffsetPastEndIsEmpty(uint256 offset, uint256 limit) public {
+    function testFuzz_RequestIdsOf_OffsetPastEndIsEmpty(uint256 offset, uint256 limit) public {
         _request(alice);
         offset = bound(offset, 1, type(uint256).max);
-        assertEq(controller.ratingsOf(TARGET, offset, limit).length, 0);
+        assertEq(controller.requestIdsOf(TARGET, offset, limit).length, 0);
     }
 }

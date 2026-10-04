@@ -172,7 +172,7 @@ interface IRatingController {
     /// @notice Returns the number of requests made for a target.
     /// @param targetUal The target UAL.
     /// @return count The number of requests.
-    function ratingsCountOf(string calldata targetUal) external view returns (uint256 count);
+    function requestCountOf(string calldata targetUal) external view returns (uint256 count);
 
     /// @notice Returns up to `limit` of a target's request ids, oldest first, starting at index
     ///         `offset`.
@@ -180,7 +180,7 @@ interface IRatingController {
     /// @param offset The index of the first id.
     /// @param limit The maximum number of ids.
     /// @return ids The target's request ids in that range.
-    function ratingsOf(string calldata targetUal, uint256 offset, uint256 limit)
+    function requestIdsOf(string calldata targetUal, uint256 offset, uint256 limit)
         external
         view
         returns (bytes32[] memory ids);

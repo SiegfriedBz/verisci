@@ -33,9 +33,9 @@ it. A fix is a redeploy, and the app reads past deployments read-only
   pending requests, and
   `pendingRequestIds(offset, limit)` returns up to `limit` of their ids from
   index `offset`, so a long list is read in chunks; the order changes as
-  requests settle. `ratingsCountOf(targetUal)` and
-  `ratingsOf(targetUal, offset, limit)` do the same for a target's request ids,
-  oldest first ([ADR 0022](../../docs/adr/0022-contract-indexes-ratings-by-target.md)).
+  requests settle. `requestCountOf(targetUal)` and
+  `requestIdsOf(targetUal, offset, limit)` do the same for a target's request
+  ids, oldest first ([ADR 0022](../../docs/adr/0022-contract-indexes-ratings-by-target.md)).
 - **Admin.** The owner (OpenZeppelin `Ownable2Step`: `transferOwnership`, then
   `acceptOwnership`) sets `oracleAgent` and `maxPendingPerRequester`.
 

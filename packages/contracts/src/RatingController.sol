@@ -32,7 +32,7 @@ contract RatingController is IRatingController, Ownable2Step {
     EnumerableSet.Bytes32Set private _pendingRequestIds;
 
     /// @dev Request ids per `keccak256(targetUal)`, oldest first (ADR 0022).
-    mapping(bytes32 targetUalHash => bytes32[] requestIds) private _ratingsOf;
+    mapping(bytes32 targetUalHash => bytes32[] requestIds) private _requestIdsOf;
 
     /// @notice Deploys the controller, owned by the deployer.
     /// @param oracleAgent_ The address allowed to fulfil requests.
@@ -64,7 +64,7 @@ contract RatingController is IRatingController, Ownable2Step {
         });
         ++pendingCountOf[msg.sender];
         _pendingRequestIds.add(requestId);
-        _ratingsOf[targetUalHash].push(requestId);
+        _requestIdsOf[targetUalHash].push(requestId);
 
         emit Phase1Requested(requestId, msg.sender, targetUalHash, targetUal, requestedAt);
     }
@@ -128,17 +128,17 @@ contract RatingController is IRatingController, Ownable2Step {
     }
 
     /// @inheritdoc IRatingController
-    function ratingsCountOf(string calldata targetUal) external view returns (uint256 count) {
-        return _ratingsOf[keccak256(bytes(targetUal))].length;
+    function requestCountOf(string calldata targetUal) external view returns (uint256 count) {
+        return _requestIdsOf[keccak256(bytes(targetUal))].length;
     }
 
     /// @inheritdoc IRatingController
-    function ratingsOf(string calldata targetUal, uint256 offset, uint256 limit)
+    function requestIdsOf(string calldata targetUal, uint256 offset, uint256 limit)
         external
         view
         returns (bytes32[] memory ids)
     {
-        bytes32[] storage all = _ratingsOf[keccak256(bytes(targetUal))];
+        bytes32[] storage all = _requestIdsOf[keccak256(bytes(targetUal))];
         (uint256 start, uint256 end) = _rangeBounds(all.length, offset, limit);
         ids = new bytes32[](end - start);
         for (uint256 i; i < ids.length; ++i) {
