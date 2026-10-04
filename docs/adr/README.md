@@ -67,7 +67,7 @@ In the order a request lives: requested, named, ingested, scored, fulfilled, and
 | [0017. Chain events are ingested at least once](0017-chain-events-are-ingested-at-least-once.md) | Signed webhooks, one event per request id, ack only after hand-off, removed logs ignored; the reconciler heals misses |
 | [0018. The phase-1 scorer has a fixed output contract](0018-phase-1-scorer-output-contract.md) | `{ score, rationale, observed, missing }`, schema-validated, computed once and read back; the model is configuration |
 | [0019. Oracle transactions are serialized](0019-oracle-transactions-are-serialized.md) | One function sends every oracle transaction, one at a time, replacing stuck ones; only `main` and `develop` hold the production and staging oracle keys |
-| [0020. A cron reconciler recovers stuck requests](0020-a-cron-reconciler-recovers-stuck-requests.md) | One singleton run per request finishes what is left, and past a maximum age fulfils if minted or cancels; a cron only restarts stuck requests from the contract's pending set |
+| [0020. A cron reconciler recovers stuck requests](0020-a-cron-reconciler-recovers-stuck-requests.md) | One singleton run per request finishes what is left, and past a maximum age fulfils if minted or cancels; a cron only restarts stuck requests from the contract's pending set (amended by [0024](0024-only-the-oracle-cancels-requests.md)) |
 | [0024. Only the oracle cancels requests](0024-only-the-oracle-cancels-requests.md) | Cancel reasons say why (maximum age, invalid target); the owner replaces the oracle in an emergency; supersedes the "owner" reason of 0020 |
 
 ## App
@@ -95,4 +95,9 @@ Not decided yet. Each becomes an ADR in the plan that first needs the answer; th
 3. Use the same headings as the others: a title `# NNNN. Title`, then `Status` and `Date`, then `## Context`, `## Decision`, `## Consequences`. Keep it short: the decision and why, not the mechanics.
 4. Add a row to its group's table, and commit it on the branch of the plan that took the decision (scope `docs`, or the workspace it governs). If it answers an open question, remove that row in the same commit.
 
-Never edit an accepted ADR's decision once merged. To change it, write a new ADR that supersedes it, and set the old one's status to `Superseded by NNNN` (the only edit a merged ADR gets).
+Never edit an accepted ADR's decision once merged. To change it, write a new ADR with the next number, and link the two:
+
+- The new ADR replaces all of the old one: the old one's status becomes `Superseded by NNNN`, and the new one's header gets `- Supersedes: NNNN`.
+- The new ADR replaces part of the old one: the old one's status becomes `Amended by NNNN`, and the new one's header gets `- Amends: NNNN (what it changes)`. Note it on the old one's row in the table too.
+
+The old ADR's status line is the only edit a merged ADR gets; git keeps its history.

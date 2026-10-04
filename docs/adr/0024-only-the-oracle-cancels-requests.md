@@ -2,6 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-10-04
+- Amends: [0020](0020-a-cron-reconciler-recovers-stuck-requests.md) (the "owner" cancel reason)
 
 ## Context
 
