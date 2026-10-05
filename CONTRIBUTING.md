@@ -86,6 +86,10 @@ touches is true again.
   and `@notice`. Every public or external function, event and error has
   `@notice`, `@param` and `@return`, or uses `@inheritdoc`. `pnpm check`
   enforces this.
+- **ADRs.** A branch's code and ADRs agree with the accepted ADRs.
+  `/review-branch` blocks the PR on a conflict until you decide to amend an
+  ADR, supersede it, or change the code; `/review-adrs` checks all ADRs on
+  demand ([ADR 0025](docs/adr/0025-reviews-gate-on-adrs-and-lint.md)).
 
 ## Pull requests
 
@@ -126,6 +130,6 @@ commit, brings the fix back.
 | Create branch | Proposes the name, runs `git switch -c` | Approve |
 | Commit | Writes the message, runs `git commit` (asks first) | Approve or edit |
 | Push | — (denied in settings) | `git push -u origin <branch>` |
-| Open PR | `/review-branch` runs CI's checks and builds, reviews, then drafts title and description | `gh pr create` or GitHub UI |
+| Open PR | `/review-branch` runs CI's checks and builds, reviews code, docs and ADRs, then drafts title and description | Decide any ADR conflict it reports; then `gh pr create` or GitHub UI |
 | Merge | — | Squash and merge into `develop` when CI is green |
 | Release | Drafts the release PR | Merge commit into `main` |

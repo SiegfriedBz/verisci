@@ -50,7 +50,9 @@ planning; cite them rather than re-arguing them.
 2. `/implement <NNN>` branches from `origin/develop`, writes the tests first and shows them
    failing, then implements until green, committing in small steps.
 3. `/review-branch` runs CI's checks, tests and builds, then the read-only reviewer; it
-   blocks on any failure or stale docs, then drafts the PR.
+   blocks on any failure, stale docs or ADR conflict, then drafts the PR.
+4. `/review-adrs`, on demand: checks every ADR against every other and reports conflicts
+   for the user to decide (ADR 0025).
 
 Branches: `<type>/<NNN>-<slug>` from `develop`. Feature PRs target `develop` and are
 squash-merged; releases go `develop` → `main` with a merge commit.
