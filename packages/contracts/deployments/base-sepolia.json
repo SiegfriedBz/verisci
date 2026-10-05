@@ -1,0 +1,11 @@
+{
+  "chainId": 84532,
+  "staging": {
+    "current": null,
+    "past": []
+  },
+  "production": {
+    "current": null,
+    "past": []
+  }
+}

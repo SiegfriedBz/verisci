@@ -4,7 +4,8 @@ Solidity contracts (Foundry) plus their TypeScript side. See `README.md` here fo
 layout, toolchain versions and commands.
 
 - `src/*.sol` contracts, `test/*.t.sol` tests, `script/*.s.sol` scripts; `src/index.ts`
-  is the TypeScript side, which may import `@verisci/core` and `@verisci/env` only.
+  is the TypeScript side, which may import `@verisci/core` and `@verisci/env` only;
+  `tools/*.ts` are Node scripts (ABI generation, deployment records).
 - Every contract, interface, library and script: `@title` and `@notice`. Every public or external
   function, event and error: `@notice`, `@param`, `@return`, or `@inheritdoc`. solhint
   fails `pnpm check` otherwise.
@@ -16,8 +17,12 @@ layout, toolchain versions and commands.
 - Fuzz-test every function that takes input; the `ci` profile runs 5000 fuzz runs.
 - Never broadcast or deploy (`forge script --broadcast`, `forge create`, `cast send`):
   deploying is the user's call.
-- `out/`, `cache/`, `dependencies/`, `soldeer.lock`, `broadcast/` and future
-  `deployments/`, `src/generated/` are generated; change the source and regenerate.
+- `out/`, `cache/`, `dependencies/`, `soldeer.lock`, `broadcast/`, `deployments/` and
+  `src/generated/` are generated; change the source and regenerate. After changing a
+  contract's interface, run `pnpm generate:abi` here and commit `src/generated/` (CI checks
+  it). `deployments/` changes only through `record-deployment`, after the user deploys.
+- `tools/*.ts` run with Node's type stripping: erasable TypeScript only (no enums, no
+  parameter properties).
 - Tests deploy `RatingController` through `script/DeployRatingController.s.sol`, so they
   run the deploy path; only constructor tests call `new RatingController` directly.
   Per-environment settings live in `script/HelperConfig.s.sol`.

@@ -30,6 +30,7 @@ taken, so a later ADR can sit in an earlier group.
 | [0006. The DKG node runs on a dedicated host](0006-dkg-node-runs-on-a-dedicated-host.md) | DKG daemon, GROBID and RPC proxy on their own host behind Caddy, every route but `/api/status` authenticated; node keys backed up off the host |
 | [0023. The contract is not upgradeable](0023-contract-is-not-upgradeable.md) | No proxy: a fix redeploys; the app reads the current address and past ones read-only; ids never collide across deployments (amended by [0027](0027-past-contracts-are-paused-and-drained.md)) |
 | [0027. Past contracts are paused and drained](0027-past-contracts-are-paused-and-drained.md) | The owner can pause new requests; after a redeploy the old contract is paused and the backend settles what is still pending on it; amends what "read-only" means in 0023 |
+| [0028. Deployed addresses are committed](0028-deployed-addresses-are-committed.md) | Each environment's current and past contract addresses live in a committed file in the contracts package, written from the deploy's broadcast output; no address in an env variable |
 
 ## Writing to the DKG
 

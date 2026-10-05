@@ -3,7 +3,8 @@
 Solidity contracts (Foundry), plus the TypeScript side that the other
 workspaces import.
 
-Status: `RatingController` v2, written and tested.
+Status: `RatingController` v2, written and tested, with its deploy script, typed ABI and
+deployment records; not deployed yet.
 
 ## RatingController
 
@@ -103,7 +104,17 @@ forge script script/DeployRatingController.s.sol
 # Deploy and verify on Basescan (export the Foundry variables of .env.example first).
 DEPLOY_ENV=staging forge script script/DeployRatingController.s.sol \
   --rpc-url base_sepolia --account verisci-deployer --broadcast --verify
+
+# Record it in deployments/base-sepolia.json, then commit that file in a PR.
+pnpm --filter @verisci/contracts record-deployment staging
 ```
+
+`record-deployment` reads the run that `--broadcast` wrote
+(`broadcast/DeployRatingController.s.sol/84532/run-latest.json`), so run it
+right after the deploy. It makes the new contract the environment's `current`
+and moves the previous one to the front of `past`. It refuses a dry run,
+another chain, or an address already recorded, and then writes nothing
+([ADR 0028](../../docs/adr/0028-deployed-addresses-are-committed.md)).
 
 After a redeploy, pause the old contract so it takes no new requests, while
 the oracle settles what is still pending on it
@@ -113,6 +124,25 @@ the oracle settles what is still pending on it
 cast send <old address> "pause()" --rpc-url base_sepolia --account verisci-deployer
 ```
 
+## TypeScript side
+
+What other workspaces import from `@verisci/contracts`:
+
+| Export | What it is |
+| --- | --- |
+| `ratingControllerAbi` | The contract's ABI, `as const`, so viem infers every function, event and error |
+| `ratingControllerDeployments(appEnv)` | `{ chainId, current, past }` for `staging` or `production`; `local` reads staging's ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)). `current` takes new requests; `past` are paused and drained ([ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)) |
+| `NoDeploymentError` | Thrown by `ratingControllerDeployments` for an environment with no current deployment |
+| `Deployment`, `DeployEnv`, `RatingControllerDeployments` | Their types |
+
+Each `Deployment` holds the contract `address`, the deploy `txHash` and
+`blockNumber`, its `owner`, `oracleAgent` and `maxPendingPerRequester` at
+deploy time, and the git `commit` it was deployed from. The owner can change
+the oracle and the cap later; read them from the contract.
+
+`deployments/base-sepolia.json` is validated when the package is imported, so
+a malformed file fails every importer with the bad field named.
+
 ## Depends on
 
 `@verisci/core`, `@verisci/env`
@@ -120,10 +150,13 @@ cast send <old address> "pause()" --rpc-url base_sepolia --account verisci-deplo
 ## Layout
 
 ```text
-src/            # .sol contracts (Foundry) and index.ts (TypeScript side)
+src/            # .sol contracts (Foundry) and the TypeScript side (index.ts, deployments)
 src/interfaces/ # contract interfaces: types, events, errors, NatSpec
+src/generated/  # generated: the typed ABI (committed)
 script/         # Foundry scripts: HelperConfig (per-environment config), DeployRatingController
 test/           # Foundry tests: *.t.sol unit and fuzz, *.inv.t.sol invariants, handlers/
+tools/          # Node scripts: generate-abi, record-deployment (with their Vitest tests)
+deployments/    # generated: deployed addresses per environment (committed)
 foundry.toml    # compiler, fuzz and invariant profiles, Base Sepolia RPC and Basescan
 soldeer.lock    # pinned Solidity dependencies
 remappings.txt  # written by hand: one line per dependency → dependencies/<name>-<version>/
@@ -132,10 +165,15 @@ remappings.txt  # written by hand: one line per dependency → dependencies/<nam
 `out/`, `cache/`, `dependencies/` and `broadcast/` (written by `forge script
 --broadcast`) are generated and gitignored.
 
-Also generated, once they exist: `deployments/` (deployed addresses per network) and `src/generated/` (TypeScript bindings
-from the build). Never edit them by hand: change the `.sol` source or the script, then
-rerun the build or the deploy script that writes them. The plan that adds each one documents
-its exact command here.
+`src/generated/` and `deployments/` are generated too, but committed, since
+Vercel has no Foundry and the addresses are reviewed in PRs. Never edit them
+by hand:
+
+- After changing a contract's interface, run `pnpm --filter @verisci/contracts
+  generate:abi` and commit the result. CI regenerates it and fails if it
+  differs. Biome skips `src/generated/`.
+- `deployments/base-sepolia.json` changes only through `record-deployment`
+  (`record-deployment --init` wrote the empty file).
 
 ## Toolchain
 
@@ -176,5 +214,9 @@ the line, with a comment saying why. Foundry 1.8.4 lints `src/` only.
 | `pnpm --filter @verisci/contracts typecheck` | Typechecks the TypeScript side |
 | `forge build --sizes` | Compiles and reports contract sizes |
 | `FOUNDRY_PROFILE=ci forge test` | Tests with the CI fuzz and invariant runs |
+| `pnpm --filter @verisci/contracts generate:abi` | `forge build`, then writes `src/generated/rating-controller-abi.ts` |
+| `pnpm --filter @verisci/contracts record-deployment <staging\|production>` | Records the latest Base Sepolia broadcast in `deployments/base-sepolia.json` |
 
 The TypeScript side ships as source (`src/index.ts`), with no build step.
+The tools run with Node's type stripping, so they use only erasable TypeScript
+(no enums, no parameter properties).

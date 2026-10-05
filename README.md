@@ -98,7 +98,8 @@ Every PR into `develop` or `main`, and every push to them, runs
 - `ts`: `biome ci`, `typecheck`, `test:coverage` (report uploaded as an
   artifact), `build` (with `APP_ENV=local`)
 - `contracts`: Soldeer install, `forge fmt --check`, `forge lint` and NatSpec,
-  `forge build --sizes`, `forge test` with the `ci` profile (5000 fuzz runs)
+  `forge build --sizes`, a check that the committed ABI matches the contract,
+  `forge test` with the `ci` profile (5000 fuzz runs)
 
 ## Decisions and domain facts
 
