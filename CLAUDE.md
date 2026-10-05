@@ -11,7 +11,8 @@ rules, PRs and releases. Each workspace has its own `CLAUDE.md` and `README.md`.
 
 | Command | Use |
 | --- | --- |
-| `pnpm check` / `pnpm check:fix` | Biome + `forge fmt --check` + NatSpec |
+| `pnpm check` | Biome + `forge fmt --check` + `forge lint` + NatSpec |
+| `pnpm check:fix` | Biome rewrites what it can fix safely |
 | `pnpm typecheck` | `tsc` in every workspace (Turbo, cached) |
 | `pnpm test` | Vitest per workspace + `forge test` |
 | `pnpm test:coverage` | Root Vitest run with thresholds (core ≥ 90% branches, others ≥ 70% lines) |
@@ -50,7 +51,9 @@ planning; cite them rather than re-arguing them.
 2. `/implement <NNN>` branches from `origin/develop`, writes the tests first and shows them
    failing, then implements until green, committing in small steps.
 3. `/review-branch` runs CI's checks, tests and builds, then the read-only reviewer; it
-   blocks on any failure or stale docs, then drafts the PR.
+   blocks on any failure, stale docs or ADR conflict, then drafts the PR.
+4. `/review-adrs`, on demand: checks every ADR against every other and reports conflicts
+   for the user to decide (ADR 0025).
 
 Branches: `<type>/<NNN>-<slug>` from `develop`. Feature PRs target `develop` and are
 squash-merged; releases go `develop` → `main` with a merge commit.
@@ -74,8 +77,8 @@ to draft a PR while docs findings remain.
 ## Hooks (.claude/hooks)
 
 - After each edit: Biome `check --write` (TS, JS, JSON, CSS), then related Vitest tests
-  (`.ts`/`.tsx` only); or `forge fmt`, NatSpec and `forge test` (Solidity). Fix what they
-  report in the same turn.
+  (`.ts`/`.tsx` only); or `forge fmt`, NatSpec, `forge lint` and `forge test` (Solidity).
+  Fix what they report in the same turn.
 - Before an edit: generated files (lockfiles, `next-env.d.ts`, Foundry output, Soldeer
   dependencies, deployments) are refused with how to regenerate them.
 - Env files other than `.env.example` are blocked for the Read, Grep and Edit tools and for

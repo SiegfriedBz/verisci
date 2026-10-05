@@ -102,7 +102,7 @@ jobs:
       - name: Install Solidity dependencies
         run: forge soldeer install
 
-      - name: Format and NatSpec
+      - name: Format, lint and NatSpec
         run: pnpm check
 
       - name: Build
