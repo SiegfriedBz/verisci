@@ -32,8 +32,9 @@ Toolchain: Node 24.21.0 (`.nvmrc`), pnpm 10.34.6 via Corepack, Foundry 1.8.4. If
 - Relative imports keep the `.ts` extension (`./shared.ts`); `allowImportingTsExtensions`
   is on in `tsconfig.base.json` because nothing emits.
 - Environment variables: each workspace declares what it reads in `src/env.ts` with
-  `defineEnv` from `@verisci/env`, and adds it to `.env.example` in the same PR. Variables
-  read only by forge go in `.env.example`'s Foundry section instead (ADR 0029).
+  `defineEnv` from `@verisci/env`, and adds it to `.env.example` in the same PR. Forge's
+  deploy settings go in `.env.example`'s Foundry section instead; per-deploy choices such
+  as `DEPLOY_ENV` go on the deploy command (ADR 0029).
 - Pin every dependency exactly (`pnpm add -E`). No ESLint or Prettier: Biome does both.
 - Coverage thresholds live in the root `vitest.config.ts` (path globs); Vitest 5 forbids
   coverage settings in project configs.
