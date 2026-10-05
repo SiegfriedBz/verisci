@@ -1,68 +1,66 @@
 # @verisci/contracts
 
-Solidity contracts (Foundry), plus the TypeScript side that the other
-workspaces import.
+Solidity contracts built with Foundry, and the TypeScript bindings the other
+workspaces import: the typed ABI and the deployed addresses of each environment.
 
-Status: `RatingController` v2, written and tested, with its deploy script, typed ABI and
-deployment records. `deployments/base-sepolia.json` lists what is deployed.
+Status: `RatingController` v2 is implemented and tested. Deployed addresses are
+recorded in `deployments/base-sepolia.json`.
 
 ## RatingController
 
-Records phase-1 rating requests on chain and the oracle's answers. Its public
+Records phase-1 rating requests on chain, and the oracle's answers. The public
 API (types, events, errors and function signatures, with their NatSpec) is
-`src/interfaces/IRatingController.sol`; `src/RatingController.sol` implements
-it. A fix is a redeploy: the old contract is paused and keeps settling the
-requests still pending on it
+defined in `src/interfaces/IRatingController.sol` and implemented in
+`src/RatingController.sol`. The contract is not upgradeable: a fix is a
+redeploy, after which the previous contract is paused and settles the requests
+still pending on it
 ([ADR 0023](../../docs/adr/0023-contract-is-not-upgradeable.md),
 [ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)).
 
-- **Request.** Anyone calls `requestPhase1(targetUal)` with a non-empty UAL
-  and gets a `requestId`, the `keccak256` of the chain id, the contract
-  address, a nonce, the requester and the UAL's hash, so every request on every
-  deployment gets its own id
+- **Request.** Anyone calls `requestPhase1(targetUal)` with a non-empty UAL and
+  receives a `requestId`: the `keccak256` of the chain id, the contract
+  address, a nonce, the requester and the UAL's hash. Every request on every
+  deployment therefore has its own id
   ([ADR 0016](../../docs/adr/0016-asset-names-derive-from-request-id.md)).
-  A requester can have at most `maxPendingPerRequester` pending requests,
-  passed to the constructor and changed by the owner
+  Each requester may hold at most `maxPendingPerRequester` pending requests
   ([ADR 0015](../../docs/adr/0015-rating-requests-are-free-on-testnet.md)).
-- **Fulfil.** Only `oracleAgent` calls `fulfilPhase1(requestId, score, rKaUal)`,
-  with a score from 0 to 100 and the R-KA's UAL. The record holds the phase-1
-  score only; a later phase gets its own field in a later contract version
+- **Fulfil.** The oracle calls `fulfilPhase1(requestId, score, rKaUal)` with a
+  score from 0 to 100 and the R-KA's UAL. The record holds the phase-1 score;
+  later phases get their own fields in later contract versions
   ([ADR 0012](../../docs/adr/0012-ratings-evolve-in-three-phases.md)).
-- **Cancel.** Only `oracleAgent` calls `cancelRequest(requestId, reason)`, with
-  the reason the request stopped: `Expired` (pending past the maximum age) or
-  `InvalidTarget`. In an emergency the owner replaces the oracle, and the new
-  oracle cancels
+- **Cancel.** The oracle calls `cancelRequest(requestId, reason)` with
+  `Expired` (pending past the maximum age) or `InvalidTarget`. In an
+  emergency, the owner assigns the oracle role to another key, which then
+  cancels
   ([ADR 0020](../../docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md),
   [ADR 0024](../../docs/adr/0024-only-the-oracle-cancels-requests.md)).
 - **Read.** `getRatingRequest(requestId)` returns the full `RatingRequest`
-  record (status `None` for an unknown id). `pendingCount()` counts the
-  pending requests, and
-  `pendingRequestIds(offset, limit)` returns up to `limit` of their ids from
-  index `offset`, so a long list is read in chunks; the order changes as
-  requests settle. `requestCountOf(targetUal)` and
-  `requestIdsOf(targetUal, offset, limit)` do the same for a target's request
-  ids, oldest first ([ADR 0022](../../docs/adr/0022-contract-indexes-request-ids-by-target.md)).
-- **Pause.** The owner calls `pause()` to stop new requests: `requestPhase1`
-  then reverts with `EnforcedPause`, while `fulfilPhase1` and `cancelRequest`
-  keep working, so pending requests still settle. `unpause()` lets requests in
-  again, and `paused()` reads the state. After a redeploy the old contract is
-  paused and drained; the pause also stops a spam wave without a redeploy
+  record, with status `None` for an unknown id. `pendingCount()` and
+  `pendingRequestIds(offset, limit)` list pending requests in chunks; their
+  order changes as requests settle. `requestCountOf(targetUal)` and
+  `requestIdsOf(targetUal, offset, limit)` list a target's requests, oldest
+  first ([ADR 0022](../../docs/adr/0022-contract-indexes-request-ids-by-target.md)).
+- **Pause.** The owner's `pause()` stops new requests: `requestPhase1` reverts
+  with `EnforcedPause`, while `fulfilPhase1` and `cancelRequest` keep working
+  so pending requests still settle. `unpause()` reopens requests, and
+  `paused()` reads the state. Pausing retires a replaced contract and also
+  serves as an emergency brake
   ([ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)).
-- **Admin.** The owner sets `oracleAgent` and `maxPendingPerRequester`, and
-  pauses requests. The owner and the oracle are always different addresses:
-  the contract reverts with `SameOwnerAndOracle` on an oracle equal to the
-  owner, or on ownership moving to the oracle
+- **Administration.** The owner sets `oracleAgent` and
+  `maxPendingPerRequester`, and pauses requests. The owner and the oracle are
+  always distinct addresses: an oracle equal to the owner, or ownership moving
+  to the oracle, reverts with `SameOwnerAndOracle`
   ([ADR 0030](../../docs/adr/0030-owner-and-oracle-are-different-addresses.md)).
-  Ownership moves in two steps (OpenZeppelin `Ownable2Step`:
-  `transferOwnership`, then `acceptOwnership`), and the contract always has an
-  owner: `renounceOwnership` reverts with `RenounceOwnershipDisabled`.
+  Ownership moves in two steps (OpenZeppelin `Ownable2Step`), and
+  `renounceOwnership` reverts with `RenounceOwnershipDisabled`, so the
+  contract always has an owner.
 
-Failures revert with custom errors, and every state change emits an event
-(`Phase1Requested`, `Phase1Fulfilled`, `RequestCancelled`,
+Failures revert with custom errors. Every state change emits an event:
+`Phase1Requested`, `Phase1Fulfilled`, `RequestCancelled`,
 `OracleAgentUpdated`, `MaxPendingPerRequesterUpdated`, and OpenZeppelin's
-`Paused` and `Unpaused`).
+`Paused` and `Unpaused`.
 
-### Life of a request
+### Request lifecycle
 
 ```text
                  requestPhase1 (anyone)
@@ -85,137 +83,134 @@ Failures revert with custom errors, and every state change emits an event
           two-step ownership transfer
 ```
 
-## Deploy
+## Deployment
 
-You deploy from your own machine, from `packages/contracts`. Staging and
-production both run on Base Sepolia (chain 84532), and each has its own
-contract ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)).
+Staging and production each have their own contract on Base Sepolia (chain id
+84532) ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)).
+Deployments run from a maintainer's machine; all commands below run from
+`packages/contracts`.
 
-### Two wallets: owner and oracle
+### Accounts
 
-A wallet is a **public address** (safe to share; it goes in the code) and a
-**private key** (secret; whoever holds it signs as that address).
-
-| Wallet | Role on the contract | Where its private key lives |
+| Account | Role on the contract | Key custody |
 | --- | --- | --- |
-| **Deployer** (`verisci-deployer`), one for both environments | **Owner**: pauses requests, sets the oracle and the cap, transfers ownership | Your machine only, in an encrypted Foundry keystore |
-| **Oracle**, one per environment | **Oracle**: fulfils and cancels requests | Your password manager for now; later the agents' deployment (`develop` for staging, `main` for production) ([ADR 0019](../../docs/adr/0019-oracle-transactions-are-serialized.md)) |
+| Deployer (`verisci-deployer` keystore), shared by both environments | Owner: pauses requests, updates the oracle and the cap, transfers ownership | Encrypted Foundry keystore on the maintainer's machine; never on Vercel or CI |
+| Oracle, one per environment | Fulfils and cancels requests | Stored securely until the environment's agents deployment (`develop` or `main`) holds it |
 
-The two must be different addresses: the oracle's key runs on a server, and
-the owner's powers stay offline. The contract enforces it and reverts with
-`SameOwnerAndOracle` otherwise
-([ADR 0030](../../docs/adr/0030-owner-and-oracle-are-different-addresses.md)).
+The two roles always use distinct addresses: the oracle key runs on a server,
+while the owner key stays offline
+([ADR 0019](../../docs/adr/0019-oracle-transactions-are-serialized.md),
+[ADR 0030](../../docs/adr/0030-owner-and-oracle-are-different-addresses.md)).
 
-### One-time setup
+### Prerequisites
 
-1. **Let forge read the root env file.** Forge reads a `.env` next to
-   `foundry.toml`, so link it to the root `.env.local`; the link is gitignored
-   like every env file
-   ([ADR 0029](../../docs/adr/0029-forge-reads-the-root-env-file.md)):
+One-time setup per machine:
+
+1. **Link forge to the root env file.** Forge reads a `.env` file next to
+   `foundry.toml`; link it to the root `.env.local`. The link is gitignored
+   ([ADR 0029](../../docs/adr/0029-forge-reads-the-root-env-file.md)).
 
    ```bash
    ln -s ../../.env.local .env
    ```
 
-2. **Fill in the Foundry section** of `.env.example` in the root `.env.local`:
-   `BASE_SEPOLIA_RPC_URL` and `ETHERSCAN_API_KEY`.
+2. **Set the Foundry variables** listed in `.env.example` in the root
+   `.env.local`: `BASE_SEPOLIA_RPC_URL` and `ETHERSCAN_API_KEY`.
 
-3. **Create the deployer wallet** and store its key encrypted:
+3. **Create the deployer account** and import it into an encrypted keystore.
+   Keep an offline backup of its private key.
 
    ```bash
-   cast wallet new                                     # prints a new address and private key
-   cast wallet import verisci-deployer --interactive   # paste that private key, choose a password
-   cast wallet address --account verisci-deployer      # prints the deployer's address
+   cast wallet new                                     # generates an address and private key
+   cast wallet import verisci-deployer --interactive   # encrypts the key under a password
+   cast wallet address --account verisci-deployer      # prints the deployer address
    ```
 
-   Back up the private key offline. It owns every contract you deploy.
+4. **Fund the deployer** with Base Sepolia ETH from a faucet. A single faucet
+   allocation covers a deployment.
 
-4. **Fund the deployer** with ETH on Base Sepolia from a faucet that offers
-   Base Sepolia. One faucet drip covers a deploy.
+### Deploying an environment
 
-### Deploy an environment
+The steps below deploy staging; for production, use `production` and
+`PRODUCTION_ORACLE`.
 
-Staging is shown; for production, use `production` and `PRODUCTION_ORACLE`.
-
-1. **Create the environment's oracle wallet** with `cast wallet new`. Keep its
-   private key in your password manager for the agents plan; only its
-   address goes in the code.
-2. **Put the oracle's address in `script/HelperConfig.s.sol`** as
-   `STAGING_ORACLE`, on a branch. While it is zero, a deploy reverts with
-   `ZeroAddress` before anything is sent.
-3. **Dry run.** Without `--broadcast`, forge simulates against Base Sepolia
-   and sends nothing:
+1. **Create the oracle account** with `cast wallet new`, and store its private
+   key securely. Only its address is committed.
+2. **Configure the oracle** by setting `STAGING_ORACLE` in
+   `script/HelperConfig.s.sol` to its address, on a branch. While the constant
+   is zero, the deployment reverts with `ZeroAddress` before any transaction
+   is sent.
+3. **Simulate** the deployment against Base Sepolia. Without `--broadcast`,
+   nothing is sent:
 
    ```bash
    DEPLOY_ENV=staging forge script script/DeployRatingController.s.sol \
      --rpc-url base_sepolia --account verisci-deployer
    ```
 
-4. **Deploy and verify** on Basescan:
+4. **Deploy** and verify the source on Basescan:
 
    ```bash
    DEPLOY_ENV=staging forge script script/DeployRatingController.s.sol \
      --rpc-url base_sepolia --account verisci-deployer --broadcast --verify
    ```
 
-5. **Record it** in `deployments/base-sepolia.json`, right after the deploy:
+5. **Record** the deployment in `deployments/base-sepolia.json`:
 
    ```bash
    pnpm --filter @verisci/contracts record-deployment staging
    ```
 
-6. **Commit** `HelperConfig` and `deployments/base-sepolia.json` in one PR
-   into `develop`.
+6. **Commit** `script/HelperConfig.s.sol` and `deployments/base-sepolia.json`,
+   and open a pull request into `develop`.
 
-`DEPLOY_ENV` goes on the command, never in an env file, so every deploy names
-its environment; a command without it reverts with `UnknownDeployEnv`.
-Without `--rpc-url`, `forge script script/DeployRatingController.s.sol` runs
-on an in-memory chain with the local Anvil config.
+`DEPLOY_ENV` is passed on each command and kept out of env files, so every
+deployment names its target explicitly; when it is missing, `HelperConfig`
+reverts with `UnknownDeployEnv`. Without `--rpc-url`, the script deploys to an
+in-memory chain with the local Anvil configuration.
 
-### How the pieces fit
+### How the scripts fit together
 
-- `script/HelperConfig.s.sol` holds the constructor arguments for each
-  environment: local Anvil (chain 31337), and staging and production on Base
-  Sepolia, which `DEPLOY_ENV` picks between.
-  `script/DeployRatingController.s.sol` deploys from it, and the account that
-  signs the broadcast becomes the owner. The Foundry tests deploy through the
-  same script.
-- `record-deployment` reads the run that `--broadcast` wrote
-  (`broadcast/DeployRatingController.s.sol/84532/run-latest.json`). It makes the
-  new contract the environment's `current` and moves the previous one to the
-  front of `past`. It refuses a dry run, another chain, or an address already
-  recorded, and then writes nothing
+- `script/HelperConfig.s.sol` holds the constructor arguments of each
+  environment: local Anvil (chain id 31337), and staging and production on
+  Base Sepolia, selected by `DEPLOY_ENV`.
+- `script/DeployRatingController.s.sol` deploys from that configuration. The
+  account that signs the broadcast becomes the owner. The Foundry test suites
+  deploy through the same script.
+- `record-deployment` reads the run file written by `--broadcast`
+  (`broadcast/DeployRatingController.s.sol/84532/run-latest.json`). The new
+  contract becomes the environment's `current` deployment, and the previous
+  one moves to the front of `past`. A dry run, another chain or an address
+  already recorded is rejected, and the file is left unchanged
   ([ADR 0028](../../docs/adr/0028-deployed-addresses-are-committed.md)).
 
-### Redeploy
+### Redeploying
 
-After a redeploy, pause the old contract so it takes no new requests, while
-the oracle settles what is still pending on it
-([ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)):
+After a redeploy, pause the previous contract. It stops accepting requests
+while the oracle settles those still pending
+([ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)).
 
 ```bash
-cast send <old address> "pause()" --rpc-url base_sepolia --account verisci-deployer
+cast send <previous address> "pause()" --rpc-url base_sepolia --account verisci-deployer
 ```
 
-## TypeScript side
+## TypeScript API
 
-What other workspaces import from `@verisci/contracts`:
-
-| Export | What it is |
+| Export | Description |
 | --- | --- |
-| `ratingControllerAbi` | The contract's ABI, `as const`, so viem infers every function, event and error |
-| `ratingControllerDeployments(appEnv)` | `{ chainId, current, past }` for `staging` or `production`; `local` reads staging's ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)). `current` takes new requests; `past` are paused and drained ([ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)) |
-| `contractsName` | The package name, listed on the web app's home page |
+| `ratingControllerAbi` | The contract ABI, typed `as const` so viem infers every function, event and error |
+| `ratingControllerDeployments(appEnv)` | `{ chainId, current, past }` for `staging` or `production`; `local` resolves to staging ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)). `current` accepts new requests; `past` contracts are paused and drained ([ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)) |
 | `NoDeploymentError` | Thrown by `ratingControllerDeployments` for an environment with no current deployment |
-| `Deployment`, `DeployEnv`, `RatingControllerDeployments` | Their types |
+| `Deployment`, `DeployEnv`, `RatingControllerDeployments` | The corresponding types |
+| `contractsName` | The package name, listed on the web app's home page |
 
-Each `Deployment` holds the contract `address`, the deploy `txHash` and
-`blockNumber`, its `owner`, `oracleAgent` and `maxPendingPerRequester` at
-deploy time, and the git `commit` it was deployed from. The owner can change
-the oracle and the cap later; read them from the contract.
+Each `Deployment` records the contract `address`, the deployment `txHash` and
+`blockNumber`, the `owner`, `oracleAgent` and `maxPendingPerRequester` at
+deployment time, and the git `commit` deployed. The owner can update the
+oracle and the cap afterwards; the contract holds their current values.
 
-`deployments/base-sepolia.json` is validated when the package is imported, so
-a malformed file fails every importer with the bad field named.
+`deployments/base-sepolia.json` is validated on import, so a malformed file
+fails every importer with the invalid field named.
 
 ## Depends on
 
@@ -224,31 +219,32 @@ a malformed file fails every importer with the bad field named.
 ## Layout
 
 ```text
-src/            # .sol contracts (Foundry) and the TypeScript side (index.ts, deployments)
+src/            # Solidity contracts and the TypeScript API (index.ts, deployments)
 src/interfaces/ # contract interfaces: types, events, errors, NatSpec
-src/generated/  # generated: the typed ABI (committed)
-script/         # Foundry scripts: HelperConfig (per-environment config), DeployRatingController
+src/generated/  # generated, committed: the typed ABI
+script/         # Foundry scripts: HelperConfig, DeployRatingController
 test/           # Foundry tests: *.t.sol unit and fuzz, *.inv.t.sol invariants, handlers/
-tools/          # Node scripts: generate-abi, record-deployment (with their Vitest tests)
-deployments/    # generated: deployed addresses per environment (committed)
+tools/          # Node scripts: generate-abi, record-deployment, with their Vitest tests
+deployments/    # generated, committed: deployed addresses per environment
 foundry.toml    # compiler, fuzz and invariant profiles, Base Sepolia RPC and Basescan
-.env            # your link to the root .env.local, which forge reads (gitignored, ADR 0029)
+.env            # local link to the root .env.local, read by forge (gitignored)
 soldeer.lock    # pinned Solidity dependencies
-remappings.txt  # written by hand: one line per dependency → dependencies/<name>-<version>/
+remappings.txt  # maintained by hand: one line per dependency → dependencies/<name>-<version>/
 ```
 
-`out/`, `cache/`, `dependencies/` and `broadcast/` (written by `forge script
---broadcast`) are generated and gitignored.
+### Generated files
 
-`src/generated/` and `deployments/` are generated too, but committed, since
-Vercel has no Foundry and the addresses are reviewed in PRs. Never edit them
-by hand:
+`out/`, `cache/`, `dependencies/` and `broadcast/` are generated and
+gitignored. `src/generated/` and `deployments/` are generated and committed:
+Vercel has no Foundry, and deployed addresses are reviewed in pull requests.
+Neither is edited by hand.
 
-- After changing a contract's interface, run `pnpm --filter @verisci/contracts
-  generate:abi` and commit the result. CI regenerates it and fails if it
-  differs. Biome skips `src/generated/`.
-- `deployments/base-sepolia.json` changes only through `record-deployment`
-  (`record-deployment --init` wrote the empty file).
+- **ABI.** After changing a contract's interface, run
+  `pnpm --filter @verisci/contracts generate:abi` and commit the result. CI
+  regenerates the file and fails on any difference. Biome skips
+  `src/generated/`.
+- **Deployments.** `deployments/base-sepolia.json` changes only through
+  `record-deployment`.
 
 ## Toolchain
 
@@ -260,38 +256,40 @@ by hand:
 | OpenZeppelin Contracts | 5.7.0 | `foundry.toml` `[dependencies]` and `soldeer.lock`, via Soldeer |
 | solhint | 6.2.4 | `package.json` |
 
-To bump a dependency: `forge soldeer install <name>~<version>` (`forge-std`,
-`@openzeppelin-contracts`), then update its path in `remappings.txt`.
+To bump a dependency, run `forge soldeer install <name>~<version>`
+(`forge-std`, `@openzeppelin-contracts`), then update its path in
+`remappings.txt`.
 
 ## NatSpec and lint
 
-Every contract, interface, library and script needs `@title` and `@notice`. Every
-public or external function, event and error needs `@notice`, `@param` and
-`@return`, or `@inheritdoc`. solhint's `use-natspec` rule enforces this at
-`error` in `pnpm check`; it is the only solhint rule enabled, so it does not
-overlap with `forge fmt` or `forge lint`.
+Every contract, interface, library and script carries `@title` and `@notice`.
+Every public or external function, event and error carries `@notice`,
+`@param` and `@return`, or `@inheritdoc`. solhint's `use-natspec` rule
+enforces this in `pnpm check`; it is the only solhint rule enabled, so it
+complements `forge fmt` and `forge lint`.
 
-`forge lint --deny notes` runs in `pnpm check` and after every `.sol` edit, so
-any lint warning or note fails
-([ADR 0025](../../docs/adr/0025-reviews-gate-on-adrs-and-lint.md)).
-`foundry.toml` turns on all five severities (high, medium, low, info, gas)
-and excludes `asm-keccak256`, which trades readability for a little gas. To
-accept one finding, put `// forge-lint: disable-next-line(<lint-id>)` above
-the line, with a comment saying why. Foundry 1.8.4 lints `src/` only.
+`forge lint --deny notes` runs in `pnpm check` and after every `.sol` edit, and
+fails on any warning or note
+([ADR 0025](../../docs/adr/0025-reviews-gate-on-adrs-and-lint.md)). It covers
+`src/`, `script/` and `test/`. `foundry.toml` enables all five severities
+(high, medium, low, info, gas) and excludes `asm-keccak256`, which trades
+readability for a small gas saving. To accept a single finding, add
+`// forge-lint: disable-next-line(<lint-id>)` above the line, with a comment
+giving the reason.
 
 ## Scripts
 
-| Command | What it does |
+| Command | Description |
 | --- | --- |
 | `forge soldeer install` | Installs the Solidity dependencies from `soldeer.lock` |
-| `pnpm --filter @verisci/contracts check` | `forge fmt --check`, then `forge lint --deny notes`, then solhint NatSpec on `src/` and `script/` |
-| `pnpm --filter @verisci/contracts test` | Vitest for the TypeScript side, then `forge test` |
-| `pnpm --filter @verisci/contracts typecheck` | Typechecks the TypeScript side |
-| `forge build --sizes` | Compiles and reports contract sizes |
-| `FOUNDRY_PROFILE=ci forge test` | Tests with the CI fuzz and invariant runs |
-| `pnpm --filter @verisci/contracts generate:abi` | `forge build`, then writes `src/generated/rating-controller-abi.ts` |
+| `pnpm --filter @verisci/contracts check` | `forge fmt --check`, `forge lint --deny notes`, then solhint NatSpec on `src/` and `script/` |
+| `pnpm --filter @verisci/contracts test` | Vitest for the TypeScript code, then `forge test` |
+| `pnpm --filter @verisci/contracts typecheck` | Typechecks the TypeScript code |
+| `pnpm --filter @verisci/contracts generate:abi` | Runs `forge build`, then writes `src/generated/rating-controller-abi.ts` |
 | `pnpm --filter @verisci/contracts record-deployment <staging\|production>` | Records the latest Base Sepolia broadcast in `deployments/base-sepolia.json` |
+| `forge build --sizes` | Compiles and reports contract sizes |
+| `FOUNDRY_PROFILE=ci forge test` | Runs the tests with the CI fuzz and invariant settings |
 
-The TypeScript side ships as source (`src/index.ts`), with no build step.
-The tools run with Node's type stripping; `erasableSyntaxOnly` in `tsconfig.json`
-keeps the package to syntax Node can strip.
+The TypeScript code ships as source (`src/index.ts`), with no build step. The
+tools run under Node's type stripping; `erasableSyntaxOnly` in `tsconfig.json`
+restricts the package to syntax Node can strip.

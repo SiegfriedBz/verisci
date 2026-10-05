@@ -138,7 +138,7 @@ rules. `.claude/` holds the shared settings, hooks and skills:
 | `/plan-feature <name>` | Writes `docs/plans/NNN-<name>.md` from the plan template |
 | `/implement <NNN>` | Branches from `develop`, writes the tests first, then implements until green |
 | `/review-branch` | Runs CI's checks, tests and builds, then a read-only review; blocks on any failure, stale docs or ADR conflict, then drafts the PR |
-| `/review-adrs` | On demand: checks every ADR against every other and reports conflicts for you to decide |
+| `/review-adrs` | On demand: checks every ADR against every other and reports conflicts for the maintainer to decide |
 
 Hooks format, lint and test each file Claude edits, block edits to generated files and
 reads of env files (except `.env.example`), and typecheck the changed workspaces and the
