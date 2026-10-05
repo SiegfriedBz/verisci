@@ -10,6 +10,9 @@ import {IRatingController} from "../src/interfaces/IRatingController.sol";
 /// @title DeployRatingControllerTest
 /// @notice Tests for the deploy script and the per-environment config it reads.
 contract DeployRatingControllerTest is Test {
+    /// Ethereum mainnet, a chain HelperConfig has no config for.
+    uint256 internal constant MAINNET_CHAIN_ID = 1;
+
     DeployRatingController internal deployer;
     HelperConfig internal helperConfig;
 
@@ -69,14 +72,15 @@ contract DeployRatingControllerTest is Test {
     }
 
     function test_GetConfig_RevertsOnUnsupportedChain() public {
-        vm.chainId(1);
-        vm.expectRevert(abi.encodeWithSelector(HelperConfig.UnsupportedChain.selector, 1));
+        vm.chainId(MAINNET_CHAIN_ID);
+        vm.expectRevert(abi.encodeWithSelector(HelperConfig.UnsupportedChain.selector, MAINNET_CHAIN_ID));
         helperConfig.getConfig();
     }
 
     function test_Deploy_RevertsOnZeroOracle() public {
-        HelperConfig.NetworkConfig memory config =
-            HelperConfig.NetworkConfig({oracleAgent: address(0), maxPendingPerRequester: 3});
+        HelperConfig.NetworkConfig memory config = HelperConfig.NetworkConfig({
+            oracleAgent: address(0), maxPendingPerRequester: helperConfig.MAX_PENDING_PER_REQUESTER()
+        });
         vm.expectRevert(IRatingController.ZeroAddress.selector);
         deployer.deploy(config);
     }

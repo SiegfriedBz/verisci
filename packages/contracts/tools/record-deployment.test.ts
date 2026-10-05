@@ -1,6 +1,7 @@
 import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { BASE_SEPOLIA_CHAIN_ID } from "@verisci/core";
 import { describe, expect, it } from "vitest";
 import type { DeploymentsFile } from "../src/deployments.ts";
 import {
@@ -10,12 +11,15 @@ import {
   recordDeploymentFile,
 } from "./record-deployment.ts";
 
+const ANVIL_CHAIN_ID = 31_337;
+const BLOCK_NUMBER = 6_699;
+const MAX_PENDING_PER_REQUESTER = 3;
 const ORACLE = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
 const OWNER = "0x1804c8ab1f12e6bbf3894d4083f33e07309d1f38";
 
 /** The shape `forge script --broadcast` writes to `run-latest.json`, trimmed to what is read. */
-const broadcastRun = (address: string, hash: string, blockNumber = "0x1a2b") => ({
-  chain: 84532,
+const broadcastRun = (address: string, hash: string) => ({
+  chain: BASE_SEPOLIA_CHAIN_ID,
   commit: "ca48594",
   transactions: [
     {
@@ -23,11 +27,14 @@ const broadcastRun = (address: string, hash: string, blockNumber = "0x1a2b") => 
       transactionType: "CREATE",
       contractName: "RatingController",
       contractAddress: address,
-      arguments: [ORACLE, "3"],
+      arguments: [ORACLE, String(MAX_PENDING_PER_REQUESTER)],
       transaction: { from: OWNER },
     },
   ],
-  receipts: [{ transactionHash: hash, blockNumber, status: "0x1" }],
+  // Receipts carry block numbers as hex strings.
+  receipts: [
+    { transactionHash: hash, blockNumber: `0x${BLOCK_NUMBER.toString(16)}`, status: "0x1" },
+  ],
 });
 
 const ADDRESS_1 = `0x${"1".repeat(40)}`;
@@ -42,10 +49,10 @@ describe("recordDeployment", () => {
       current: {
         address: ADDRESS_1,
         txHash: HASH_1,
-        blockNumber: 0x1a2b,
+        blockNumber: BLOCK_NUMBER,
         owner: OWNER,
         oracleAgent: ORACLE.toLowerCase(),
-        maxPendingPerRequester: 3,
+        maxPendingPerRequester: MAX_PENDING_PER_REQUESTER,
         commit: "ca48594",
       },
       past: [],
@@ -74,8 +81,10 @@ describe("recordDeployment", () => {
   });
 
   it("throws on a run from another chain", () => {
-    const run = { ...broadcastRun(ADDRESS_1, HASH_1), chain: 31337 };
-    expect(() => recordDeployment(emptyDeployments(), "staging", run)).toThrow(/chain 31337/);
+    const run = { ...broadcastRun(ADDRESS_1, HASH_1), chain: ANVIL_CHAIN_ID };
+    expect(() => recordDeployment(emptyDeployments(), "staging", run)).toThrow(
+      `chain ${ANVIL_CHAIN_ID}`,
+    );
   });
 
   it("throws on an address already recorded in that environment", () => {

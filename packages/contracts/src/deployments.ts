@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+/** The contract stores the pending cap as a `uint8`. */
+const UINT8_MAX = 255;
+
 const address = z.string().regex(/^0x[0-9a-f]{40}$/, "expected a lowercase 0x address");
 
 const deploymentSchema = z.object({
@@ -8,7 +11,7 @@ const deploymentSchema = z.object({
   blockNumber: z.int().nonnegative(),
   owner: address,
   oracleAgent: address,
-  maxPendingPerRequester: z.int().min(1).max(255),
+  maxPendingPerRequester: z.int().min(1).max(UINT8_MAX),
   commit: z.string().min(1),
 });
 

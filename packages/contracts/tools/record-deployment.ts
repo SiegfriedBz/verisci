@@ -1,7 +1,9 @@
 // Records a RatingController deployment from the run file `forge script --broadcast` writes.
 // Usage: node tools/record-deployment.ts <staging|production>, or --init for an empty file.
+
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { BASE_SEPOLIA_CHAIN_ID } from "@verisci/core";
 import { z } from "zod";
 import {
   type DeployEnv,
@@ -9,9 +11,6 @@ import {
   type DeploymentsFile,
   parseDeployments,
 } from "../src/deployments.ts";
-
-/** Base Sepolia, where staging and production both run. */
-export const BASE_SEPOLIA_CHAIN_ID = 84532;
 
 const runSchema = z.object({
   chain: z.int(),

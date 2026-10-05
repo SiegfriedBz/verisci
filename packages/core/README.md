@@ -7,7 +7,13 @@ Domain logic. Core does no IO: no `fetch`, no `node:*` imports and no other
 `pnpm check` enforces this: `packages/core/biome.json` turns `fetch`,
 `node:*` and `@verisci/*` into errors ("core does no IO").
 
-Status: placeholder.
+Status: shared constants only.
+
+## API
+
+| Export | What it is |
+| --- | --- |
+| `BASE_SEPOLIA_CHAIN_ID` | 84532, the chain staging and production run on, which UALs also name ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)) |
 
 ## Depends on
 
