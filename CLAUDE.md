@@ -11,7 +11,7 @@ rules, PRs and releases. Each workspace has its own `CLAUDE.md` and `README.md`.
 
 | Command | Use |
 | --- | --- |
-| `pnpm check` / `pnpm check:fix` | Biome + `forge fmt --check` + NatSpec |
+| `pnpm check` / `pnpm check:fix` | Biome + `forge fmt --check` + `forge lint` + NatSpec |
 | `pnpm typecheck` | `tsc` in every workspace (Turbo, cached) |
 | `pnpm test` | Vitest per workspace + `forge test` |
 | `pnpm test:coverage` | Root Vitest run with thresholds (core ≥ 90% branches, others ≥ 70% lines) |
@@ -74,8 +74,8 @@ to draft a PR while docs findings remain.
 ## Hooks (.claude/hooks)
 
 - After each edit: Biome `check --write` (TS, JS, JSON, CSS), then related Vitest tests
-  (`.ts`/`.tsx` only); or `forge fmt`, NatSpec and `forge test` (Solidity). Fix what they
-  report in the same turn.
+  (`.ts`/`.tsx` only); or `forge fmt`, NatSpec, `forge lint` and `forge test` (Solidity).
+  Fix what they report in the same turn.
 - Before an edit: generated files (lockfiles, `next-env.d.ts`, Foundry output, Soldeer
   dependencies, deployments) are refused with how to regenerate them.
 - Env files other than `.env.example` are blocked for the Read, Grep and Edit tools and for

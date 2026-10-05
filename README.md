@@ -79,7 +79,7 @@ Environment variables are listed in [`.env.example`](.env.example): copy it to
 
 | Command | What it does |
 | --- | --- |
-| `pnpm check` | Biome format, lint and import order; then `forge fmt --check` and the NatSpec check in `packages/contracts` |
+| `pnpm check` | Biome format, lint and import order; then `forge fmt --check`, `forge lint` (any warning or note fails) and the NatSpec check in `packages/contracts` |
 | `pnpm check:fix` | Biome rewrites what it can fix safely |
 | `pnpm typecheck` | `tsc` in every workspace |
 | `pnpm test` | Vitest in every workspace, plus `forge test` in `packages/contracts` |
@@ -97,7 +97,7 @@ Every PR into `develop` or `main`, and every push to them, runs
 
 - `ts`: `biome ci`, `typecheck`, `test:coverage` (report uploaded as an
   artifact), `build` (with `APP_ENV=local`)
-- `contracts`: Soldeer install, `forge fmt --check` and NatSpec,
+- `contracts`: Soldeer install, `forge fmt --check`, `forge lint` and NatSpec,
   `forge build --sizes`, `forge test` with the `ci` profile (5000 fuzz runs)
 
 ## Decisions and domain facts

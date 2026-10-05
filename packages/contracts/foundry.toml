@@ -21,6 +21,12 @@ runs = 5000
 runs = 256
 depth = 50
 
+# `pnpm check` runs `forge lint --deny notes`, so every finding below fails it (ADR 0025).
+[lint]
+severity = ["high", "medium", "low", "info", "gas"]
+# Inline assembly for keccak256 saves a little gas per hash and costs readability.
+exclude_lints = ["asm-keccak256"]
+
 # remappings.txt is written by hand: update a dependency's path there when bumping it.
 [soldeer]
 remappings_generate = false

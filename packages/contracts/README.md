@@ -106,20 +106,28 @@ its exact command here.
 To bump a dependency: `forge soldeer install <name>~<version>` (`forge-std`,
 `@openzeppelin-contracts`), then update its path in `remappings.txt`.
 
-## NatSpec
+## NatSpec and lint
 
 Every contract, interface and library needs `@title` and `@notice`. Every
 public or external function, event and error needs `@notice`, `@param` and
 `@return`, or `@inheritdoc`. solhint's `use-natspec` rule enforces this at
 `error` in `pnpm check`; it is the only solhint rule enabled, so it does not
-overlap with `forge fmt`.
+overlap with `forge fmt` or `forge lint`.
+
+`forge lint --deny notes` runs in `pnpm check` and after every `.sol` edit, so
+any lint warning or note fails
+([ADR 0025](../../docs/adr/0025-reviews-gate-on-adrs-and-lint.md)).
+`foundry.toml` turns on all five severities (high, medium, low, info, gas)
+and excludes `asm-keccak256`, which trades readability for a little gas. To
+accept one finding, put `// forge-lint: disable-next-line(<lint-id>)` above
+the line, with a comment saying why. Foundry 1.8.4 lints `src/` only.
 
 ## Scripts
 
 | Command | What it does |
 | --- | --- |
 | `forge soldeer install` | Installs the Solidity dependencies from `soldeer.lock` |
-| `pnpm --filter @verisci/contracts check` | `forge fmt --check`, then solhint NatSpec (skipped while `src/` has no `.sol` files) |
+| `pnpm --filter @verisci/contracts check` | `forge fmt --check`, then `forge lint --deny notes`, then solhint NatSpec (skipped while `src/` has no `.sol` files) |
 | `pnpm --filter @verisci/contracts test` | Vitest for the TypeScript side, then `forge test` |
 | `pnpm --filter @verisci/contracts typecheck` | Typechecks the TypeScript side |
 | `forge build --sizes` | Compiles and reports contract sizes |
