@@ -53,10 +53,11 @@ A PDF becomes a Target KA.
 | ADR | Decision |
 | --- | --- |
 | [0011. A rating is a separate R-KA, linked by schema:about](0011-a-rating-is-a-separate-r-ka.md) | One R-KA per rating, linked to its target by `schema:about`, minted in phase 1 and updated by later phases; the target is never modified |
-| [0012. Ratings evolve in three phases](0012-ratings-evolve-in-three-phases.md) | Machine score, then human review, then wet-lab; one score per phase, written once |
+| [0012. Ratings evolve in three phases](0012-ratings-evolve-in-three-phases.md) | Machine score, then human review, then wet-lab; one score per phase, written once (amended by [0026](0026-the-oracle-settles-every-phase-on-chain.md)) |
 | [0013. A paper can have several ratings](0013-several-ratings-per-paper.md) | A rating is identified by its phase-1 request id and its R-KA's UAL; rating count is a number |
 | [0014. The contract owns scores, the DKG owns content](0014-contract-owns-scores-dkg-owns-content.md) | The UI shows the contract's score and flags a gap with the DKG |
 | [0022. The contract indexes request ids by target](0022-contract-indexes-request-ids-by-target.md) | Request ids listed per target UAL, oldest first, by view call; an indexer only if view calls stop being enough |
+| [0026. The oracle settles every phase on chain](0026-the-oracle-settles-every-phase-on-chain.md) | The oracle agent records every phase's result on the contract; reviewers and labs send their input to our backend; amends who writes phases 2 and 3 in 0012 |
 
 ## Rating flow
 
