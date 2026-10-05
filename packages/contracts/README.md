@@ -288,6 +288,7 @@ giving the reason.
 | `pnpm --filter @verisci/contracts generate:abi` | Runs `forge build`, then writes `src/generated/rating-controller-abi.ts` |
 | `pnpm --filter @verisci/contracts record-deployment <staging\|production>` | Records the latest Base Sepolia broadcast in `deployments/base-sepolia.json` |
 | `forge build --sizes` | Compiles and reports contract sizes |
+| `forge coverage` | Reports Solidity test coverage per file |
 | `FOUNDRY_PROFILE=ci forge test` | Runs the tests with the CI fuzz and invariant settings |
 
 The TypeScript code ships as source (`src/index.ts`), with no build step. The
