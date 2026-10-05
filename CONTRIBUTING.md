@@ -98,7 +98,8 @@ touches is true again.
 - **Description**: four sections — Summary (what and why, 2–3 sentences),
   Changes (bullets), How to verify (commands and expected result),
   Checklist (tests, `pnpm check`/`typecheck`/`test` pass, READMEs, comments,
-  TSDoc and NatSpec updated as described in [Docs](#docs), no secrets).
+  TSDoc and NatSpec updated as described in [Docs](#docs), code and ADRs
+  agree with the accepted ADRs, no secrets).
   Claude drafts it with `/review-branch`, from
   [`.github/pull_request_template.md`](.github/pull_request_template.md); you
   edit and paste it.
