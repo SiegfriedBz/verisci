@@ -1,6 +1,6 @@
 # 0012. Ratings evolve in three phases
 
-- Status: Accepted
+- Status: Amended by [0026](0026-the-oracle-settles-every-phase-on-chain.md)
 - Date: 2026-10-02
 
 ## Context
