@@ -2,13 +2,14 @@
 pragma solidity 0.8.37;
 
 import {Ownable, Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {IRatingController} from "./interfaces/IRatingController.sol";
 
 /// @title RatingController
 /// @author verisci
 /// @notice Records phase-1 rating requests for target UALs and the oracle's answers.
-contract RatingController is IRatingController, Ownable2Step {
+contract RatingController is IRatingController, Ownable2Step, Pausable {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     /// @inheritdoc IRatingController
@@ -43,7 +44,7 @@ contract RatingController is IRatingController, Ownable2Step {
     }
 
     /// @inheritdoc IRatingController
-    function requestPhase1(string calldata targetUal) external returns (bytes32 requestId) {
+    function requestPhase1(string calldata targetUal) external whenNotPaused returns (bytes32 requestId) {
         if (bytes(targetUal).length == 0) revert EmptyTargetUal();
         uint256 pending = pendingCountOf[msg.sender];
         if (pending >= maxPendingPerRequester) revert TooManyPending(pending, maxPendingPerRequester);
@@ -106,6 +107,16 @@ contract RatingController is IRatingController, Ownable2Step {
     /// @inheritdoc IRatingController
     function setMaxPendingPerRequester(uint8 max) external onlyOwner {
         _setMaxPendingPerRequester(max);
+    }
+
+    /// @inheritdoc IRatingController
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    /// @inheritdoc IRatingController
+    function unpause() external onlyOwner {
+        _unpause();
     }
 
     /// @inheritdoc IRatingController

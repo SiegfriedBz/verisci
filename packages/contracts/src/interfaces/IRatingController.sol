@@ -136,6 +136,13 @@ interface IRatingController {
     /// @param max The new cap.
     function setMaxPendingPerRequester(uint8 max) external;
 
+    /// @notice Stops new requests; fulfil and cancel keep working, so pending requests still
+    ///         settle (ADR 0027). Owner only.
+    function pause() external;
+
+    /// @notice Lets new requests in again. Owner only.
+    function unpause() external;
+
     /// @notice Highest phase-1 score.
     /// @return max The highest score, 100.
     function MAX_SCORE() external view returns (uint8 max);

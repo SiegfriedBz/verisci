@@ -39,20 +39,27 @@ it. A fix is a redeploy, and the app reads past deployments read-only
   requests settle. `requestCountOf(targetUal)` and
   `requestIdsOf(targetUal, offset, limit)` do the same for a target's request
   ids, oldest first ([ADR 0022](../../docs/adr/0022-contract-indexes-request-ids-by-target.md)).
-- **Admin.** The owner sets `oracleAgent` and `maxPendingPerRequester`.
-  Ownership moves in two steps (OpenZeppelin `Ownable2Step`:
+- **Pause.** The owner calls `pause()` to stop new requests: `requestPhase1`
+  then reverts with `EnforcedPause`, while `fulfilPhase1` and `cancelRequest`
+  keep working, so pending requests still settle. `unpause()` lets requests in
+  again, and `paused()` reads the state. After a redeploy the old contract is
+  paused and drained; the pause also stops a spam wave without a redeploy
+  ([ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)).
+- **Admin.** The owner sets `oracleAgent` and `maxPendingPerRequester`, and
+  pauses requests. Ownership moves in two steps (OpenZeppelin `Ownable2Step`:
   `transferOwnership`, then `acceptOwnership`), and the contract always has an
   owner: `renounceOwnership` reverts with `RenounceOwnershipDisabled`.
 
 Failures revert with custom errors, and every state change emits an event
 (`Phase1Requested`, `Phase1Fulfilled`, `RequestCancelled`,
-`OracleAgentUpdated`, `MaxPendingPerRequesterUpdated`).
+`OracleAgentUpdated`, `MaxPendingPerRequesterUpdated`, and OpenZeppelin's
+`Paused` and `Unpaused`).
 
 ### Life of a request
 
 ```text
                  requestPhase1 (anyone)
-                         │  checks: UAL not empty, under the cap
+                         │  checks: not paused, UAL not empty, under the cap
                          │  id = hash(chain, contract, nonce, requester, UAL)
                          ▼
    ┌──────────────── Pending ────────────────┐
@@ -67,7 +74,8 @@ Failures revert with custom errors, and every state change emits an event
         └──────── final: leaves the pending set, frees a cap slot,
                   stays in _requestIdsOf, never changes again
 
-   owner: setOracleAgent, setMaxPendingPerRequester, two-step ownership transfer
+   owner: setOracleAgent, setMaxPendingPerRequester, pause/unpause (requests only),
+          two-step ownership transfer
 ```
 
 ## Depends on

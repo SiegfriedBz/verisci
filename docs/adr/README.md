@@ -28,7 +28,8 @@ taken, so a later ADR can sit in an earlier group.
 | [0004. Each workspace declares its own env variables](0004-each-workspace-declares-its-env.md) | `defineEnv` per workspace; fails fast, never shows values; `APP_ENV` required in production builds |
 | [0005. Staging and production use separate resources](0005-staging-and-production-are-isolated.md) | Separate contract, graph, webhook, oracle wallet and Inngest environment per environment; the DKG node (its wallet and admin token) is shared, so a `-prod` guard protects production |
 | [0006. The DKG node runs on a dedicated host](0006-dkg-node-runs-on-a-dedicated-host.md) | DKG daemon, GROBID and RPC proxy on their own host behind Caddy, every route but `/api/status` authenticated; node keys backed up off the host |
-| [0023. The contract is not upgradeable](0023-contract-is-not-upgradeable.md) | No proxy: a fix redeploys; the app reads the current address and past ones read-only; ids never collide across deployments |
+| [0023. The contract is not upgradeable](0023-contract-is-not-upgradeable.md) | No proxy: a fix redeploys; the app reads the current address and past ones read-only; ids never collide across deployments (amended by [0027](0027-past-contracts-are-paused-and-drained.md)) |
+| [0027. Past contracts are paused and drained](0027-past-contracts-are-paused-and-drained.md) | The owner can pause new requests; after a redeploy the old contract is paused and the backend settles what is still pending on it; amends what "read-only" means in 0023 |
 
 ## Writing to the DKG
 

@@ -60,6 +60,12 @@ contract RatingControllerInvariantTest is Test {
         }
     }
 
+    /// While paused, no request is added and the nonce does not move.
+    function invariant_PausedTakesNoRequests() public view {
+        assertEq(handler.requestedWhilePaused(), 0);
+        assertEq(handler.nonceMovedWhilePaused(), 0);
+    }
+
     /// Every stored score is at most 100.
     function invariant_ScoresAtMost100() public view {
         for (uint256 i; i < handler.idCount(); ++i) {

@@ -2,6 +2,7 @@
 pragma solidity 0.8.37;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {Test} from "forge-std/Test.sol";
 import {RatingController} from "../src/RatingController.sol";
 import {IRatingController} from "../src/interfaces/IRatingController.sol";
@@ -444,6 +445,95 @@ contract RatingControllerTest is Test {
         vm.expectRevert(IRatingController.RenounceOwnershipDisabled.selector);
         controller.renounceOwnership();
         assertEq(controller.owner(), owner);
+    }
+
+    // --- pause ---
+
+    function _pause() internal {
+        vm.prank(owner);
+        controller.pause();
+    }
+
+    function test_Pause_ByOwnerPausesAndEmits() public {
+        vm.expectEmit(address(controller));
+        emit Pausable.Paused(owner);
+        _pause();
+        assertTrue(controller.paused());
+    }
+
+    function test_Pause_BlocksRequestsAndKeepsNonce() public {
+        _requestBy(alice);
+        _pause();
+        vm.prank(bob);
+        vm.expectRevert(Pausable.EnforcedPause.selector);
+        controller.requestPhase1(TARGET);
+        assertEq(controller.nonce(), 1);
+    }
+
+    function test_Pause_OracleStillFulfils() public {
+        bytes32 id = _requestBy(alice);
+        _pause();
+        _fulfil(id);
+        assertEq(uint8(controller.getRatingRequest(id).status), uint8(IRatingController.Status.Fulfilled));
+        assertEq(controller.pendingCount(), 0);
+    }
+
+    function test_Pause_OracleStillCancels() public {
+        bytes32 id = _requestBy(alice);
+        _pause();
+        vm.prank(oracle);
+        controller.cancelRequest(id, IRatingController.CancelReason.Expired);
+        _assertCancelled(id, IRatingController.CancelReason.Expired);
+    }
+
+    function test_Unpause_ByOwnerResumesRequests() public {
+        _pause();
+        vm.expectEmit(address(controller));
+        emit Pausable.Unpaused(owner);
+        vm.prank(owner);
+        controller.unpause();
+        assertFalse(controller.paused());
+        _requestBy(alice);
+        assertEq(controller.pendingCount(), 1);
+    }
+
+    function testFuzz_Pause_RevertsWhenNotOwner(address caller) public {
+        vm.assume(caller != owner);
+        vm.prank(caller);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, caller));
+        controller.pause();
+    }
+
+    function testFuzz_Unpause_RevertsWhenNotOwner(address caller) public {
+        vm.assume(caller != owner);
+        _pause();
+        vm.prank(caller);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, caller));
+        controller.unpause();
+    }
+
+    function test_Pause_RevertsWhenAlreadyPaused() public {
+        _pause();
+        vm.prank(owner);
+        vm.expectRevert(Pausable.EnforcedPause.selector);
+        controller.pause();
+    }
+
+    function test_Unpause_RevertsWhenNotPaused() public {
+        vm.prank(owner);
+        vm.expectRevert(Pausable.ExpectedPause.selector);
+        controller.unpause();
+    }
+
+    function test_Pause_OwnerAdminStillWorks() public {
+        _pause();
+        address next = makeAddr("next oracle");
+        vm.startPrank(owner);
+        controller.setOracleAgent(next);
+        controller.setMaxPendingPerRequester(5);
+        vm.stopPrank();
+        assertEq(controller.oracleAgent(), next);
+        assertEq(controller.maxPendingPerRequester(), 5);
     }
 
     // --- views ---

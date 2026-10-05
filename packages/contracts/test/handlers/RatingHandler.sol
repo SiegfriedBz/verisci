@@ -7,8 +7,8 @@ import {RatingController} from "../../src/RatingController.sol";
 import {IRatingController} from "../../src/interfaces/IRatingController.sol";
 
 /// @title RatingHandler
-/// @notice Drives RatingController through random requests, fulfils, cancels and cap changes
-///         for the invariant tests, and records ghost state to check against.
+/// @notice Drives RatingController through random requests, fulfils, cancels, cap changes and
+///         pauses for the invariant tests, and records ghost state to check against.
 contract RatingHandler is CommonBase, StdUtils {
     RatingController internal immutable controller;
     address internal immutable owner;
@@ -30,6 +30,14 @@ contract RatingHandler is CommonBase, StdUtils {
     /// @notice Number of fulfils or cancels that succeeded on an already settled request.
     uint256 public settledTwice;
 
+    /// @notice Number of requests that succeeded while the contract was paused.
+    uint256 public requestedWhilePaused;
+
+    /// @notice Number of times `nonce` was seen to differ from its value when the pause began.
+    uint256 public nonceMovedWhilePaused;
+
+    uint256 internal _nonceAtPause;
+
     string[3] internal _targets = ["did:dkg:t/0x1/1", "did:dkg:t/0x1/2", "did:dkg:t/0x1/3"];
 
     constructor(RatingController controller_, address owner_, address oracle_) {
@@ -47,8 +55,19 @@ contract RatingHandler is CommonBase, StdUtils {
         address actor = _actors[actorSeed % _actors.length];
         if (controller.pendingCountOf(actor) >= controller.maxPendingPerRequester()) return;
         vm.warp(block.timestamp + 1);
+        string memory target = _targets[targetSeed % _targets.length];
+        if (!controller.paused()) {
+            vm.prank(actor);
+            _ids.push(controller.requestPhase1(target));
+            return;
+        }
         vm.prank(actor);
-        _ids.push(controller.requestPhase1(_targets[targetSeed % _targets.length]));
+        // A paused contract must refuse every request and leave the nonce where the pause found it.
+        try controller.requestPhase1(target) returns (bytes32 id) {
+            ++requestedWhilePaused;
+            _ids.push(id);
+        } catch {}
+        if (controller.nonce() != _nonceAtPause) ++nonceMovedWhilePaused;
     }
 
     function fulfil(uint256 idSeed, uint8 score, uint256 rKaSeed) external {
@@ -76,6 +95,19 @@ contract RatingHandler is CommonBase, StdUtils {
     function setCap(uint256 max) external {
         vm.prank(owner);
         controller.setMaxPendingPerRequester(uint8(bound(max, 1, 5)));
+    }
+
+    function pause() external {
+        if (controller.paused()) return;
+        vm.prank(owner);
+        controller.pause();
+        _nonceAtPause = controller.nonce();
+    }
+
+    function unpause() external {
+        if (!controller.paused()) return;
+        vm.prank(owner);
+        controller.unpause();
     }
 
     // --- ghost accessors ---

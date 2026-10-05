@@ -1,6 +1,6 @@
 # 0023. The contract is not upgradeable
 
-- Status: Accepted
+- Status: Amended by [0027](0027-past-contracts-are-paused-and-drained.md)
 - Date: 2026-10-03
 
 ## Context

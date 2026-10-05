@@ -25,4 +25,5 @@ layout, toolchain versions and commands.
   `test/RatingController.inv.t.sol`, driven by `test/handlers/RatingHandler.sol`.
 - It follows ADRs 0012 (one score per phase), 0015 (per-requester cap), 0016 (request id
   scheme), 0020 (pending set, cancel reasons), 0022 (request ids indexed by target), 0023
-  (a fix is a redeploy) and 0024 (only the oracle cancels). See [`docs/adr/`](../../docs/adr/README.md).
+  (a fix is a redeploy), 0024 (only the oracle cancels) and 0027 (the owner pauses new
+  requests; fulfil and cancel keep working). See [`docs/adr/`](../../docs/adr/README.md).
