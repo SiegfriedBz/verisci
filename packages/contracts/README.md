@@ -118,6 +118,24 @@ DEPLOY_ENV=staging forge script script/DeployRatingController.s.sol \
 pnpm --filter @verisci/contracts record-deployment staging
 ```
 
+### First deploy of an environment
+
+1. Create its oracle wallet with `cast wallet new`, and keep the key safe: the
+   agents use it to fulfil and cancel ([ADR 0019](../../docs/adr/0019-oracle-transactions-are-serialized.md)).
+   Each environment has its own oracle
+   ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)).
+2. Put that address in `HelperConfig` (`STAGING_ORACLE` or `PRODUCTION_ORACLE`)
+   on a branch.
+3. Create the deployer wallet and import it as the `verisci-deployer`
+   keystore (once for both environments). It becomes the owner.
+4. Fund the deployer with Base Sepolia ETH from a faucet.
+5. In the root `.env.local`, fill in `BASE_SEPOLIA_RPC_URL` and
+   `ETHERSCAN_API_KEY`, and create the `.env` link above.
+6. Dry-run against Base Sepolia, which simulates without sending:
+   `DEPLOY_ENV=staging forge script script/DeployRatingController.s.sol --rpc-url base_sepolia`.
+7. Deploy with `--broadcast --verify`, run `record-deployment`, and commit
+   `HelperConfig` and `deployments/base-sepolia.json` in one PR into `develop`.
+
 `record-deployment` reads the run that `--broadcast` wrote
 (`broadcast/DeployRatingController.s.sol/84532/run-latest.json`), so run it
 right after the deploy. It makes the new contract the environment's `current`
