@@ -4,6 +4,7 @@ pragma solidity 0.8.37;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {Test} from "forge-std/Test.sol";
+import {DeployRatingController} from "../script/DeployRatingController.s.sol";
 import {RatingController} from "../src/RatingController.sol";
 import {IRatingController} from "../src/interfaces/IRatingController.sol";
 
@@ -12,8 +13,8 @@ import {IRatingController} from "../src/interfaces/IRatingController.sol";
 contract RatingControllerTest is Test {
     RatingController internal controller;
 
-    address internal owner = makeAddr("owner");
-    address internal oracle = makeAddr("oracle");
+    address internal owner;
+    address internal oracle;
     address internal alice = makeAddr("alice");
     address internal bob = makeAddr("bob");
 
@@ -21,8 +22,9 @@ contract RatingControllerTest is Test {
     string internal constant RKA = "did:dkg:otp:20430/0xabc/2";
 
     function setUp() public {
-        vm.prank(owner);
-        controller = new RatingController(oracle, 3);
+        (controller,) = new DeployRatingController().run();
+        owner = controller.owner();
+        oracle = controller.oracleAgent();
     }
 
     // --- helpers ---

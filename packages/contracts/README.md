@@ -78,6 +78,41 @@ Failures revert with custom errors, and every state change emits an event
           two-step ownership transfer
 ```
 
+## Deploy
+
+`script/HelperConfig.s.sol` holds the constructor arguments for each
+environment: local Anvil (chain 31337), and staging and production on Base
+Sepolia (chain 84532). Both Base Sepolia environments share one chain id, so
+`DEPLOY_ENV` picks one there. `script/DeployRatingController.s.sol` deploys
+from that config, and the account that signs the broadcast becomes the owner.
+The Foundry tests deploy through the same script.
+
+Staging's and production's oracle addresses stay zero until their wallets
+exist, so a deploy to either reverts with `ZeroAddress` before anything is
+broadcast. Put the addresses in `HelperConfig` in a commit before the first deploy.
+
+Deploying is yours, from your machine; Claude Code never broadcasts.
+
+```bash
+# Once: store the deployer key encrypted in a Foundry keystore.
+cast wallet import verisci-deployer --interactive
+
+# Without --broadcast, a dry run on an in-memory chain, or against Base Sepolia with --rpc-url.
+forge script script/DeployRatingController.s.sol
+
+# Deploy and verify on Basescan (export the Foundry variables of .env.example first).
+DEPLOY_ENV=staging forge script script/DeployRatingController.s.sol \
+  --rpc-url base_sepolia --account verisci-deployer --broadcast --verify
+```
+
+After a redeploy, pause the old contract so it takes no new requests, while
+the oracle settles what is still pending on it
+([ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)):
+
+```bash
+cast send <old address> "pause()" --rpc-url base_sepolia --account verisci-deployer
+```
+
 ## Depends on
 
 `@verisci/core`, `@verisci/env`
@@ -87,16 +122,17 @@ Failures revert with custom errors, and every state change emits an event
 ```text
 src/            # .sol contracts (Foundry) and index.ts (TypeScript side)
 src/interfaces/ # contract interfaces: types, events, errors, NatSpec
+script/         # Foundry scripts: HelperConfig (per-environment config), DeployRatingController
 test/           # Foundry tests: *.t.sol unit and fuzz, *.inv.t.sol invariants, handlers/
-foundry.toml    # compiler, fuzz and invariant profiles
+foundry.toml    # compiler, fuzz and invariant profiles, Base Sepolia RPC and Basescan
 soldeer.lock    # pinned Solidity dependencies
 remappings.txt  # written by hand: one line per dependency → dependencies/<name>-<version>/
 ```
 
-`out/`, `cache/` and `dependencies/` are generated and gitignored.
+`out/`, `cache/`, `dependencies/` and `broadcast/` (written by `forge script
+--broadcast`) are generated and gitignored.
 
-Also generated, once they exist: `broadcast/` (written by `forge script --broadcast`),
-`deployments/` (deployed addresses per network) and `src/generated/` (TypeScript bindings
+Also generated, once they exist: `deployments/` (deployed addresses per network) and `src/generated/` (TypeScript bindings
 from the build). Never edit them by hand: change the `.sol` source or the script, then
 rerun the build or the deploy script that writes them. The plan that adds each one documents
 its exact command here.
@@ -116,7 +152,7 @@ To bump a dependency: `forge soldeer install <name>~<version>` (`forge-std`,
 
 ## NatSpec and lint
 
-Every contract, interface and library needs `@title` and `@notice`. Every
+Every contract, interface, library and script needs `@title` and `@notice`. Every
 public or external function, event and error needs `@notice`, `@param` and
 `@return`, or `@inheritdoc`. solhint's `use-natspec` rule enforces this at
 `error` in `pnpm check`; it is the only solhint rule enabled, so it does not
@@ -135,7 +171,7 @@ the line, with a comment saying why. Foundry 1.8.4 lints `src/` only.
 | Command | What it does |
 | --- | --- |
 | `forge soldeer install` | Installs the Solidity dependencies from `soldeer.lock` |
-| `pnpm --filter @verisci/contracts check` | `forge fmt --check`, then `forge lint --deny notes`, then solhint NatSpec (skipped while `src/` has no `.sol` files) |
+| `pnpm --filter @verisci/contracts check` | `forge fmt --check`, then `forge lint --deny notes`, then solhint NatSpec on `src/` and `script/` |
 | `pnpm --filter @verisci/contracts test` | Vitest for the TypeScript side, then `forge test` |
 | `pnpm --filter @verisci/contracts typecheck` | Typechecks the TypeScript side |
 | `forge build --sizes` | Compiles and reports contract sizes |

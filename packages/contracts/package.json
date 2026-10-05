@@ -8,7 +8,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "check": "forge fmt --check && forge lint --deny notes && if [ -n \"$(find src -name '*.sol')\" ]; then solhint --disc --noPoster 'src/**/*.sol'; fi",
+    "check": "forge fmt --check && forge lint --deny notes && solhint --disc --noPoster 'src/**/*.sol' 'script/**/*.sol'",
     "test": "vitest run && forge test"
   },
   "dependencies": {

@@ -5,7 +5,7 @@ layout, toolchain versions and commands.
 
 - `src/*.sol` contracts, `test/*.t.sol` tests, `script/*.s.sol` scripts; `src/index.ts`
   is the TypeScript side, which may import `@verisci/core` and `@verisci/env` only.
-- Every contract, interface and library: `@title` and `@notice`. Every public or external
+- Every contract, interface, library and script: `@title` and `@notice`. Every public or external
   function, event and error: `@notice`, `@param`, `@return`, or `@inheritdoc`. solhint
   fails `pnpm check` otherwise.
 - `forge lint --deny notes` fails `pnpm check` and the edit hook on any warning or note (ADR 0025).
@@ -16,8 +16,11 @@ layout, toolchain versions and commands.
 - Fuzz-test every function that takes input; the `ci` profile runs 5000 fuzz runs.
 - Never broadcast or deploy (`forge script --broadcast`, `forge create`, `cast send`):
   deploying is the user's call.
-- `out/`, `cache/`, `dependencies/`, `soldeer.lock` and future `broadcast/`,
+- `out/`, `cache/`, `dependencies/`, `soldeer.lock`, `broadcast/` and future
   `deployments/`, `src/generated/` are generated; change the source and regenerate.
+- Tests deploy `RatingController` through `script/DeployRatingController.s.sol`, so they
+  run the deploy path; only constructor tests call `new RatingController` directly.
+  Per-environment settings live in `script/HelperConfig.s.sol`.
 - Contracts follow the Solidity style guide's order of layout. Types, events and errors
   go in an interface (`src/interfaces/I<Name>.sol`) with their NatSpec; the contract
   implements it and uses `@inheritdoc`.
