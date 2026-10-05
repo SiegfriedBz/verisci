@@ -53,7 +53,7 @@ env.APP_ENV; // "local" | "staging" | "production"
 ```
 
 Envs in `extends` keep the values they were built with; they are not re-read from
-the `runtimeEnv` you pass. `sharedEnv` is always built from `process.env`, so a test
+the given `runtimeEnv`. `sharedEnv` is always built from `process.env`, so a test
 or script with its own `runtimeEnv` extends `createSharedEnv(runtimeEnv)` instead.
 
 The workspace adds `zod` to its own dependencies, pinned to the version `env` uses.

@@ -443,6 +443,22 @@ contract RatingControllerTest is Test {
         controller.transferOwnership(oracle);
     }
 
+    function testFuzz_TransferOwnership_NonOwnerGetsUnauthorizedEvenForOracle(address caller) public {
+        vm.assume(caller != owner);
+        vm.prank(caller);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, caller));
+        controller.transferOwnership(oracle);
+    }
+
+    function test_AcceptOwnership_OracleThatIsNotPendingGetsUnauthorized() public {
+        vm.prank(owner);
+        controller.transferOwnership(bob);
+
+        vm.prank(oracle);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, oracle));
+        controller.acceptOwnership();
+    }
+
     function test_AcceptOwnership_RevertsWhenPendingOwnerBecameOracle() public {
         vm.startPrank(owner);
         controller.transferOwnership(bob);

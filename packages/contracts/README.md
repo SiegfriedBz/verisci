@@ -11,9 +11,9 @@ recorded in `deployments/base-sepolia.json`.
 Records phase-1 rating requests on chain, and the oracle's answers. The public
 API (types, events, errors and function signatures, with their NatSpec) is
 defined in `src/interfaces/IRatingController.sol` and implemented in
-`src/RatingController.sol`. The contract is not upgradeable: a fix is a
-redeploy, after which the previous contract is paused and settles the requests
-still pending on it
+`src/RatingController.sol`. The deployed code is final: a fix is a redeploy,
+after which the previous contract is paused and settles the requests still
+pending on it
 ([ADR 0023](../../docs/adr/0023-contract-is-not-upgradeable.md),
 [ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)).
 
@@ -94,7 +94,7 @@ Deployments run from a maintainer's machine; all commands below run from
 
 | Account | Role on the contract | Key custody |
 | --- | --- | --- |
-| Deployer (`verisci-deployer` keystore), shared by both environments | Owner: pauses requests, updates the oracle and the cap, transfers ownership | Encrypted Foundry keystore on the maintainer's machine; never on Vercel or CI |
+| Deployer (`verisci-deployer` keystore), shared by both environments | Owner: pauses requests, updates the oracle and the cap, transfers ownership | Encrypted Foundry keystore on the maintainer's machine only |
 | Oracle, one per environment | Fulfils and cancels requests | Stored securely until the environment's agents deployment (`develop` or `main`) holds it |
 
 The two roles always use distinct addresses: the oracle key runs on a server,
@@ -141,7 +141,7 @@ The steps below deploy staging; for production, use `production` and
    is zero, the deployment reverts with `ZeroAddress` before any transaction
    is sent.
 3. **Simulate** the deployment against Base Sepolia. Without `--broadcast`,
-   nothing is sent:
+   the run stays a local simulation:
 
    ```bash
    DEPLOY_ENV=staging forge script script/DeployRatingController.s.sol \
@@ -164,8 +164,8 @@ The steps below deploy staging; for production, use `production` and
 6. **Commit** `script/HelperConfig.s.sol` and `deployments/base-sepolia.json`,
    and open a pull request into `develop`.
 
-`DEPLOY_ENV` is passed on each command and kept out of env files, so every
-deployment names its target explicitly; when it is missing, `HelperConfig`
+`DEPLOY_ENV` is passed on each command, so every deployment names its target
+explicitly; when it is missing, `HelperConfig`
 reverts with `UnknownDeployEnv`. Without `--rpc-url`, the script deploys to an
 in-memory chain with the local Anvil configuration.
 
@@ -236,8 +236,8 @@ remappings.txt  # maintained by hand: one line per dependency → dependencies/<
 
 `out/`, `cache/`, `dependencies/` and `broadcast/` are generated and
 gitignored. `src/generated/` and `deployments/` are generated and committed:
-Vercel has no Foundry, and deployed addresses are reviewed in pull requests.
-Neither is edited by hand.
+Vercel builds without Foundry, and deployed addresses are reviewed in pull
+requests. Both are written by tooling only.
 
 - **ABI.** After changing a contract's interface, run
   `pnpm --filter @verisci/contracts generate:abi` and commit the result. CI

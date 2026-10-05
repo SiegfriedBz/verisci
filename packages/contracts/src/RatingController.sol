@@ -164,7 +164,7 @@ contract RatingController is IRatingController, Ownable2Step, Pausable {
     /// @notice Starts moving ownership to `newOwner`, who must call `acceptOwnership`. Reverts with
     ///         `SameOwnerAndOracle` when `newOwner` is the oracle (ADR 0030). Owner only.
     /// @param newOwner The address that may accept ownership.
-    function transferOwnership(address newOwner) public override {
+    function transferOwnership(address newOwner) public override onlyOwner {
         if (newOwner == oracleAgent) revert SameOwnerAndOracle();
         super.transferOwnership(newOwner);
     }
@@ -172,7 +172,8 @@ contract RatingController is IRatingController, Ownable2Step, Pausable {
     /// @notice Completes an ownership transfer; called by the pending owner. Reverts with
     ///         `SameOwnerAndOracle` when the pending owner has become the oracle since (ADR 0030).
     function acceptOwnership() public override {
-        if (msg.sender == oracleAgent) revert SameOwnerAndOracle();
+        // Only the pending owner reaches this error; anyone else gets OpenZeppelin's own.
+        if (msg.sender == pendingOwner() && msg.sender == oracleAgent) revert SameOwnerAndOracle();
         super.acceptOwnership();
     }
 
