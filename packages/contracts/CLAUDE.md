@@ -8,7 +8,7 @@ layout, toolchain versions and commands.
 - Every contract, interface and library: `@title` and `@notice`. Every public or external
   function, event and error: `@notice`, `@param`, `@return`, or `@inheritdoc`. solhint
   fails `pnpm check` otherwise.
-- `forge lint --deny notes` fails `pnpm check` and the edit hook on any warning or note.
+- `forge lint --deny notes` fails `pnpm check` and the edit hook on any warning or note (ADR 0025).
   Fix the finding, or accept one line with `// forge-lint: disable-next-line(<id>)` and a
   comment saying why.
 - Dependencies via Soldeer (`forge soldeer install`), never `forge install` or git

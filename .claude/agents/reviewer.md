@@ -53,7 +53,7 @@ Then report:
 - An open question an ADR in the diff answers whose row is still in the Open questions table.
 - A merged ADR (present on the base branch) changed anywhere but its status line: `git diff <base>...HEAD -- docs/adr/`.
 
-Every ADR finding ends with the user's options, never new wording: **amend** an ADR (new ADR, `Amends`), **supersede** it (new ADR, `Supersedes`), or **change the code**, whichever apply. Never propose text for an ADR.
+Every ADR finding ends with the user's options, never new wording: **amend** an ADR (new ADR, `Amends`), **supersede** it (new ADR, `Supersedes`), or **change the code**, whichever apply; for an index finding, **fix the index** row. Never propose text for an ADR.
 
 Report each finding as: section (Code, Docs or ADRs), file:line, what is wrong, and why it matters. Most severe first. If a section has nothing, say so.
 

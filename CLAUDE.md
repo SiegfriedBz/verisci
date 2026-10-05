@@ -11,7 +11,8 @@ rules, PRs and releases. Each workspace has its own `CLAUDE.md` and `README.md`.
 
 | Command | Use |
 | --- | --- |
-| `pnpm check` / `pnpm check:fix` | Biome + `forge fmt --check` + `forge lint` + NatSpec |
+| `pnpm check` | Biome + `forge fmt --check` + `forge lint` + NatSpec |
+| `pnpm check:fix` | Biome rewrites what it can fix safely |
 | `pnpm typecheck` | `tsc` in every workspace (Turbo, cached) |
 | `pnpm test` | Vitest per workspace + `forge test` |
 | `pnpm test:coverage` | Root Vitest run with thresholds (core ≥ 90% branches, others ≥ 70% lines) |
