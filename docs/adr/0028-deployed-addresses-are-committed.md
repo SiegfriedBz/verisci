@@ -9,7 +9,7 @@
 
 ## Decision
 
-- Staging's and production's deployments live in one file in the contracts package, committed: the current deployment and the past ones, with what each was deployed with.
+- Staging's and production's deployments live in one file in the contracts package, committed: the current deployment and every past one that took requests, with what each was deployed with. A past deployment that took none, and is paused, has nothing for the backend to settle ([0027](0027-past-contracts-are-paused-and-drained.md)) and may be left out.
 - The file changes only after a deploy, through a reviewed PR.
 - The app reads staging's and production's addresses from that file. How a local test run targets a developer's own contract ([0019](0019-oracle-transactions-are-serialized.md)) is for the agents plan.
 

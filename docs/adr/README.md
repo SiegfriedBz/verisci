@@ -30,7 +30,7 @@ taken, so a later ADR can sit in an earlier group.
 | [0006. The DKG node runs on a dedicated host](0006-dkg-node-runs-on-a-dedicated-host.md) | DKG daemon, GROBID and RPC proxy on their own host behind Caddy, every route but `/api/status` authenticated; node keys backed up off the host |
 | [0023. The contract is not upgradeable](0023-contract-is-not-upgradeable.md) | No proxy: a fix redeploys; the app reads the current address and past ones read-only; ids never collide across deployments (amended by [0027](0027-past-contracts-are-paused-and-drained.md)) |
 | [0027. Past contracts are paused and drained](0027-past-contracts-are-paused-and-drained.md) | The owner can pause new requests; after a redeploy the old contract is paused and the backend settles what is still pending on it; amends what "read-only" means in 0023 |
-| [0028. Deployed addresses are committed](0028-deployed-addresses-are-committed.md) | Staging's and production's current and past contract addresses live in a committed file in the contracts package, changed only after a deploy through a reviewed PR; local test runs are for the agents plan |
+| [0028. Deployed addresses are committed](0028-deployed-addresses-are-committed.md) | Staging's and production's current contract, and every past one that took requests, live in a committed file in the contracts package, changed only after a deploy through a reviewed PR; local test runs are for the agents plan |
 | [0029. Forge reads the root env file](0029-forge-reads-the-root-env-file.md) | Forge reads the same root env file as the app; its settings are listed in `.env.example` with no `src/env.ts`; per-deploy choices go on the command; amends 0004 |
 
 ## Writing to the DKG
