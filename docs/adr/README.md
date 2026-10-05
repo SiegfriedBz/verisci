@@ -19,6 +19,7 @@ taken, so a later ADR can sit in an earlier group.
 | [0001. Toolchain: Biome, TypeScript 6, Soldeer, exact pins](0001-toolchain-biome-ts6-soldeer-exact-pins.md) | Biome replaces ESLint and Prettier; TypeScript 6.0.x; Soldeer; solc 0.8.37; every dependency pinned exactly |
 | [0002. Internal packages ship TypeScript source](0002-internal-packages-ship-typescript-source.md) | Packages export `src/*.ts` with no build step; relative imports keep `.ts` |
 | [0003. Inngest workflows live in the agents package](0003-inngest-workflows-live-in-agents.md) | Inngest functions live in `@verisci/agents`; `web` only serves them at `/api/inngest` |
+| [0025. Reviews gate on ADR consistency and Foundry lint](0025-reviews-gate-on-adrs-and-lint.md) | Each branch review checks what it touches against accepted ADRs and blocks on a conflict until the user decides; a full ADR check runs on demand; every Foundry lint warning and note fails the checks |
 
 ## Environments and infrastructure
 
