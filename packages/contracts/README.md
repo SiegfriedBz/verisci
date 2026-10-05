@@ -49,7 +49,11 @@ requests still pending on it
   paused and drained; the pause also stops a spam wave without a redeploy
   ([ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)).
 - **Admin.** The owner sets `oracleAgent` and `maxPendingPerRequester`, and
-  pauses requests. Ownership moves in two steps (OpenZeppelin `Ownable2Step`:
+  pauses requests. The owner and the oracle are always different addresses:
+  the contract reverts with `SameOwnerAndOracle` on an oracle equal to the
+  owner, or on ownership moving to the oracle
+  ([ADR 0030](../../docs/adr/0030-owner-and-oracle-are-different-addresses.md)).
+  Ownership moves in two steps (OpenZeppelin `Ownable2Step`:
   `transferOwnership`, then `acceptOwnership`), and the contract always has an
   owner: `renounceOwnership` reverts with `RenounceOwnershipDisabled`.
 
@@ -83,65 +87,107 @@ Failures revert with custom errors, and every state change emits an event
 
 ## Deploy
 
-`script/HelperConfig.s.sol` holds the constructor arguments for each
-environment: local Anvil (chain 31337), and staging and production on Base
-Sepolia (chain 84532). Both Base Sepolia environments share one chain id, so
-`DEPLOY_ENV` picks one there. `script/DeployRatingController.s.sol` deploys
-from that config, and the account that signs the broadcast becomes the owner.
-The Foundry tests deploy through the same script.
+You deploy from your own machine, from `packages/contracts`. Staging and
+production both run on Base Sepolia (chain 84532), and each has its own
+contract ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)).
 
-Staging's and production's oracle addresses stay zero until their wallets
-exist, so a deploy to either reverts with `ZeroAddress` before anything is
-broadcast. Put the addresses in `HelperConfig` in a commit before the first deploy.
+### Two wallets: owner and oracle
 
-You deploy from your own machine. Fill in the Foundry section of `.env.example`
-in the root `.env.local`. Forge reads a `.env` next to `foundry.toml`, so link
-it to that file once; the link is gitignored like every env file
-([ADR 0029](../../docs/adr/0029-forge-reads-the-root-env-file.md)). Pass
-`DEPLOY_ENV` on the command line, so every deploy names its environment.
+A wallet is a **public address** (safe to share; it goes in the code) and a
+**private key** (secret; whoever holds it signs as that address).
 
-```bash
-# Once, from packages/contracts: let forge read the root .env.local.
-ln -s ../../.env.local .env
+| Wallet | Role on the contract | Where its private key lives |
+| --- | --- | --- |
+| **Deployer** (`verisci-deployer`), one for both environments | **Owner**: pauses requests, sets the oracle and the cap, transfers ownership | Your machine only, in an encrypted Foundry keystore |
+| **Oracle**, one per environment | **Oracle**: fulfils and cancels requests | Your password manager for now; later the agents' deployment (`develop` for staging, `main` for production) ([ADR 0019](../../docs/adr/0019-oracle-transactions-are-serialized.md)) |
 
-# Once: store the deployer key encrypted in a Foundry keystore.
-cast wallet import verisci-deployer --interactive
+The two must be different addresses: the oracle's key runs on a server, and
+the owner's powers stay offline. The contract enforces it and reverts with
+`SameOwnerAndOracle` otherwise
+([ADR 0030](../../docs/adr/0030-owner-and-oracle-are-different-addresses.md)).
 
-# Without --broadcast, a dry run on an in-memory chain, or against Base Sepolia with --rpc-url.
-forge script script/DeployRatingController.s.sol
+### One-time setup
 
-# Deploy and verify on Basescan.
-DEPLOY_ENV=staging forge script script/DeployRatingController.s.sol \
-  --rpc-url base_sepolia --account verisci-deployer --broadcast --verify
+1. **Let forge read the root env file.** Forge reads a `.env` next to
+   `foundry.toml`, so link it to the root `.env.local`; the link is gitignored
+   like every env file
+   ([ADR 0029](../../docs/adr/0029-forge-reads-the-root-env-file.md)):
 
-# Record it in deployments/base-sepolia.json, then commit that file in a PR.
-pnpm --filter @verisci/contracts record-deployment staging
-```
+   ```bash
+   ln -s ../../.env.local .env
+   ```
 
-### First deploy of an environment
+2. **Fill in the Foundry section** of `.env.example` in the root `.env.local`:
+   `BASE_SEPOLIA_RPC_URL` and `ETHERSCAN_API_KEY`.
 
-1. Create its oracle wallet with `cast wallet new`, and keep the key safe: the
-   agents use it to fulfil and cancel ([ADR 0019](../../docs/adr/0019-oracle-transactions-are-serialized.md)).
-   Each environment has its own oracle
-   ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)).
-2. Put that address in `HelperConfig` (`STAGING_ORACLE` or `PRODUCTION_ORACLE`)
-   on a branch.
-3. Create the deployer wallet and import it as the `verisci-deployer`
-   keystore (once for both environments). It becomes the owner.
-4. Fund the deployer with Base Sepolia ETH from a faucet.
-5. In the root `.env.local`, fill in `BASE_SEPOLIA_RPC_URL` and
-   `ETHERSCAN_API_KEY`, and create the `.env` link above.
-6. Dry-run against Base Sepolia, which simulates without sending:
-   `DEPLOY_ENV=staging forge script script/DeployRatingController.s.sol --rpc-url base_sepolia`.
-7. Deploy with `--broadcast --verify`, run `record-deployment`, and commit
-   `HelperConfig` and `deployments/base-sepolia.json` in one PR into `develop`.
+3. **Create the deployer wallet** and store its key encrypted:
 
-`record-deployment` reads the run that `--broadcast` wrote
-(`broadcast/DeployRatingController.s.sol/84532/run-latest.json`), so run it
-right after the deploy. It makes the new contract the environment's `current`
-and moves the previous one to the front of `past`. It refuses a dry run,
-another chain, or an address already recorded, and then writes nothing
-([ADR 0028](../../docs/adr/0028-deployed-addresses-are-committed.md)).
+   ```bash
+   cast wallet new                                     # prints a new address and private key
+   cast wallet import verisci-deployer --interactive   # paste that private key, choose a password
+   cast wallet address --account verisci-deployer      # prints the deployer's address
+   ```
+
+   Back up the private key offline. It owns every contract you deploy.
+
+4. **Fund the deployer** with ETH on Base Sepolia from a faucet that offers
+   Base Sepolia. One faucet drip covers a deploy.
+
+### Deploy an environment
+
+Staging is shown; for production, use `production` and `PRODUCTION_ORACLE`.
+
+1. **Create the environment's oracle wallet** with `cast wallet new`. Keep its
+   private key in your password manager for the agents plan; only its
+   address goes in the code.
+2. **Put the oracle's address in `script/HelperConfig.s.sol`** as
+   `STAGING_ORACLE`, on a branch. While it is zero, a deploy reverts with
+   `ZeroAddress` before anything is sent.
+3. **Dry run.** Without `--broadcast`, forge simulates against Base Sepolia
+   and sends nothing:
+
+   ```bash
+   DEPLOY_ENV=staging forge script script/DeployRatingController.s.sol \
+     --rpc-url base_sepolia --account verisci-deployer
+   ```
+
+4. **Deploy and verify** on Basescan:
+
+   ```bash
+   DEPLOY_ENV=staging forge script script/DeployRatingController.s.sol \
+     --rpc-url base_sepolia --account verisci-deployer --broadcast --verify
+   ```
+
+5. **Record it** in `deployments/base-sepolia.json`, right after the deploy:
+
+   ```bash
+   pnpm --filter @verisci/contracts record-deployment staging
+   ```
+
+6. **Commit** `HelperConfig` and `deployments/base-sepolia.json` in one PR
+   into `develop`.
+
+`DEPLOY_ENV` goes on the command, never in an env file, so every deploy names
+its environment; a command without it reverts with `UnknownDeployEnv`.
+Without `--rpc-url`, `forge script script/DeployRatingController.s.sol` runs
+on an in-memory chain with the local Anvil config.
+
+### How the pieces fit
+
+- `script/HelperConfig.s.sol` holds the constructor arguments for each
+  environment: local Anvil (chain 31337), and staging and production on Base
+  Sepolia, which `DEPLOY_ENV` picks between.
+  `script/DeployRatingController.s.sol` deploys from it, and the account that
+  signs the broadcast becomes the owner. The Foundry tests deploy through the
+  same script.
+- `record-deployment` reads the run that `--broadcast` wrote
+  (`broadcast/DeployRatingController.s.sol/84532/run-latest.json`). It makes the
+  new contract the environment's `current` and moves the previous one to the
+  front of `past`. It refuses a dry run, another chain, or an address already
+  recorded, and then writes nothing
+  ([ADR 0028](../../docs/adr/0028-deployed-addresses-are-committed.md)).
+
+### Redeploy
 
 After a redeploy, pause the old contract so it takes no new requests, while
 the oracle settles what is still pending on it

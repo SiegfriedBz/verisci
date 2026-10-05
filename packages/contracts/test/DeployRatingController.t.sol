@@ -77,6 +77,14 @@ contract DeployRatingControllerTest is Test {
         helperConfig.getConfig();
     }
 
+    function test_Deploy_RevertsWhenOracleIsTheDeployer() public {
+        HelperConfig.NetworkConfig memory config = HelperConfig.NetworkConfig({
+            oracleAgent: DEFAULT_SENDER, maxPendingPerRequester: helperConfig.MAX_PENDING_PER_REQUESTER()
+        });
+        vm.expectRevert(IRatingController.SameOwnerAndOracle.selector);
+        deployer.deploy(config);
+    }
+
     function test_Deploy_RevertsOnZeroOracle() public {
         HelperConfig.NetworkConfig memory config = HelperConfig.NetworkConfig({
             oracleAgent: address(0), maxPendingPerRequester: helperConfig.MAX_PENDING_PER_REQUESTER()

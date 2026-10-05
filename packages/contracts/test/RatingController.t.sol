@@ -314,10 +314,11 @@ contract RatingControllerTest is Test {
 
     function test_Cancel_OwnerSwapsOracleInAnEmergency() public {
         bytes32 id = _requestBy(alice);
-        vm.startPrank(owner);
-        controller.setOracleAgent(owner);
+        address emergencyOracle = makeAddr("emergency oracle");
+        vm.prank(owner);
+        controller.setOracleAgent(emergencyOracle);
+        vm.prank(emergencyOracle);
         controller.cancelRequest(id, IRatingController.CancelReason.InvalidTarget);
-        vm.stopPrank();
         _assertCancelled(id, IRatingController.CancelReason.InvalidTarget);
     }
 
@@ -340,7 +341,7 @@ contract RatingControllerTest is Test {
     // --- admin ---
 
     function testFuzz_SetOracleAgent_ReplacesOracle(address next) public {
-        vm.assume(next != address(0) && next != oracle);
+        vm.assume(next != address(0) && next != oracle && next != owner);
         bytes32 id = _requestBy(alice);
 
         vm.expectEmit(address(controller));
@@ -420,6 +421,38 @@ contract RatingControllerTest is Test {
         vm.prank(alice);
         vm.expectRevert(abi.encodeWithSelector(IRatingController.TooManyPending.selector, 2, 1));
         controller.requestPhase1(TARGET);
+    }
+
+    // --- owner and oracle stay different addresses (ADR 0030) ---
+
+    function test_Constructor_RevertsWhenOracleIsDeployer() public {
+        vm.prank(alice);
+        vm.expectRevert(IRatingController.SameOwnerAndOracle.selector);
+        new RatingController(alice, 3);
+    }
+
+    function test_SetOracleAgent_RevertsOnOwner() public {
+        vm.prank(owner);
+        vm.expectRevert(IRatingController.SameOwnerAndOracle.selector);
+        controller.setOracleAgent(owner);
+    }
+
+    function test_TransferOwnership_RevertsOnOracle() public {
+        vm.prank(owner);
+        vm.expectRevert(IRatingController.SameOwnerAndOracle.selector);
+        controller.transferOwnership(oracle);
+    }
+
+    function test_AcceptOwnership_RevertsWhenPendingOwnerBecameOracle() public {
+        vm.startPrank(owner);
+        controller.transferOwnership(bob);
+        controller.setOracleAgent(bob);
+        vm.stopPrank();
+
+        vm.prank(bob);
+        vm.expectRevert(IRatingController.SameOwnerAndOracle.selector);
+        controller.acceptOwnership();
+        assertEq(controller.owner(), owner);
     }
 
     function test_Ownership_MovesInTwoSteps() public {

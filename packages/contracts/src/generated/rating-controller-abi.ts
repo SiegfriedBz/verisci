@@ -648,6 +648,11 @@ export const ratingControllerAbi = [
   },
   {
     "type": "error",
+    "name": "SameOwnerAndOracle",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "TooManyPending",
     "inputs": [
       {

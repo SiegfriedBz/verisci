@@ -112,6 +112,10 @@ interface IRatingController {
     ///         contract always has an owner.
     error RenounceOwnershipDisabled();
 
+    /// @notice The owner and the oracle would be the same address. They are kept apart because the
+    ///         oracle's key runs on a server and the owner's stays offline (ADR 0030).
+    error SameOwnerAndOracle();
+
     /// @notice Requests a phase-1 rating of `targetUal`.
     /// @param targetUal The UAL of the Target KA to rate.
     /// @return requestId The new request id.

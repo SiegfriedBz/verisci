@@ -34,13 +34,18 @@ contract HelperConfig is Script {
     /// @notice Pending cap for every environment.
     uint8 public constant MAX_PENDING_PER_REQUESTER = 3;
 
-    /// @notice Anvil's second default account, the oracle on a local node.
+    /// @notice Public address of Anvil's second default account, the oracle on a local node.
     address public constant ANVIL_ORACLE = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
 
-    /// @notice Staging's oracle wallet. Zero until the wallet exists, which makes a deploy revert.
-    address public constant STAGING_ORACLE = address(0);
+    /// @notice Public address of staging's oracle wallet. Its private key stays off the repo; the
+    ///         agents on `develop` sign with it (ADR 0019). It differs from the deployer, who
+    ///         becomes the owner (ADR 0030). Zero until the wallet exists, which makes a deploy revert.
+    address public constant STAGING_ORACLE = 0xE7899a249C8C21F334BDA14D1d861116Aa048F68;
 
-    /// @notice Production's oracle wallet. Zero until the wallet exists, which makes a deploy revert.
+    /// @notice Public address of production's oracle wallet. Its private key stays off the repo;
+    ///         the agents on `main` sign with it (ADR 0019). It differs from the deployer, who
+    ///         becomes the owner (ADR 0030). Zero until the wallet exists, which makes a deploy
+    ///         revert.
     address public constant PRODUCTION_ORACLE = address(0);
 
     /// @notice The config for the current chain, and on Base Sepolia for `DEPLOY_ENV`.

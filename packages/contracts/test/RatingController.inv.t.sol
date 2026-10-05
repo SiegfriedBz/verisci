@@ -64,6 +64,11 @@ contract RatingControllerInvariantTest is Test {
         assertEq(handler.nonceMovedWhilePaused(), 0);
     }
 
+    /// The owner and the oracle are never the same address (ADR 0030).
+    function invariant_OwnerIsNeverOracle() public view {
+        assertTrue(controller.owner() != controller.oracleAgent());
+    }
+
     /// Every stored score is at most 100.
     function invariant_ScoresAtMost100() public view {
         for (uint256 i; i < handler.idCount(); ++i) {

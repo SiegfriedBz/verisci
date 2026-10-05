@@ -34,6 +34,7 @@ layout, toolchain versions and commands.
 - It follows ADRs 0012 (one score per phase), 0015 (per-requester cap), 0016 (request id
   scheme), 0020 (pending set, cancel reasons), 0022 (request ids indexed by target), 0023
   (a fix is a redeploy), 0024 (only the oracle cancels), 0027 (the owner pauses new
-  requests; fulfil and cancel keep working), 0028 (deployed addresses are committed) and
-  0029 (forge reads the root env file through `.env`). `HelperConfig` and
-  `resolveDeployments` follow 0005 (staging, production and local). See [`docs/adr/`](../../docs/adr/README.md).
+  requests; fulfil and cancel keep working), 0028 (deployed addresses are committed), 0029
+  (forge reads the root env file through `.env`) and 0030 (owner and oracle are different
+  addresses). `HelperConfig` and `resolveDeployments` follow 0005 (staging, production and
+  local). See [`docs/adr/`](../../docs/adr/README.md).

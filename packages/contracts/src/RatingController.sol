@@ -161,8 +161,24 @@ contract RatingController is IRatingController, Ownable2Step, Pausable {
         revert RenounceOwnershipDisabled();
     }
 
+    /// @notice Starts moving ownership to `newOwner`, who must call `acceptOwnership`. Reverts with
+    ///         `SameOwnerAndOracle` when `newOwner` is the oracle (ADR 0030). Owner only.
+    /// @param newOwner The address that may accept ownership.
+    function transferOwnership(address newOwner) public override {
+        if (newOwner == oracleAgent) revert SameOwnerAndOracle();
+        super.transferOwnership(newOwner);
+    }
+
+    /// @notice Completes an ownership transfer; called by the pending owner. Reverts with
+    ///         `SameOwnerAndOracle` when the pending owner has become the oracle since (ADR 0030).
+    function acceptOwnership() public override {
+        if (msg.sender == oracleAgent) revert SameOwnerAndOracle();
+        super.acceptOwnership();
+    }
+
     function _setOracleAgent(address oracleAgent_) private {
         if (oracleAgent_ == address(0)) revert ZeroAddress();
+        if (oracleAgent_ == owner()) revert SameOwnerAndOracle();
         oracleAgent = oracleAgent_;
         emit OracleAgentUpdated(oracleAgent_);
     }
