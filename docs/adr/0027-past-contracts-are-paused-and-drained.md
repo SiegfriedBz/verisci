@@ -18,4 +18,4 @@
 
 - No request stays pending forever across a redeploy, and nothing is migrated: each request settles on the contract that took it.
 - The pause is reversible, so it also stops a wave of spam requests without a redeploy.
-- The reconciler and the oracle read every contract of an environment, current and past; the agents plan builds that.
+- The reconciler and the oracle read every contract of an environment listed in the deployments file ([0028](0028-deployed-addresses-are-committed.md)), current and past; the agents plan builds that.
