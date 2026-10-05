@@ -39,7 +39,7 @@ contract HelperConfig is Script {
 
     /// @notice Public address of staging's oracle wallet. Its private key stays off the repo; the
     ///         agents on `develop` sign with it (ADR 0019). It differs from the deployer, who
-    ///         becomes the owner (ADR 0030). Zero until the wallet exists, which makes a deploy revert.
+    ///         becomes the owner (ADR 0030).
     address public constant STAGING_ORACLE = 0xE7899a249C8C21F334BDA14D1d861116Aa048F68;
 
     /// @notice Public address of production's oracle wallet. Its private key stays off the repo;
