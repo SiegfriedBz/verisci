@@ -13,6 +13,7 @@ Status: shared constants only.
 
 | Export | What it is |
 | --- | --- |
+| `coreName` | The package name, listed on the web app's home page |
 | `BASE_SEPOLIA_CHAIN_ID` | 84532, the chain staging and production run on, which UALs also name ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)) |
 
 ## Depends on

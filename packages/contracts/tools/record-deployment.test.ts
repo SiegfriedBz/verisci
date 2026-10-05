@@ -39,8 +39,10 @@ const broadcastRun = (address: string, hash: string) => ({
 
 const ADDRESS_1 = `0x${"1".repeat(40)}`;
 const ADDRESS_2 = `0x${"2".repeat(40)}`;
+const ADDRESS_3 = `0x${"3".repeat(40)}`;
 const HASH_1 = `0x${"a".repeat(64)}`;
 const HASH_2 = `0x${"b".repeat(64)}`;
+const HASH_3 = `0x${"c".repeat(64)}`;
 
 describe("recordDeployment", () => {
   it("records a first deployment as current", () => {
@@ -63,8 +65,24 @@ describe("recordDeployment", () => {
   it("moves the current deployment to the front of past", () => {
     const first = recordDeployment(emptyDeployments(), "staging", broadcastRun(ADDRESS_1, HASH_1));
     const second = recordDeployment(first, "staging", broadcastRun(ADDRESS_2, HASH_2));
-    expect(second.staging.current?.address).toBe(ADDRESS_2);
-    expect(second.staging.past.map((d) => d.address)).toEqual([ADDRESS_1]);
+    const third = recordDeployment(second, "staging", broadcastRun(ADDRESS_3, HASH_3));
+    expect(third.staging.current?.address).toBe(ADDRESS_3);
+    expect(third.staging.past.map((d) => d.address)).toEqual([ADDRESS_2, ADDRESS_1]);
+  });
+
+  it("throws on a reverted deploy, whose receipt status is 0x0", () => {
+    const run = broadcastRun(ADDRESS_1, HASH_1);
+    const reverted = { ...run, receipts: run.receipts.map((r) => ({ ...r, status: "0x0" })) };
+    expect(() => recordDeployment(emptyDeployments(), "staging", reverted)).toThrow(
+      /No successful receipt/,
+    );
+  });
+
+  it("throws on a run with no receipt for the deploy", () => {
+    const run = { ...broadcastRun(ADDRESS_1, HASH_1), receipts: [] };
+    expect(() => recordDeployment(emptyDeployments(), "staging", run)).toThrow(
+      /No successful receipt/,
+    );
   });
 
   it("throws on a run with no RatingController CREATE", () => {
@@ -87,9 +105,17 @@ describe("recordDeployment", () => {
     );
   });
 
-  it("throws on an address already recorded in that environment", () => {
+  it("throws on an address already recorded as current", () => {
     const first = recordDeployment(emptyDeployments(), "staging", broadcastRun(ADDRESS_1, HASH_1));
     expect(() => recordDeployment(first, "staging", broadcastRun(ADDRESS_1, HASH_2))).toThrow(
+      /already recorded/,
+    );
+  });
+
+  it("throws on an address already recorded in past", () => {
+    const first = recordDeployment(emptyDeployments(), "staging", broadcastRun(ADDRESS_1, HASH_1));
+    const second = recordDeployment(first, "staging", broadcastRun(ADDRESS_2, HASH_2));
+    expect(() => recordDeployment(second, "staging", broadcastRun(ADDRESS_1, HASH_3))).toThrow(
       /already recorded/,
     );
   });

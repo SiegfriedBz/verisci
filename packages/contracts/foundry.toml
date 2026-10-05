@@ -21,7 +21,7 @@ runs = 5000
 runs = 256
 depth = 50
 
-# Read from the shell when a script runs against Base Sepolia (`.env.example`, Foundry section).
+# Forge reads these from `.env`, a link to the root `.env.local` (ADR 0029), or from the shell.
 [rpc_endpoints]
 base_sepolia = "${BASE_SEPOLIA_RPC_URL}"
 

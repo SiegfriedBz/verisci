@@ -58,6 +58,9 @@ or script with its own `runtimeEnv` extends `createSharedEnv(runtimeEnv)` instea
 
 The workspace adds `zod` to its own dependencies, pinned to the version `env` uses.
 Add each new variable to the root [`.env.example`](../../.env.example) in the same PR.
+Variables read only by forge, for deploys, sit in its Foundry section and are checked
+by the Foundry scripts that read them
+([ADR 0029](../../docs/adr/0029-forge-reads-the-root-env-file.md)).
 
 ## API
 

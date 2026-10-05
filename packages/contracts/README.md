@@ -4,15 +4,17 @@ Solidity contracts (Foundry), plus the TypeScript side that the other
 workspaces import.
 
 Status: `RatingController` v2, written and tested, with its deploy script, typed ABI and
-deployment records; not deployed yet.
+deployment records. `deployments/base-sepolia.json` lists what is deployed.
 
 ## RatingController
 
 Records phase-1 rating requests on chain and the oracle's answers. Its public
 API (types, events, errors and function signatures, with their NatSpec) is
 `src/interfaces/IRatingController.sol`; `src/RatingController.sol` implements
-it. A fix is a redeploy, and the app reads past deployments read-only
-([ADR 0023](../../docs/adr/0023-contract-is-not-upgradeable.md)).
+it. A fix is a redeploy: the old contract is paused and keeps settling the
+requests still pending on it
+([ADR 0023](../../docs/adr/0023-contract-is-not-upgradeable.md),
+[ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)).
 
 - **Request.** Anyone calls `requestPhase1(targetUal)` with a non-empty UAL
   and gets a `requestId`, the `keccak256` of the chain id, the contract
@@ -92,16 +94,23 @@ Staging's and production's oracle addresses stay zero until their wallets
 exist, so a deploy to either reverts with `ZeroAddress` before anything is
 broadcast. Put the addresses in `HelperConfig` in a commit before the first deploy.
 
-Deploying is yours, from your machine; Claude Code never broadcasts.
+You deploy from your own machine. Fill in the Foundry section of `.env.example`
+in the root `.env.local`. Forge reads a `.env` next to `foundry.toml`, so link
+it to that file once; the link is gitignored like every env file
+([ADR 0029](../../docs/adr/0029-forge-reads-the-root-env-file.md)). Pass
+`DEPLOY_ENV` on the command line, so every deploy names its environment.
 
 ```bash
+# Once, from packages/contracts: let forge read the root .env.local.
+ln -s ../../.env.local .env
+
 # Once: store the deployer key encrypted in a Foundry keystore.
 cast wallet import verisci-deployer --interactive
 
 # Without --broadcast, a dry run on an in-memory chain, or against Base Sepolia with --rpc-url.
 forge script script/DeployRatingController.s.sol
 
-# Deploy and verify on Basescan (export the Foundry variables of .env.example first).
+# Deploy and verify on Basescan.
 DEPLOY_ENV=staging forge script script/DeployRatingController.s.sol \
   --rpc-url base_sepolia --account verisci-deployer --broadcast --verify
 
@@ -132,6 +141,7 @@ What other workspaces import from `@verisci/contracts`:
 | --- | --- |
 | `ratingControllerAbi` | The contract's ABI, `as const`, so viem infers every function, event and error |
 | `ratingControllerDeployments(appEnv)` | `{ chainId, current, past }` for `staging` or `production`; `local` reads staging's ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)). `current` takes new requests; `past` are paused and drained ([ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)) |
+| `contractsName` | The package name, listed on the web app's home page |
 | `NoDeploymentError` | Thrown by `ratingControllerDeployments` for an environment with no current deployment |
 | `Deployment`, `DeployEnv`, `RatingControllerDeployments` | Their types |
 
@@ -158,6 +168,7 @@ test/           # Foundry tests: *.t.sol unit and fuzz, *.inv.t.sol invariants, 
 tools/          # Node scripts: generate-abi, record-deployment (with their Vitest tests)
 deployments/    # generated: deployed addresses per environment (committed)
 foundry.toml    # compiler, fuzz and invariant profiles, Base Sepolia RPC and Basescan
+.env            # your link to the root .env.local, which forge reads (gitignored, ADR 0029)
 soldeer.lock    # pinned Solidity dependencies
 remappings.txt  # written by hand: one line per dependency → dependencies/<name>-<version>/
 ```
@@ -218,5 +229,5 @@ the line, with a comment saying why. Foundry 1.8.4 lints `src/` only.
 | `pnpm --filter @verisci/contracts record-deployment <staging\|production>` | Records the latest Base Sepolia broadcast in `deployments/base-sepolia.json` |
 
 The TypeScript side ships as source (`src/index.ts`), with no build step.
-The tools run with Node's type stripping, so they use only erasable TypeScript
-(no enums, no parameter properties).
+The tools run with Node's type stripping; `erasableSyntaxOnly` in `tsconfig.json`
+keeps the package to syntax Node can strip.
