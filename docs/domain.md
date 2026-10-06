@@ -21,6 +21,12 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
 
   A UAL parser accepts both and never assumes the middle segment is our node: a target
   published elsewhere ([ADR 0011](adr/0011-a-rating-is-a-separate-r-ka.md)) may use either.
+- **Canonical UAL spelling** (OriginTrail/dkg `packages/core/src/ka-ual-identity.ts`,
+  checked at `74a515e`, 2026-10-06): lowercase address and chain namespace, decimal numbers
+  with no leading zero; the chain part may be namespaced with several colons, and the chain
+  number goes up to uint256. Id `0` is a valid canonical id there. Our parser keeps these
+  rules but caps the chain number at `Number.MAX_SAFE_INTEGER`
+  ([ADR 0031](adr/0031-uals-are-normalized-before-the-contract.md)).
 - **Context graph ids** are the full `<agent address>/<name>`. A bare name refers to a
   different, local graph, so queries with it silently return nothing.
 - **Store and mint are separate calls:** `POST /api/knowledge-assets`, then

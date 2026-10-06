@@ -24,6 +24,10 @@ pending on it
   ([ADR 0016](../../docs/adr/0016-asset-names-derive-from-request-id.md)).
   Each requester may hold at most `maxPendingPerRequester` pending requests
   ([ADR 0015](../../docs/adr/0015-rating-requests-are-free-on-testnet.md)).
+  The contract stores and hashes the UAL exactly as given, so callers send the
+  canonical spelling from `normalizeUal` in `@verisci/core`; the oracle cancels
+  a request whose UAL is in any other spelling with `InvalidTarget`
+  ([ADR 0031](../../docs/adr/0031-uals-are-normalized-before-the-contract.md)).
 - **Fulfil.** The oracle calls `fulfilPhase1(requestId, score, rKaUal)` with a
   score from 0 to 100 and the R-KA's UAL. The record holds the phase-1 score;
   later phases get their own fields in later contract versions
