@@ -79,7 +79,7 @@ Environment variables are listed in [`.env.example`](.env.example): copy it to
 
 | Command | What it does |
 | --- | --- |
-| `pnpm check` | Biome format, lint and import order; then `forge fmt --check` and the NatSpec check in `packages/contracts` |
+| `pnpm check` | Biome format, lint and import order; then `forge fmt --check`, `forge lint` (any warning or note fails) and the NatSpec check in `packages/contracts` |
 | `pnpm check:fix` | Biome rewrites what it can fix safely |
 | `pnpm typecheck` | `tsc` in every workspace |
 | `pnpm test` | Vitest in every workspace, plus `forge test` in `packages/contracts` |
@@ -97,8 +97,9 @@ Every PR into `develop` or `main`, and every push to them, runs
 
 - `ts`: `biome ci`, `typecheck`, `test:coverage` (report uploaded as an
   artifact), `build` (with `APP_ENV=local`)
-- `contracts`: Soldeer install, `forge fmt --check` and NatSpec,
-  `forge build --sizes`, `forge test` with the `ci` profile (5000 fuzz runs)
+- `contracts`: Soldeer install, `forge fmt --check`, `forge lint` and NatSpec,
+  `forge build --sizes`, a check that the committed ABI matches the contract,
+  `forge test` with the `ci` profile (5000 fuzz runs)
 
 ## Decisions and domain facts
 
@@ -136,7 +137,8 @@ rules. `.claude/` holds the shared settings, hooks and skills:
 | --- | --- |
 | `/plan-feature <name>` | Writes `docs/plans/NNN-<name>.md` from the plan template |
 | `/implement <NNN>` | Branches from `develop`, writes the tests first, then implements until green |
-| `/review-branch` | Runs CI's checks, tests and builds, then a read-only review; blocks on any failure or stale docs, then drafts the PR |
+| `/review-branch` | Runs CI's checks, tests and builds, then a read-only review; blocks on any failure, stale docs or ADR conflict, then drafts the PR |
+| `/review-adrs` | On demand: checks every ADR against every other and reports conflicts for the maintainer to decide |
 
 Hooks format, lint and test each file Claude edits, block edits to generated files and
 reads of env files (except `.env.example`), and typecheck the changed workspaces and the

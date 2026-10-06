@@ -53,11 +53,17 @@ env.APP_ENV; // "local" | "staging" | "production"
 ```
 
 Envs in `extends` keep the values they were built with; they are not re-read from
-the `runtimeEnv` you pass. `sharedEnv` is always built from `process.env`, so a test
+the given `runtimeEnv`. `sharedEnv` is always built from `process.env`, so a test
 or script with its own `runtimeEnv` extends `createSharedEnv(runtimeEnv)` instead.
 
 The workspace adds `zod` to its own dependencies, pinned to the version `env` uses.
 Add each new variable to the root [`.env.example`](../../.env.example) in the same PR.
+
+Foundry's deployment settings are the exception: forge reads them from the same root
+env file, so they are listed in the Foundry section of `.env.example` without a
+`src/env.ts`, and forge validates them when it uses them. Per-deployment choices such
+as `DEPLOY_ENV` are passed on the command line
+([ADR 0029](../../docs/adr/0029-forge-reads-the-root-env-file.md)).
 
 ## API
 

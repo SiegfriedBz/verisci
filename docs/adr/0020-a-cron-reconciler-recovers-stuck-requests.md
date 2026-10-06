@@ -1,6 +1,6 @@
 # 0020. A cron reconciler recovers stuck requests
 
-- Status: Accepted
+- Status: Amended by [0024](0024-only-the-oracle-cancels-requests.md)
 - Date: 2026-10-02
 
 ## Context

@@ -47,6 +47,11 @@ $out"
         fi
         ;;
     esac
+    # Same gate as `pnpm check`: any lint warning or note fails (ADR 0025).
+    if ! out=$(forge lint "$sol" --deny notes 2>&1); then
+      fail "forge lint found issues in $rel:
+$(printf '%s\n' "$out" | tail -n 60)"
+    fi
     if ! out=$(forge test 2>&1); then
       fail "forge test fails after editing $rel:
 $(printf '%s\n' "$out" | tail -n 60)"
