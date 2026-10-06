@@ -13,7 +13,15 @@
     "past": []
   },
   "production": {
-    "current": null,
+    "current": {
+      "address": "0xae82e52df0c8f2f9d41e7e17fdd60cbdbd299923",
+      "txHash": "0x5ee29503a6934b59a824a9645d3fde8e4a71c5e1ff0388917b08353f13ae4cd7",
+      "blockNumber": 47751934,
+      "owner": "0xa0f8e83c0829117838e805e40f49029a21a5a0e3",
+      "oracleAgent": "0xff1400d130a9da1b6b3929f43fa58417d64b54c2",
+      "maxPendingPerRequester": 3,
+      "commit": "898f18a"
+    },
     "past": []
   }
 }
