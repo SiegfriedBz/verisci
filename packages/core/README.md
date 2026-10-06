@@ -7,7 +7,7 @@ Domain logic. Core does no IO: no `fetch`, no `node:*` imports and no other
 `pnpm check` enforces this: `packages/core/biome.json` turns `fetch`,
 `node:*` and `@verisci/*` into errors ("core does no IO").
 
-Status: shared constants. Domain logic arrives with the first feature that needs it.
+Status: shared constants and UAL parsing.
 
 ## API
 
@@ -15,6 +15,27 @@ Status: shared constants. Domain logic arrives with the first feature that needs
 | --- | --- |
 | `coreName` | The package name, listed on the web app's home page |
 | `BASE_SEPOLIA_CHAIN_ID` | 84532, the chain id of Base Sepolia, where staging and production run and which UALs reference ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)) |
+| `parseUal(input)` | Parses a UAL into a `Ual` (`blockchain`, `chainId`, lowercase `address`, `bigint` `id`), or returns `{ ok: false, reason }` with a `UalError`; never throws |
+| `formatUal(ual)` | Writes a `Ual` as its canonical string |
+| `normalizeUal(input)` | The canonical string for any accepted spelling, or the parse failure |
+| `isSameUal(a, b)` | True when both are valid UALs naming the same KA |
+
+## UALs
+
+A UAL names a Knowledge Asset on the DKG: `did:dkg:<blockchain>:<chainId>/<address>/<id>`.
+Normalize every UAL with `normalizeUal` before it reaches the contract, a DKG lookup or the
+UI ([ADR 0031](../../docs/adr/0031-uals-are-normalized-before-the-contract.md)): the
+contract lists ratings under the exact string, so two spellings of one UAL would split its
+ratings.
+
+- **Accepted and rewritten:** surrounding whitespace, any case in the `did:dkg:` prefix, the
+  blockchain name and the address.
+- **Refused:** a chain id or id with a leading zero, a chain id above
+  `Number.MAX_SAFE_INTEGER`, an id above 2^256 − 1, and any other shape.
+- **Both V10 shapes** parse (`docs/domain.md`): `address` is the author's or the
+  KnowledgeAssets contract's, which the string cannot tell apart.
+- Whether a UAL can be rated (its chain, its node) is the rating workflow's call, not the
+  parser's.
 
 ## Depends on
 
