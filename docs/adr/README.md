@@ -25,10 +25,13 @@ taken, so a later ADR can sit in an earlier group.
 
 | ADR | Decision |
 | --- | --- |
-| [0004. Each workspace declares its own env variables](0004-each-workspace-declares-its-env.md) | `defineEnv` per workspace; fails fast, never shows values; `APP_ENV` required in production builds |
+| [0004. Each workspace declares its own env variables](0004-each-workspace-declares-its-env.md) | `defineEnv` per workspace; fails fast, never shows values; `APP_ENV` required in production builds (amended by [0029](0029-forge-reads-the-root-env-file.md)) |
 | [0005. Staging and production use separate resources](0005-staging-and-production-are-isolated.md) | Separate contract, graph, webhook, oracle wallet and Inngest environment per environment; the DKG node (its wallet and admin token) is shared, so a `-prod` guard protects production |
 | [0006. The DKG node runs on a dedicated host](0006-dkg-node-runs-on-a-dedicated-host.md) | DKG daemon, GROBID and RPC proxy on their own host behind Caddy, every route but `/api/status` authenticated; node keys backed up off the host |
-| [0023. The contract is not upgradeable](0023-contract-is-not-upgradeable.md) | No proxy: a fix redeploys; the app reads the current address and past ones read-only; ids never collide across deployments |
+| [0023. The contract is not upgradeable](0023-contract-is-not-upgradeable.md) | No proxy: a fix redeploys; the app reads the current address and past ones read-only; ids never collide across deployments (amended by [0027](0027-past-contracts-are-paused-and-drained.md)) |
+| [0027. Past contracts are paused and drained](0027-past-contracts-are-paused-and-drained.md) | The owner can pause new requests; after a redeploy the old contract is paused and the backend settles what is still pending on it; amends what "read-only" means in 0023 |
+| [0028. Deployed addresses are committed](0028-deployed-addresses-are-committed.md) | Staging's and production's current contract, and every past one that took requests, live in a committed file in the contracts package, changed only after a deploy through a reviewed PR; local test runs are for the agents plan |
+| [0029. Forge reads the root env file](0029-forge-reads-the-root-env-file.md) | Forge reads the same root env file as the app; its settings are listed in `.env.example` with no `src/env.ts`; per-deploy choices go on the command; amends 0004 |
 
 ## Writing to the DKG
 
@@ -72,6 +75,7 @@ In the order a request lives: requested, named, ingested, scored, fulfilled, and
 | [0019. Oracle transactions are serialized](0019-oracle-transactions-are-serialized.md) | One function sends every oracle transaction, one at a time, replacing stuck ones; only `main` and `develop` hold the production and staging oracle keys |
 | [0020. A cron reconciler recovers stuck requests](0020-a-cron-reconciler-recovers-stuck-requests.md) | One singleton run per request finishes what is left, and past a maximum age fulfils if minted or cancels; a cron only restarts stuck requests from the contract's pending set (amended by [0024](0024-only-the-oracle-cancels-requests.md)) |
 | [0024. Only the oracle cancels requests](0024-only-the-oracle-cancels-requests.md) | Cancel reasons say why (maximum age, invalid target); the owner replaces the oracle in an emergency; amends the "owner" reason of 0020 |
+| [0030. The owner and the oracle are different addresses](0030-owner-and-oracle-are-different-addresses.md) | The contract rejects an oracle equal to the owner and ownership moving to the oracle; each environment has a deployer (owner, offline) and an oracle (key on its deployment) |
 
 ## App
 
@@ -89,6 +93,7 @@ Not decided yet. Each becomes an ADR in the plan that first needs the answer; th
 | Where do alerts go? | One chat-bot channel behind a single `notify()`, fed by a scheduled check (wallet balances, orphans, age of the oldest pending request) and an uptime check on the node's `/api/status`. | agents plan |
 | Where does mutable app state live? | Nowhere authoritative: the chain and the DKG hold the truth. Rate-limit counters go in one small key-value store (Upstash Redis); losing it only resets the limits. | first web plan with a wallet |
 | Who may request phases 2 and 3? | Anyone, not only the phase-1 requester. Whoever requests, our node writes the R-KA update, since it owns the R-KA ([0012](0012-ratings-evolve-in-three-phases.md)). Also open: whether a later phase's request gets its own id or reuses the rating's. | phase-2 plan |
+| How does a local test run target a developer's own contract? | One local-only address variable for that contract, read by the agents when `APP_ENV=local`; staging's and production's addresses stay in the committed file ([0028](0028-deployed-addresses-are-committed.md), [0019](0019-oracle-transactions-are-serialized.md)). | agents plan |
 | Who holds the DKG node's credential? | Caddy keeps the daemon's admin token on the host and checks one credential per environment, so each can be revoked alone. The `-prod` guard stays ([0005](0005-staging-and-production-are-isolated.md)). | dkg plan |
 
 ## Adding an ADR

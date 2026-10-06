@@ -112,6 +112,10 @@ interface IRatingController {
     ///         contract always has an owner.
     error RenounceOwnershipDisabled();
 
+    /// @notice The owner and the oracle would be the same address. They are kept apart because the
+    ///         oracle's key runs on a server and the owner's stays offline (ADR 0030).
+    error SameOwnerAndOracle();
+
     /// @notice Requests a phase-1 rating of `targetUal`.
     /// @param targetUal The UAL of the Target KA to rate.
     /// @return requestId The new request id.
@@ -135,6 +139,13 @@ interface IRatingController {
     /// @notice Sets the per-requester pending cap. Owner only.
     /// @param max The new cap.
     function setMaxPendingPerRequester(uint8 max) external;
+
+    /// @notice Stops new requests; fulfil and cancel keep working, so pending requests still
+    ///         settle (ADR 0027). Owner only.
+    function pause() external;
+
+    /// @notice Lets new requests in again. Owner only.
+    function unpause() external;
 
     /// @notice Highest phase-1 score.
     /// @return max The highest score, 100.

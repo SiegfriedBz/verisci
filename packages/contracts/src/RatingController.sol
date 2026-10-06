@@ -2,13 +2,14 @@
 pragma solidity 0.8.37;
 
 import {Ownable, Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {IRatingController} from "./interfaces/IRatingController.sol";
 
 /// @title RatingController
 /// @author verisci
 /// @notice Records phase-1 rating requests for target UALs and the oracle's answers.
-contract RatingController is IRatingController, Ownable2Step {
+contract RatingController is IRatingController, Ownable2Step, Pausable {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     /// @inheritdoc IRatingController
@@ -43,7 +44,7 @@ contract RatingController is IRatingController, Ownable2Step {
     }
 
     /// @inheritdoc IRatingController
-    function requestPhase1(string calldata targetUal) external returns (bytes32 requestId) {
+    function requestPhase1(string calldata targetUal) external whenNotPaused returns (bytes32 requestId) {
         if (bytes(targetUal).length == 0) revert EmptyTargetUal();
         uint256 pending = pendingCountOf[msg.sender];
         if (pending >= maxPendingPerRequester) revert TooManyPending(pending, maxPendingPerRequester);
@@ -109,6 +110,16 @@ contract RatingController is IRatingController, Ownable2Step {
     }
 
     /// @inheritdoc IRatingController
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    /// @inheritdoc IRatingController
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
+    /// @inheritdoc IRatingController
     function getRatingRequest(bytes32 requestId) external view returns (RatingRequest memory request) {
         return _ratingRequests[requestId];
     }
@@ -150,8 +161,25 @@ contract RatingController is IRatingController, Ownable2Step {
         revert RenounceOwnershipDisabled();
     }
 
+    /// @notice Starts moving ownership to `newOwner`, who must call `acceptOwnership`. Reverts with
+    ///         `SameOwnerAndOracle` when `newOwner` is the oracle (ADR 0030). Owner only.
+    /// @param newOwner The address that may accept ownership.
+    function transferOwnership(address newOwner) public override onlyOwner {
+        if (newOwner == oracleAgent) revert SameOwnerAndOracle();
+        super.transferOwnership(newOwner);
+    }
+
+    /// @notice Completes an ownership transfer; called by the pending owner. Reverts with
+    ///         `SameOwnerAndOracle` when the pending owner has become the oracle since (ADR 0030).
+    function acceptOwnership() public override {
+        // Only the pending owner reaches this error; anyone else gets OpenZeppelin's own.
+        if (msg.sender == pendingOwner() && msg.sender == oracleAgent) revert SameOwnerAndOracle();
+        super.acceptOwnership();
+    }
+
     function _setOracleAgent(address oracleAgent_) private {
         if (oracleAgent_ == address(0)) revert ZeroAddress();
+        if (oracleAgent_ == owner()) revert SameOwnerAndOracle();
         oracleAgent = oracleAgent_;
         emit OracleAgentUpdated(oracleAgent_);
     }

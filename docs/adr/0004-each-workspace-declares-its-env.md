@@ -1,6 +1,6 @@
 # 0004. Each workspace declares its own env variables
 
-- Status: Accepted
+- Status: Amended by [0029](0029-forge-reads-the-root-env-file.md)
 - Date: 2026-10-02
 
 ## Context

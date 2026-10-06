@@ -108,6 +108,10 @@ jobs:
       - name: Build
         run: forge build --sizes
 
+      # Vercel has no Foundry, so the ABI is committed; it must match the contract.
+      - name: Generated ABI is current
+        run: pnpm generate:abi && git diff --exit-code -- src/generated
+
       - name: Test
         run: forge test
         env:

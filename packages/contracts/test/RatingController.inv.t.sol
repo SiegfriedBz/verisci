@@ -2,6 +2,7 @@
 pragma solidity 0.8.37;
 
 import {Test} from "forge-std/Test.sol";
+import {DeployRatingController} from "../script/DeployRatingController.s.sol";
 import {RatingController} from "../src/RatingController.sol";
 import {IRatingController} from "../src/interfaces/IRatingController.sol";
 import {RatingHandler} from "./handlers/RatingHandler.sol";
@@ -13,11 +14,8 @@ contract RatingControllerInvariantTest is Test {
     RatingHandler internal handler;
 
     function setUp() public {
-        address owner = makeAddr("owner");
-        address oracle = makeAddr("oracle");
-        vm.prank(owner);
-        controller = new RatingController(oracle, 3);
-        handler = new RatingHandler(controller, owner, oracle);
+        (controller,) = new DeployRatingController().run();
+        handler = new RatingHandler(controller, controller.owner(), controller.oracleAgent());
         targetContract(address(handler));
     }
 
@@ -58,6 +56,17 @@ contract RatingControllerInvariantTest is Test {
             assertEq(r.phase1Score, s.score);
             assertEq(keccak256(bytes(r.rKaUal)), s.rKaHash);
         }
+    }
+
+    /// While paused, no request is added and the nonce does not move.
+    function invariant_PausedTakesNoRequests() public view {
+        assertEq(handler.requestedWhilePaused(), 0);
+        assertEq(handler.nonceMovedWhilePaused(), 0);
+    }
+
+    /// The owner and the oracle are never the same address (ADR 0030).
+    function invariant_OwnerIsNeverOracle() public view {
+        assertTrue(controller.owner() != controller.oracleAgent());
     }
 
     /// Every stored score is at most 100.

@@ -7,7 +7,14 @@ Domain logic. Core does no IO: no `fetch`, no `node:*` imports and no other
 `pnpm check` enforces this: `packages/core/biome.json` turns `fetch`,
 `node:*` and `@verisci/*` into errors ("core does no IO").
 
-Status: placeholder.
+Status: shared constants. Domain logic arrives with the first feature that needs it.
+
+## API
+
+| Export | Description |
+| --- | --- |
+| `coreName` | The package name, listed on the web app's home page |
+| `BASE_SEPOLIA_CHAIN_ID` | 84532, the chain id of Base Sepolia, where staging and production run and which UALs reference ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)) |
 
 ## Depends on
 
