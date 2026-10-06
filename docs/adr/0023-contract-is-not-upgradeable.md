@@ -1,6 +1,6 @@
 # 0023. The contract is not upgradeable
 
-- Status: Amended by [0027](0027-past-contracts-are-paused-and-drained.md)
+- Status: Amended by [0027](0027-past-contracts-are-paused-and-drained.md) and [0032](0032-the-owner-can-transfer-ownership.md)
 - Date: 2026-10-03
 
 ## Context

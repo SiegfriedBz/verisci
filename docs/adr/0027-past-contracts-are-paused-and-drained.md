@@ -1,6 +1,6 @@
 # 0027. Past contracts are paused and drained
 
-- Status: Accepted
+- Status: Amended by [0032](0032-the-owner-can-transfer-ownership.md)
 - Date: 2026-10-05
 - Amends: [0023](0023-contract-is-not-upgradeable.md) (what "read-only" means for a past contract, and what the owner can do)
 

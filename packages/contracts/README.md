@@ -57,7 +57,8 @@ pending on it
   ([ADR 0030](../../docs/adr/0030-owner-and-oracle-are-different-addresses.md)).
   Ownership moves in two steps (OpenZeppelin `Ownable2Step`), and
   `renounceOwnership` reverts with `RenounceOwnershipDisabled`, so the
-  contract always has an owner.
+  contract always has an owner
+  ([ADR 0032](../../docs/adr/0032-the-owner-can-transfer-ownership.md)).
 
 Failures revert with custom errors. Every state change emits an event:
 `Phase1Requested`, `Phase1Fulfilled`, `RequestCancelled`,
