@@ -61,7 +61,7 @@ A PDF becomes a Target KA.
 | [0014. The contract owns scores, the DKG owns content](0014-contract-owns-scores-dkg-owns-content.md) | The UI shows the contract's score and flags a gap with the DKG |
 | [0022. The contract indexes request ids by target](0022-contract-indexes-request-ids-by-target.md) | Request ids listed per target UAL, oldest first, by view call; an indexer only if view calls stop being enough |
 | [0026. The oracle settles every phase on chain](0026-the-oracle-settles-every-phase-on-chain.md) | The oracle agent records every phase's result on the contract; reviewers and labs send their input to our backend; amends who writes phases 2 and 3 in 0012 |
-| [0031. UALs are normalized before they reach the contract](0031-uals-are-normalized-before-the-contract.md) | Every UAL takes one canonical spelling, from `@verisci/core`, before the contract, a DKG lookup or the UI; numbers with a leading zero are refused; the contract is unchanged |
+| [0031. UALs are normalized before they reach the contract](0031-uals-are-normalized-before-the-contract.md) | Every UAL takes one canonical spelling, from `@verisci/core`, before the contract, a DKG lookup or the UI; numbers with a leading zero are refused; the contract is unchanged and the oracle cancels requests with a non-canonical target |
 
 ## Rating flow
 
