@@ -44,9 +44,8 @@ contract HelperConfig is Script {
 
     /// @notice Public address of production's oracle wallet. Its private key stays off the repo;
     ///         the agents on `main` sign with it (ADR 0019). It differs from the deployer, who
-    ///         becomes the owner (ADR 0030). Zero until the wallet exists, which makes a deploy
-    ///         revert.
-    address public constant PRODUCTION_ORACLE = address(0);
+    ///         becomes the owner (ADR 0030), and from staging's oracle (ADR 0005).
+    address public constant PRODUCTION_ORACLE = 0xff1400d130a9dA1B6b3929F43FA58417d64b54C2;
 
     /// @notice The config for the current chain, and on Base Sepolia for `DEPLOY_ENV`.
     /// @return config The constructor arguments to deploy with.

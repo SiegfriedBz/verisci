@@ -51,6 +51,15 @@ contract DeployRatingControllerTest is Test {
         assertEq(config.maxPendingPerRequester, helperConfig.MAX_PENDING_PER_REQUESTER());
     }
 
+    /// Staging and production each have their own oracle wallet (ADR 0005).
+    function test_OracleWallets_AreSetAndSeparate() public view {
+        address staging = helperConfig.STAGING_ORACLE();
+        address production = helperConfig.PRODUCTION_ORACLE();
+        assertNotEq(staging, address(0));
+        assertNotEq(production, address(0));
+        assertNotEq(staging, production);
+    }
+
     function test_GetConfigFor_RevertsOnUnsetDeployEnv() public {
         uint256 chainId = helperConfig.BASE_SEPOLIA_CHAIN_ID();
         vm.expectRevert(abi.encodeWithSelector(HelperConfig.UnknownDeployEnv.selector, ""));
