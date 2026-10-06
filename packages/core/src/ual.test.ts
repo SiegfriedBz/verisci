@@ -33,6 +33,20 @@ describe("parseUal", () => {
     });
   });
 
+  it("parses a namespaced blockchain name", () => {
+    expect(parseUal(`did:dkg:evm:base:84532/${ADDRESS}/42`)).toEqual({
+      ok: true,
+      ual: { ...expected, blockchain: "evm:base" },
+    });
+  });
+
+  it("parses an uppercase 0X address prefix", () => {
+    expect(parseUal(`did:dkg:base:84532/0X${ADDRESS.slice(2).toUpperCase()}/42`)).toEqual({
+      ok: true,
+      ual: expected,
+    });
+  });
+
   it("parses id 0", () => {
     expect(parseUal(`did:dkg:base:84532/${ADDRESS}/0`)).toEqual({
       ok: true,
@@ -73,6 +87,11 @@ describe("parseUal", () => {
     ["a negative id", `did:dkg:base:84532/${ADDRESS}/-1`, "bad-id"],
     ["an empty id", `did:dkg:base:84532/${ADDRESS}/`, "bad-id"],
     ["an id with a leading zero", `did:dkg:base:84532/${ADDRESS}/042`, "bad-id"],
+    [
+      "an id longer than 78 digits",
+      `did:dkg:base:84532/${ADDRESS}/${"9".repeat(100_000)}`,
+      "bad-id",
+    ],
     ["an id above uint256", `did:dkg:base:84532/${ADDRESS}/${MAX_U256 + 1n}`, "bad-id"],
     ["an extra segment", `${UAL}/1`, "bad-shape"],
     ["a missing segment", `did:dkg:base:84532/${ADDRESS}`, "bad-shape"],

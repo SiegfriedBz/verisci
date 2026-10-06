@@ -37,6 +37,8 @@ export type NormalizeUalResult =
 
 const PREFIX = "did:dkg:";
 const MAX_U256 = 2n ** 256n - 1n;
+/** Digits in 2^256 − 1; a longer id is refused before `BigInt` parses it. */
+const MAX_U256_DIGITS = 78;
 /** Lowercase name, optionally namespaced with colons, as OriginTrail's canonical chain ids are. */
 const BLOCKCHAIN = /^[a-z][a-z0-9-]*(?::[a-z0-9-]+)*$/;
 /** A decimal integer with no sign and no leading zero, so each value has one spelling. */
@@ -72,14 +74,18 @@ export function parseUal(input: string): ParseUalResult {
   const address = rawAddress.toLowerCase();
   if (!ADDRESS.test(address)) return fail("bad-address");
 
-  if (!CANONICAL_DECIMAL.test(rawId)) return fail("bad-id");
+  if (rawId.length > MAX_U256_DIGITS || !CANONICAL_DECIMAL.test(rawId)) return fail("bad-id");
   const id = BigInt(rawId);
   if (id > MAX_U256) return fail("bad-id");
 
   return { ok: true, ual: { blockchain, chainId, address: address as `0x${string}`, id } };
 }
 
-/** Writes the canonical UAL string: lowercase blockchain and address, decimal id. */
+/**
+ * Writes the canonical UAL string: lowercase blockchain and address, decimal id. Give it a
+ * `Ual` from {@link parseUal}: it checks nothing, so a hand-built value with a bad field
+ * gives a string `parseUal` refuses.
+ */
 export function formatUal(ual: Ual): string {
   return `${PREFIX}${ual.blockchain.toLowerCase()}:${ual.chainId}/${ual.address.toLowerCase()}/${ual.id}`;
 }
