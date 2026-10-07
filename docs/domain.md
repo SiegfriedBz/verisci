@@ -29,6 +29,15 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
   ([ADR 0031](adr/0031-uals-are-normalized-before-the-contract.md)).
 - **Context graph ids** are the full `<agent address>/<name>`. A bare name refers to a
   different, local graph, so queries with it silently return nothing.
+- **Asset names are scoped per context graph and per writing agent** (OriginTrail/dkg,
+  checked at `74a515e`, 2026-10-07): a name is stored at
+  `did:dkg:context-graph:<graph id>/assertion/<agent address>/<name>`
+  (`packages/core/src/constants.ts`), so the same name in two graphs is two assets.
+- **Asset name rules** (`validateAssertionName`, same file and commit): 1 to 256
+  characters, no `/`, no whitespace and none of `<>"{}|^` `` ` `` `\`. A path segment
+  starting with `did:dkg:` or matching `0x<40 hex>:<number>` is read as a KA id, not a name
+  (`packages/cli/src/daemon/routes/knowledge-assets.ts`). Ours start with `verisci-`
+  (`packages/core/README.md` → Asset names).
 - **Store and mint are separate calls:** `POST /api/knowledge-assets`, then
   `…/{name}/vm/publish`. Asset states are missing, stored (`promoted`) and minted
   (`published`). A stored asset already has a `reservedUal`, so a UAL being present does
@@ -61,6 +70,19 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
   its number, so each environment sees gaps in its numbering. Expected, not a bug.
 - **Authority resolution needs the node's local JSON-RPC proxy:** public Base Sepolia
   endpoints are not reliable enough for it.
+
+## IPFS
+
+Checked with `multiformats` 14.0.5, 2026-10-07.
+
+- **One file has several CIDs, depending on the import settings:** the same bytes added
+  as a raw block give a `bafkrei…` CID (raw codec), and as a UnixFS file a `bafybei…` CID
+  (dag-pb); files larger than one block also depend on the chunker. A CID names the file
+  under one set of settings (CID version, raw leaves or UnixFS, chunker), so every upload
+  must use the same ones for one PDF to keep one CID ([ADR 0010](adr/0010-pdf-to-target-ka-pipeline.md)).
+- **One CID has several spellings:** CIDv0 (`Qm…`) and CIDv1 in base32 (`b…`), base58btc
+  (`z…`) or base36 (`k…`). `CID.parse` reads all four, and `.toV1().toString()` writes
+  base32. It refuses uppercase base32 (`B…`).
 
 ## Chain
 
