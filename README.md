@@ -45,6 +45,129 @@ publishes (Target KAs and every R-KA) are minted and owned by its DKG node. The
 **oracle** is verisci's account that records rating
 results on the contract.
 
+## Architecture
+
+The diagrams below show the target design; the workspaces build it plan by plan.
+
+### Environments and resources
+
+Each environment has one context graph on the shared DKG node
+([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)). Our node
+publishes the ratings of every contract of an environment to that environment's
+graph, so a redeployed contract keeps the graph of the one it replaces; the old
+contract is paused and drained ([ADR 0027](docs/adr/0027-past-contracts-are-paused-and-drained.md)).
+Each contract's R-KA names are its own, because the request id hashes the chain
+id and contract address ([ADR 0016](docs/adr/0016-asset-names-derive-from-request-id.md)).
+Each environment also has its own oracle wallet, Alchemy webhook and Inngest
+environment. Only `develop` holds staging's oracle key and runs its ratings;
+previews and local development share staging's contract and graph, and a
+developer running the rating functions locally uses their own contract and
+oracle key ([ADR 0019](docs/adr/0019-oracle-transactions-are-serialized.md)).
+
+```mermaid
+flowchart TB
+  subgraph staging["Staging: develop"]
+    direction TB
+    sc["RatingController (staging)<br/>Base Sepolia<br/>+ past contracts, paused"]
+    sr["Rating and publish runs<br/>oracle wallet, Alchemy webhook,<br/>Inngest environment"]
+    sg["Staging graph<br/>on the shared DKG node host"]
+    sc --> sr -->|"stores and mints KAs"| sg
+  end
+  subgraph production["Production: main"]
+    direction TB
+    pc["RatingController (production)<br/>Base Sepolia<br/>+ past contracts, paused"]
+    pr["Rating and publish runs<br/>oracle wallet, Alchemy webhook,<br/>Inngest environment"]
+    pg["Production graph<br/>on the shared DKG node host"]
+    pc --> pr -->|"stores and mints KAs"| pg
+  end
+```
+
+### Publishing a paper
+
+```mermaid
+sequenceDiagram
+  actor U as Submitter browser
+  participant P as IPFS pinning
+  participant A as App server
+  participant R as Publish run (Inngest)
+  participant G as GROBID (node host)
+  participant N as DKG node
+  U->>A: ask for an upload URL
+  A-->>U: short-lived signed upload URL
+  U->>P: upload the PDF
+  P-->>U: CID
+  U->>A: CID + EIP-712 signature
+  A->>A: verify the signature and the pinned file
+  A->>R: event with the CID, submitter address and signature
+  R->>R: Target KA name from CID
+  R->>P: fetch the PDF by its CID
+  R->>G: parse the PDF
+  R->>R: extract metadata (LLM)
+  R->>N: store with the submitter address and signature, then mint and poll
+  N-->>R: Target KA UAL, ready to be rated
+```
+
+The same PDF always has the same CID, so publishing it again converges on the
+existing Target KA ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)).
+
+### Rating a paper
+
+```mermaid
+sequenceDiagram
+  actor U as Requester wallet
+  participant C as RatingController
+  participant W as Webhook route
+  participant R as Rating run (Inngest)
+  participant N as DKG node
+  participant O as Oracle function
+  U->>C: requestPhase1(targetUal)
+  C-->>W: Phase1Requested(requestId, …) via Alchemy
+  W->>R: event keyed on requestId
+  R->>C: read the request and the contract's oracle
+  Note over R: Stop if settled, or if the oracle is not this deployment's key.
+  R->>R: R-KA name from requestId
+  R->>N: read R-KA state by name
+  alt invalid target, or past the maximum age without a minted R-KA
+    R->>O: cancel(requestId, reason)
+    O->>C: cancelRequest(requestId, reason)
+  else missing
+    R->>R: score the target
+    R->>N: store R-KA, then mint and poll until minted
+    R->>O: fulfil(requestId, score, rKaUal)
+    O->>C: fulfilPhase1(requestId, score, rKaUal)
+  else stored
+    R->>N: read the stored score back
+    R->>N: poll for an earlier mint, up to the maximum mint time
+    opt still stored
+      R->>N: mint and poll until minted
+    end
+    R->>O: fulfil(requestId, score, rKaUal)
+    O->>C: fulfilPhase1(requestId, score, rKaUal)
+  else minted
+    R->>N: read the score back from the R-KA
+    R->>O: fulfil(requestId, score, rKaUal)
+    O->>C: fulfilPhase1(requestId, score, rKaUal)
+  end
+  Note over C,O: The oracle function re-reads the request and sends nothing if it is already settled.
+  Note over C,R: A cron reconciler pages through pendingRequestIds(offset, limit)<br/>on every contract of the environment, past ones included,<br/>and restarts the run of any stuck request.
+```
+
+Every run reads the request on chain and its R-KA on the node, then does what
+is left: a retry, or a run restarted by the reconciler, recomputes the same name
+from the request id and converges on the same R-KA
+([ADR 0007](docs/adr/0007-all-writes-converge.md), [ADR 0017](docs/adr/0017-chain-events-are-ingested-at-least-once.md),
+[ADR 0020](docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md)). A run
+that finds an R-KA stored by an earlier run polls for a mint still in flight
+and mints only if the R-KA is still stored
+([ADR 0008](docs/adr/0008-mints-are-async-polled-in-short-steps.md)). Every
+fulfil and cancel goes through the one serialized oracle function, which reads
+the request again and sends nothing if it is already settled
+([ADR 0019](docs/adr/0019-oracle-transactions-are-serialized.md)); a target UAL
+that is invalid or not in canonical form is cancelled
+([ADR 0031](docs/adr/0031-uals-are-normalized-before-the-contract.md)). The
+contract's calls and events are documented in the
+[`@verisci/contracts` README](packages/contracts/README.md).
+
 ## The repo
 
 A pnpm and Turborepo monorepo: a Next.js app and five internal packages.
