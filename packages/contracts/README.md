@@ -51,15 +51,15 @@ pending on it
   serves as an emergency brake
   ([ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)).
 - **Administration.** The owner sets `oracleAgent` and
-  `maxPendingPerRequester`, and pauses and unpauses new requests. The owner and the oracle are
+  `maxPendingPerRequester`, and pauses and unpauses new requests
+  ([ADR 0033](../../docs/adr/0033-the-owner-can-unpause.md)). The owner and the oracle are
   always distinct addresses: an oracle equal to the owner, or ownership moving
   to the oracle, reverts with `SameOwnerAndOracle`
   ([ADR 0030](../../docs/adr/0030-owner-and-oracle-are-different-addresses.md)).
   Ownership moves in two steps (OpenZeppelin `Ownable2Step`), and
   `renounceOwnership` reverts with `RenounceOwnershipDisabled`, so the
   contract always has an owner
-  ([ADR 0032](../../docs/adr/0032-the-owner-can-transfer-ownership.md),
-  [ADR 0033](../../docs/adr/0033-the-owner-can-unpause.md)).
+  ([ADR 0032](../../docs/adr/0032-the-owner-can-transfer-ownership.md)).
 
 Failures revert with custom errors. Every state change emits an event:
 `Phase1Requested`, `Phase1Fulfilled`, `RequestCancelled`,

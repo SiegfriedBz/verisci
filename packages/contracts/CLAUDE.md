@@ -37,5 +37,5 @@ layout, toolchain versions and commands.
   requests; fulfil and cancel keep working), 0028 (deployed addresses are committed), 0029
   (forge reads the root env file through `.env`), 0030 (owner and oracle are different
   addresses), 0032 (two-step ownership transfer, no renounce) and 0033 (the owner
-  unpauses too). `HelperConfig` and `resolveDeployments` follow 0005 (staging, production and
-  local). See [`docs/adr/`](../../docs/adr/README.md).
+  unpauses too). `HelperConfig` and `resolveDeployments` follow 0005 (staging,
+  production and local). See [`docs/adr/`](../../docs/adr/README.md).
