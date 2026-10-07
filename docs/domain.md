@@ -74,7 +74,8 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
 ## IPFS
 
 CID facts checked with `multiformats` 14.0.5, 2026-10-07; import defaults from the Kubo
-docs. The settings Pinata's signed-URL uploads use are not checked yet.
+docs, current at 2026-10-07. The settings Pinata's signed-URL uploads use are still to be
+checked.
 
 - **One file has several CIDs, depending on the import settings:** CID version, raw
   leaves or UnixFS leaves, and the chunker. Kubo's default gives a CIDv0 (`Qm…`, dag-pb);

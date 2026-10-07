@@ -11,7 +11,7 @@ export type AssetNameResult =
 const R_KA_PREFIX = "verisci-rka-";
 const TARGET_KA_PREFIX = "verisci-tka-";
 const REQUEST_ID = /^0x[0-9a-f]{64}$/;
-/** Multicodec codes of the CIDs an IPFS upload of a file produces. */
+/** The hash, digest length and codecs of the CIDs an IPFS upload of a file produces. */
 const SHA2_256 = 0x12;
 const SHA2_256_BYTES = 32;
 const RAW = 0x55;
