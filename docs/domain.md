@@ -35,7 +35,7 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
   (`packages/core/src/constants.ts`), so the same name in two graphs is two assets.
 - **Asset name rules** (`validateAssertionName`, same file and commit): 1 to 256
   characters, no `/`, no whitespace and none of `<>"{}|^` `` ` `` `\`. A path segment
-  starting with `did:dkg:` or matching `0x<40 hex>:<number>` is read as a KA id, not a name
+  starting with `did:dkg:` or matching `0x<40 hex>:<number>` is read as a KA id
   (`packages/cli/src/daemon/routes/knowledge-assets.ts`). Ours start with `verisci-`
   (`packages/core/README.md` → Asset names).
 - **Store and mint are separate calls:** `POST /api/knowledge-assets`, then
@@ -73,16 +73,20 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
 
 ## IPFS
 
-Checked with `multiformats` 14.0.5, 2026-10-07.
+CID facts checked with `multiformats` 14.0.5, 2026-10-07; import defaults from the Kubo
+docs. The settings Pinata's signed-URL uploads use are not checked yet.
 
-- **One file has several CIDs, depending on the import settings:** the same bytes added
-  as a raw block give a `bafkrei…` CID (raw codec), and as a UnixFS file a `bafybei…` CID
-  (dag-pb); files larger than one block also depend on the chunker. A CID names the file
-  under one set of settings (CID version, raw leaves or UnixFS, chunker), so every upload
-  must use the same ones for one PDF to keep one CID ([ADR 0010](adr/0010-pdf-to-target-ka-pipeline.md)).
+- **One file has several CIDs, depending on the import settings:** CID version, raw
+  leaves or UnixFS leaves, and the chunker. Kubo's default gives a CIDv0 (`Qm…`, dag-pb);
+  with CIDv1 and raw leaves, a file that fits in one chunk gives a `bafkrei…` CID (raw
+  codec), and a larger file a `bafybei…` CID (dag-pb root). The uploader picks the
+  settings, so one PDF keeps one CID only while every upload goes through the same
+  uploader with the same settings ([ADR 0010](adr/0010-pdf-to-target-ka-pipeline.md)).
 - **One CID has several spellings:** CIDv0 (`Qm…`) and CIDv1 in base32 (`b…`), base58btc
   (`z…`) or base36 (`k…`). `CID.parse` reads all four, and `.toV1().toString()` writes
   base32. It refuses uppercase base32 (`B…`).
+- **A valid CID can name any hash and any size:** `CID.parse` checks the format only. An
+  identity-hash CID carries its data inline, so it can be hundreds of characters long.
 
 ## Chain
 
