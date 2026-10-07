@@ -51,14 +51,15 @@ pending on it
   serves as an emergency brake
   ([ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)).
 - **Administration.** The owner sets `oracleAgent` and
-  `maxPendingPerRequester`, and pauses new requests. The owner and the oracle are
+  `maxPendingPerRequester`, and pauses and unpauses new requests. The owner and the oracle are
   always distinct addresses: an oracle equal to the owner, or ownership moving
   to the oracle, reverts with `SameOwnerAndOracle`
   ([ADR 0030](../../docs/adr/0030-owner-and-oracle-are-different-addresses.md)).
   Ownership moves in two steps (OpenZeppelin `Ownable2Step`), and
   `renounceOwnership` reverts with `RenounceOwnershipDisabled`, so the
   contract always has an owner
-  ([ADR 0032](../../docs/adr/0032-the-owner-can-transfer-ownership.md)).
+  ([ADR 0032](../../docs/adr/0032-the-owner-can-transfer-ownership.md),
+  [ADR 0033](../../docs/adr/0033-the-owner-can-unpause.md)).
 
 Failures revert with custom errors. Every state change emits an event:
 `Phase1Requested`, `Phase1Fulfilled`, `RequestCancelled`,
@@ -99,7 +100,7 @@ Deployments run from a maintainer's machine; all commands below run from
 
 | Account | Role on the contract | Key custody |
 | --- | --- | --- |
-| Deployer (`verisci-deployer` keystore), shared by both environments | Owner: pauses new requests, updates the oracle and the cap, transfers ownership | Encrypted Foundry keystore on the maintainer's machine only |
+| Deployer (`verisci-deployer` keystore), shared by both environments | Owner: pauses and unpauses new requests, updates the oracle and the cap, transfers ownership | Encrypted Foundry keystore on the maintainer's machine only |
 | Oracle, one per environment | Fulfils and cancels requests | Stored securely until the environment's agents deployment (`develop` or `main`) holds it |
 
 The two roles always use distinct addresses: the oracle key runs on a server,
