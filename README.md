@@ -45,6 +45,89 @@ publishes (Target KAs and every R-KA) are minted and owned by its DKG node. The
 **oracle** is verisci's account that records rating
 results on the contract.
 
+## Architecture
+
+The diagrams below show the target design; the workspaces build it plan by plan.
+
+### Environments and resources
+
+Each environment has one context graph, shared by all its contracts. A
+redeployed contract writes to the same graph as the one it replaces; the old
+contract is paused and drained ([ADR 0027](docs/adr/0027-past-contracts-are-paused-and-drained.md)).
+R-KA names cannot collide across contracts, because the request id hashes the
+chain id and contract address ([ADR 0016](docs/adr/0016-asset-names-derive-from-request-id.md)).
+
+```mermaid
+flowchart TB
+  subgraph node["DKG node (shared host, ADR 0006)"]
+    sg["Staging graph"]
+    pg["Production graph"]
+  end
+  subgraph staging["Staging: develop, previews, local"]
+    sc["RatingController (staging)<br/>Base Sepolia<br/>+ past contracts, paused"]
+  end
+  subgraph production["Production: main"]
+    pc["RatingController (production)<br/>Base Sepolia<br/>+ past contracts, paused"]
+  end
+  staging --> sg
+  production --> pg
+```
+
+### Rating a paper
+
+```mermaid
+sequenceDiagram
+  actor U as Requester wallet
+  participant C as RatingController
+  participant W as Webhook route
+  participant R as Rating run (Inngest)
+  participant N as DKG node
+  participant O as Oracle function
+  U->>C: requestPhase1(targetUal)
+  C-->>W: Phase1Requested(requestId, …) via Alchemy
+  W->>R: event keyed on requestId
+  R->>R: R-KA name from requestId
+  R->>N: read R-KA state by name
+  alt missing
+    R->>R: score the target
+    R->>N: store R-KA
+  else stored
+    R->>N: read the stored score back
+  end
+  R->>N: mint, then poll until minted
+  R->>O: fulfil(requestId, score, rKaUal)
+  O->>C: fulfilPhase1(...)
+  Note over C,R: A cron reconciler reads pendingRequestIds()<br/>and restarts the run of any stuck request.
+```
+
+A retry, or a run restarted by the reconciler, recomputes the same name from the
+request id and resumes from whatever state the node reports
+([ADR 0007](docs/adr/0007-all-writes-converge.md), [ADR 0020](docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md)).
+
+### Publishing a paper
+
+```mermaid
+sequenceDiagram
+  actor U as Submitter browser
+  participant P as IPFS pinning
+  participant A as App server
+  participant R as Publish run (Inngest)
+  participant N as DKG node
+  A->>U: short-lived signed upload URL
+  U->>P: upload the PDF
+  P-->>U: CID
+  U->>A: CID + EIP-712 signature
+  A->>A: verify the signature and the pinned file
+  A->>R: event with the CID
+  R->>R: Target KA name from CID
+  R->>R: parse (GROBID), extract metadata (LLM)
+  R->>N: store, then mint the Target KA
+  N-->>R: Target KA UAL, ready to be rated
+```
+
+The same PDF always has the same CID, so publishing it again converges on the
+existing Target KA ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)).
+
 ## The repo
 
 A pnpm and Turborepo monorepo: a Next.js app and five internal packages.
