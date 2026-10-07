@@ -11,13 +11,18 @@ export type AssetNameResult =
 const R_KA_PREFIX = "verisci-rka-";
 const TARGET_KA_PREFIX = "verisci-tka-";
 const REQUEST_ID = /^0x[0-9a-f]{64}$/;
+/** Multicodec codes of the CIDs an IPFS upload of a file produces. */
+const SHA2_256 = 0x12;
+const SHA2_256_BYTES = 32;
+const RAW = 0x55;
+const DAG_PB = 0x70;
 
 /**
  * The DKG asset name of a rating's R-KA: `verisci-rka-<request id>`, the phase-1 request id
  * as `0x` + 64 lowercase hex (ADR 0016). The id hashes the chain id and contract address, so
- * two deployments never share a name. Later phases keep this name (ADR 0011).
+ * each deployment's requests have their own names. Later phases keep this name (ADR 0011).
  *
- * Accepts any case and surrounding whitespace. Never throws.
+ * Accepts any case and surrounding whitespace. Returns a result for every input.
  */
 export function rKaName(requestId: string): AssetNameResult {
   const id = requestId.trim().toLowerCase();
@@ -30,16 +35,28 @@ export function rKaName(requestId: string): AssetNameResult {
  * daemon scopes names per context graph, so the same PDF in staging and production is two
  * assets.
  *
- * Every spelling of one CID (v0 `Qm…`, v1 in base32 `b…`, base58btc `z…` or base36 `k…`)
- * gives one name. The codec is part of the CID: the same bytes uploaded as a raw block and
- * as a UnixFS file are two CIDs, so two names (`docs/domain.md` → IPFS).
+ * Accepts the CIDs an IPFS upload of a file produces: a sha2-256 digest with the raw or
+ * dag-pb codec, so every name is 71 characters. Every spelling of one CID (v0 `Qm…`, v1 in
+ * base32 `b…`, base58btc `z…` or base36 `k…`) gives one name. The codec is part of the CID:
+ * the same bytes uploaded as a raw block and as a UnixFS file are two CIDs, so two names
+ * (`docs/domain.md` → IPFS).
  *
- * Accepts surrounding whitespace. Never throws.
+ * Accepts surrounding whitespace. Returns a result for every input.
  */
 export function targetKaName(cid: string): AssetNameResult {
+  let parsed: CID;
   try {
-    return { ok: true, name: `${TARGET_KA_PREFIX}${CID.parse(cid.trim()).toV1().toString()}` };
+    parsed = CID.parse(cid.trim());
   } catch {
     return { ok: false, reason: "bad-cid" };
   }
+  const { code, size } = parsed.multihash;
+  if (
+    code !== SHA2_256 ||
+    size !== SHA2_256_BYTES ||
+    (parsed.code !== RAW && parsed.code !== DAG_PB)
+  ) {
+    return { ok: false, reason: "bad-cid" };
+  }
+  return { ok: true, name: `${TARGET_KA_PREFIX}${parsed.toV1().toString()}` };
 }

@@ -6,9 +6,12 @@ import * as Digest from "multiformats/hashes/digest";
 import { describe, expect, it } from "vitest";
 import { rKaName, targetKaName } from "./asset-names.ts";
 
+const IDENTITY = 0x00;
 const SHA2_256 = 0x12;
+const SHA2_512 = 0x13;
 const RAW = 0x55;
 const DAG_PB = 0x70;
+const DAG_CBOR = 0x71;
 
 const REQUEST_ID = `0x${"ab12".repeat(16)}`;
 const DIGEST = Digest.create(
@@ -19,13 +22,12 @@ const RAW_CID = CID.createV1(RAW, DIGEST);
 const V0_CID = CID.createV0(DIGEST);
 const DAG_PB_CID = CID.createV1(DAG_PB, DIGEST);
 
-/** The daemon's assertion-name rules plus our own: lowercase, never read as a KA id. */
+/**
+ * The daemon's assertion-name rules, tightened to our own: 1 to 256 characters of
+ * `[a-z0-9-]`. A name with no `:` cannot take a KA id's shape (`did:dkg:…`, `0x…:<n>`).
+ */
 function isDaemonSafe(name: string): boolean {
-  return (
-    /^[a-z0-9-]{1,256}$/.test(name) &&
-    !name.startsWith("did:dkg:") &&
-    !/^0x[0-9a-f]{40}:[0-9]+$/.test(name)
-  );
+  return /^[a-z0-9-]{1,256}$/.test(name);
 }
 
 function hex(bytes: Uint8Array): string {
@@ -92,6 +94,16 @@ describe("targetKaName", () => {
     ["not a CID", "not-a-cid"],
     ["a truncated CID", RAW_CID.toString().slice(0, 20)],
     ["an uppercase base32 CID", RAW_CID.toString().toUpperCase()],
+    [
+      "an identity-hash CID holding 200 bytes",
+      CID.createV1(RAW, Digest.create(IDENTITY, new Uint8Array(200))).toString(),
+    ],
+    ["a sha2-512 CID", CID.createV1(RAW, Digest.create(SHA2_512, new Uint8Array(64))).toString()],
+    [
+      "a sha2-256 CID with a 20-byte digest",
+      CID.createV1(RAW, Digest.create(SHA2_256, new Uint8Array(20))).toString(),
+    ],
+    ["a dag-cbor CID", CID.createV1(DAG_CBOR, DIGEST).toString()],
   ])("refuses %s as bad-cid", (_, input) => {
     expect(targetKaName(input)).toEqual({ ok: false, reason: "bad-cid" });
   });
@@ -106,7 +118,7 @@ describe("asset name properties", () => {
         const rKa = rKaName(`0x${hex(id)}`);
         const tKa = targetKaName(CID.createV1(RAW, Digest.create(SHA2_256, digest)).toString());
         if (!rKa.ok || !tKa.ok) return false;
-        return isDaemonSafe(rKa.name) && isDaemonSafe(tKa.name);
+        return isDaemonSafe(rKa.name) && isDaemonSafe(tKa.name) && tKa.name.length === 71;
       }),
     );
   });
