@@ -51,26 +51,31 @@ The diagrams below show the target design; the workspaces build it plan by plan.
 
 ### Environments and resources
 
-Each environment has one context graph, shared by all its contracts. A
-redeployed contract writes to the same graph as the one it replaces; the old
+Each environment has one context graph on the shared DKG node
+([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)). Our node
+publishes the ratings of every contract of an environment to that environment's
+graph, so a redeployed contract keeps the graph of the one it replaces; the old
 contract is paused and drained ([ADR 0027](docs/adr/0027-past-contracts-are-paused-and-drained.md)).
-R-KA names cannot collide across contracts, because the request id hashes the
-chain id and contract address ([ADR 0016](docs/adr/0016-asset-names-derive-from-request-id.md)).
+Each contract's R-KA names are its own, because the request id hashes the chain
+id and contract address ([ADR 0016](docs/adr/0016-asset-names-derive-from-request-id.md)).
+Previews and local development use staging's contract and graph; a developer
+running the rating functions locally uses their own contract and oracle key
+([ADR 0019](docs/adr/0019-oracle-transactions-are-serialized.md)).
 
 ```mermaid
 flowchart TB
-  subgraph node["DKG node (shared host, ADR 0006)"]
+  subgraph node["DKG node host (shared, ADR 0006)"]
     sg["Staging graph"]
     pg["Production graph"]
   end
-  subgraph staging["Staging: develop, previews, local"]
+  subgraph staging["Staging: develop and previews"]
     sc["RatingController (staging)<br/>Base Sepolia<br/>+ past contracts, paused"]
   end
   subgraph production["Production: main"]
     pc["RatingController (production)<br/>Base Sepolia<br/>+ past contracts, paused"]
   end
-  staging --> sg
-  production --> pg
+  staging -. "R-KAs published by our node" .-> sg
+  production -. "R-KAs published by our node" .-> pg
 ```
 
 ### Rating a paper
@@ -86,23 +91,41 @@ sequenceDiagram
   U->>C: requestPhase1(targetUal)
   C-->>W: Phase1Requested(requestId, …) via Alchemy
   W->>R: event keyed on requestId
+  R->>C: read the request and the contract's oracle
+  Note over R: Stop if settled, or if the oracle is not this deployment's key.
   R->>R: R-KA name from requestId
   R->>N: read R-KA state by name
-  alt missing
+  alt invalid target, or past the maximum age without a minted R-KA
+    R->>O: cancel(requestId, reason)
+    O->>C: cancelRequest(requestId, reason)
+  else missing
     R->>R: score the target
-    R->>N: store R-KA
+    R->>N: store R-KA, then mint and poll until minted
+    R->>O: fulfil(requestId, score, rKaUal)
+    O->>C: fulfilPhase1(requestId, score, rKaUal)
   else stored
-    R->>N: read the stored score back
+    R->>N: read the stored score back, wait out any earlier mint
+    R->>N: mint and poll until minted
+    R->>O: fulfil(requestId, score, rKaUal)
+    O->>C: fulfilPhase1(requestId, score, rKaUal)
+  else minted
+    R->>O: fulfil(requestId, score, rKaUal)
+    O->>C: fulfilPhase1(requestId, score, rKaUal)
   end
-  R->>N: mint, then poll until minted
-  R->>O: fulfil(requestId, score, rKaUal)
-  O->>C: fulfilPhase1(...)
-  Note over C,R: A cron reconciler reads pendingRequestIds()<br/>and restarts the run of any stuck request.
+  Note over C,R: A cron reconciler pages through pendingRequestIds(offset, limit)<br/>and restarts the run of any stuck request.
 ```
 
-A retry, or a run restarted by the reconciler, recomputes the same name from the
-request id and resumes from whatever state the node reports
-([ADR 0007](docs/adr/0007-all-writes-converge.md), [ADR 0020](docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md)).
+Every run reads the request on chain and its R-KA on the node, then does what
+is left: a retry, or a run restarted by the reconciler, recomputes the same name
+from the request id and converges on the same R-KA
+([ADR 0007](docs/adr/0007-all-writes-converge.md), [ADR 0017](docs/adr/0017-chain-events-are-ingested-at-least-once.md),
+[ADR 0020](docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md)). A run
+that finds an R-KA stored by an earlier run waits out any mint still in flight
+before minting ([ADR 0008](docs/adr/0008-mints-are-async-polled-in-short-steps.md)).
+Every fulfil and cancel goes through the one serialized oracle function
+([ADR 0019](docs/adr/0019-oracle-transactions-are-serialized.md)); a target UAL
+that is invalid or not in canonical form is cancelled
+([ADR 0031](docs/adr/0031-uals-are-normalized-before-the-contract.md)).
 
 ### Publishing a paper
 
@@ -112,16 +135,19 @@ sequenceDiagram
   participant P as IPFS pinning
   participant A as App server
   participant R as Publish run (Inngest)
+  participant G as GROBID (node host)
   participant N as DKG node
-  A->>U: short-lived signed upload URL
+  U->>A: ask for an upload URL
+  A-->>U: short-lived signed upload URL
   U->>P: upload the PDF
   P-->>U: CID
   U->>A: CID + EIP-712 signature
   A->>A: verify the signature and the pinned file
-  A->>R: event with the CID
+  A->>R: event with the CID, submitter address and signature
   R->>R: Target KA name from CID
-  R->>R: parse (GROBID), extract metadata (LLM)
-  R->>N: store, then mint the Target KA
+  R->>G: parse the PDF
+  R->>R: extract metadata (LLM)
+  R->>N: store, then mint and poll until minted
   N-->>R: Target KA UAL, ready to be rated
 ```
 
