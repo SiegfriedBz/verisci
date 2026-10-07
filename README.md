@@ -107,8 +107,8 @@ sequenceDiagram
   N-->>R: Target KA UAL, ready to be rated
 ```
 
-The same PDF always has the same CID, so publishing it again converges on the
-existing Target KA ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)).
+Every PDF goes through one uploader with fixed IPFS import settings, so the same PDF always
+has the same CID and publishing it again converges on the existing Target KA ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)).
 
 ### Rating a paper
 

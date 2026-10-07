@@ -7,7 +7,7 @@ Domain logic. Core does no IO: no `fetch`, no `node:*` imports and no other
 `pnpm check` enforces this: `packages/core/biome.json` turns `fetch`,
 `node:*` and `@verisci/*` into errors ("core does no IO").
 
-Status: shared constants and UAL parsing.
+Status: shared constants, UAL parsing and asset names.
 
 ## API
 
@@ -22,6 +22,9 @@ Status: shared constants and UAL parsing.
 | `Ual` | A parsed UAL: `blockchain`, `chainId`, lowercase `address`, `bigint` `id` |
 | `UalError` | Why a string is not a UAL: `empty`, `not-a-dkg-did`, `bad-chain`, `bad-address`, `bad-id`, `bad-shape` |
 | `ParseUalResult`, `NormalizeUalResult` | The results of `parseUal` and `normalizeUal` |
+| `rKaName(requestId)` | The R-KA's asset name, `verisci-rka-<request id>`, or `{ ok: false, reason: "bad-request-id" }`; returns a result for every input |
+| `targetKaName(cid)` | The Target KA's asset name, `verisci-tka-<CIDv1 base32>`, or `{ ok: false, reason: "bad-cid" }`; returns a result for every input |
+| `AssetNameResult`, `AssetNameError` | The result of both, and why an input cannot be named |
 
 ## UALs
 
@@ -42,10 +45,33 @@ ratings.
 - Whether a UAL can be rated (its chain, its node) is the rating workflow's call, not the
   parser's.
 
+## Asset names
+
+Every write to the DKG stores an asset under a name computed from data every process
+already has, so a retried store or mint finds the asset an earlier attempt created
+([ADR 0007](../../docs/adr/0007-all-writes-converge.md)). Any process recomputes a name
+from the request id or the CID.
+
+- **R-KA:** `verisci-rka-<request id>`, the phase-1 request id as `0x` + 64 lowercase hex
+  ([ADR 0016](../../docs/adr/0016-asset-names-derive-from-request-id.md)). Any case and
+  surrounding whitespace give the same name.
+- **Target KA:** `verisci-tka-<CIDv1 base32>`
+  ([ADR 0010](../../docs/adr/0010-pdf-to-target-ka-pipeline.md)), from the CIDs an IPFS
+  upload of a file produces: a sha2-256 digest with the raw or dag-pb codec. Every spelling
+  of one CID (`Qm…`, `b…`, `z…`, `k…`) gives the same name; uppercase base32 (`B…`), other
+  hashes and other codecs are `bad-cid`. The same bytes uploaded with other import settings
+  are another CID, so another name (`docs/domain.md` → IPFS).
+- **Scope:** a name holds only its prefix and the request id or CID. The daemon scopes
+  names per context graph, so each environment's graph holds its own asset
+  (`docs/domain.md` → DKG).
+- Every name is lowercase `[a-z0-9-]`, 78 characters for an R-KA and 71 for a Target KA,
+  within the daemon's 1 to 256 and with no `:`, so the daemon reads it as a name.
+
 ## Depends on
 
-No other workspace. pnpm does not hoist undeclared workspace packages, so an
-import of another `@verisci/*` package fails to typecheck.
+The `multiformats` library, to parse CIDs, and no other workspace. pnpm does not hoist
+undeclared workspace packages, so an import of another `@verisci/*` package fails to
+typecheck.
 
 ## Scripts
 

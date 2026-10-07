@@ -12,5 +12,8 @@
   },
   "devDependencies": {
     "fast-check": "4.10.2"
+  },
+  "dependencies": {
+    "multiformats": "14.0.5"
   }
 }
