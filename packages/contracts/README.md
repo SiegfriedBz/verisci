@@ -14,8 +14,7 @@ defined in `src/interfaces/IRatingController.sol` and implemented in
 `src/RatingController.sol`. The deployed code is final: a fix is a redeploy,
 after which the previous contract is paused and settles the requests still
 pending on it
-([ADR 0023](../../docs/adr/0023-contract-is-not-upgradeable.md),
-[ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)).
+([ADR 0023](../../docs/adr/0023-a-fix-is-a-redeploy-owner-powers-fixed.md)).
 
 - **Request.** Anyone calls `requestPhase1(targetUal)` with a non-empty UAL and
   receives a `requestId`: the `keccak256` of the chain id, the contract
@@ -31,13 +30,12 @@ pending on it
 - **Fulfil.** The oracle calls `fulfilPhase1(requestId, score, rKaUal)` with a
   score from 0 to 100 and the R-KA's UAL. The record holds the phase-1 score;
   later phases get their own fields in later contract versions
-  ([ADR 0012](../../docs/adr/0012-ratings-evolve-in-three-phases.md)).
+  ([ADR 0012](../../docs/adr/0012-three-phases-settled-by-the-oracle.md)).
 - **Cancel.** The oracle calls `cancelRequest(requestId, reason)` with
   `Expired` (pending past the maximum age) or `InvalidTarget`. In an
   emergency, the owner assigns the oracle role to another key, which then
   cancels
-  ([ADR 0020](../../docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md),
-  [ADR 0024](../../docs/adr/0024-only-the-oracle-cancels-requests.md)).
+  ([ADR 0020](../../docs/adr/0020-stuck-requests-recovered-only-oracle-cancels.md)).
 - **Read.** `getRatingRequest(requestId)` returns the full `RatingRequest`
   record, with status `None` for an unknown id. `pendingCount()` and
   `pendingRequestIds(offset, limit)` list pending requests in chunks; their
@@ -49,17 +47,17 @@ pending on it
   so pending requests still settle. `unpause()` reopens requests, and
   `paused()` reads the state. Pausing retires a replaced contract and also
   serves as an emergency brake
-  ([ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)).
+  ([ADR 0023](../../docs/adr/0023-a-fix-is-a-redeploy-owner-powers-fixed.md)).
 - **Administration.** The owner sets `oracleAgent` and
   `maxPendingPerRequester`, and pauses and unpauses new requests
-  ([ADR 0033](../../docs/adr/0033-the-owner-can-unpause.md)). The owner and the oracle are
-  always distinct addresses: an oracle equal to the owner, or ownership moving
+  ([ADR 0023](../../docs/adr/0023-a-fix-is-a-redeploy-owner-powers-fixed.md)). The owner and
+  the oracle are always distinct addresses: an oracle equal to the owner, or ownership moving
   to the oracle, reverts with `SameOwnerAndOracle`
   ([ADR 0030](../../docs/adr/0030-owner-and-oracle-are-different-addresses.md)).
   Ownership moves in two steps (OpenZeppelin `Ownable2Step`), and
   `renounceOwnership` reverts with `RenounceOwnershipDisabled`, so the
   contract always has an owner
-  ([ADR 0032](../../docs/adr/0032-the-owner-can-transfer-ownership.md)).
+  ([ADR 0023](../../docs/adr/0023-a-fix-is-a-redeploy-owner-powers-fixed.md)).
 
 Failures revert with custom errors. Every state change emits an event:
 `Phase1Requested`, `Phase1Fulfilled`, `RequestCancelled`,
@@ -114,7 +112,7 @@ One-time setup per machine:
 
 1. **Link forge to the root env file.** Forge reads a `.env` file next to
    `foundry.toml`; link it to the root `.env.local`. The link is gitignored
-   ([ADR 0029](../../docs/adr/0029-forge-reads-the-root-env-file.md)).
+   ([ADR 0004](../../docs/adr/0004-env-variables-per-workspace-one-root-file.md)).
 
    ```bash
    ln -s ../../.env.local .env
@@ -194,7 +192,7 @@ in-memory chain with the local Anvil configuration.
 
 After a redeploy, pause the previous contract. It stops accepting requests
 while the oracle settles those still pending
-([ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)).
+([ADR 0023](../../docs/adr/0023-a-fix-is-a-redeploy-owner-powers-fixed.md)).
 
 ```bash
 cast send <previous address> "pause()" --rpc-url base_sepolia --account verisci-deployer
@@ -205,7 +203,7 @@ cast send <previous address> "pause()" --rpc-url base_sepolia --account verisci-
 | Export | Description |
 | --- | --- |
 | `ratingControllerAbi` | The contract ABI, typed `as const` so viem infers every function, event and error |
-| `ratingControllerDeployments(appEnv)` | `{ chainId, current, past }` for `staging` or `production`; `local` resolves to staging ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)). `current` accepts new requests; `past` contracts are paused and drained ([ADR 0027](../../docs/adr/0027-past-contracts-are-paused-and-drained.md)) |
+| `ratingControllerDeployments(appEnv)` | `{ chainId, current, past }` for `staging` or `production`; `local` resolves to staging ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)). `current` accepts new requests; `past` contracts are paused and drained ([ADR 0023](../../docs/adr/0023-a-fix-is-a-redeploy-owner-powers-fixed.md)) |
 | `NoDeploymentError` | Thrown by `ratingControllerDeployments` for an environment with no current deployment |
 | `Deployment`, `DeployEnv`, `RatingControllerDeployments` | The corresponding types |
 | `contractsName` | The package name, listed on the web app's home page |

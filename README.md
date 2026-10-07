@@ -13,7 +13,7 @@ rating to the paper itself, in the open: each rating is a public record on the
 OriginTrail Decentralized Knowledge Graph (DKG), and its score is written on
 chain, so neither can be quietly changed. A rating starts as a rough machine
 score and is meant to grow stronger through human review and, later, wet-lab
-replication ([ADR 0012](docs/adr/0012-ratings-evolve-in-three-phases.md)).
+replication ([ADR 0012](docs/adr/0012-three-phases-settled-by-the-oracle.md)).
 
 Status: early. verisci is a rebuild of an earlier prototype,
 desci-rating-dapp, which ran both flows (publish a paper, rate it) end to end on
@@ -36,7 +36,7 @@ user-facing feature has shipped here yet. Everything runs on testnets.
   ([ADR 0007](docs/adr/0007-all-writes-converge.md)).
 - **A cron job restarts anything stuck**, from the contract's own list of
   pending requests, and that request's run finishes or cancels it
-  ([ADR 0020](docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md)).
+  ([ADR 0020](docs/adr/0020-stuck-requests-recovered-only-oracle-cancels.md)).
 - **Staging and production are kept apart**, with their own contracts, graphs
   and oracle wallets; only the DKG node is shared ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)).
 
@@ -55,7 +55,7 @@ Each environment has one context graph on the shared DKG node
 ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)). Our node
 publishes the ratings of every contract of an environment to that environment's
 graph, so a redeployed contract keeps the graph of the one it replaces; the old
-contract is paused and drained ([ADR 0027](docs/adr/0027-past-contracts-are-paused-and-drained.md)).
+contract is paused and drained ([ADR 0023](docs/adr/0023-a-fix-is-a-redeploy-owner-powers-fixed.md)).
 Each contract's R-KA names are its own, because the request id hashes the chain
 id and contract address ([ADR 0016](docs/adr/0016-asset-names-derive-from-request-id.md)).
 Each environment also has its own oracle wallet, Alchemy webhook and Inngest
@@ -156,7 +156,7 @@ Every run reads the request on chain and its R-KA on the node, then does what
 is left: a retry, or a run restarted by the reconciler, recomputes the same name
 from the request id and converges on the same R-KA
 ([ADR 0007](docs/adr/0007-all-writes-converge.md), [ADR 0017](docs/adr/0017-chain-events-are-ingested-at-least-once.md),
-[ADR 0020](docs/adr/0020-a-cron-reconciler-recovers-stuck-requests.md)). A run
+[ADR 0020](docs/adr/0020-stuck-requests-recovered-only-oracle-cancels.md)). A run
 that finds an R-KA stored by an earlier run polls for a mint still in flight
 and mints only if the R-KA is still stored
 ([ADR 0008](docs/adr/0008-mints-are-async-polled-in-short-steps.md)). Every

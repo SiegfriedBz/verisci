@@ -30,7 +30,7 @@ strings count as unset.
 Why the environments are split this way is
 [ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md); why each workspace
 declares its own variables and why `APP_ENV` is required in production builds is
-[ADR 0004](../../docs/adr/0004-each-workspace-declares-its-env.md).
+[ADR 0004](../../docs/adr/0004-env-variables-per-workspace-one-root-file.md).
 
 ## Declaring a workspace's variables
 
@@ -63,7 +63,7 @@ Foundry's deployment settings are the exception: forge reads them from the same 
 env file, so they are listed in the Foundry section of `.env.example` without a
 `src/env.ts`, and forge validates them when it uses them. Per-deployment choices such
 as `DEPLOY_ENV` are passed on the command line
-([ADR 0029](../../docs/adr/0029-forge-reads-the-root-env-file.md)).
+([ADR 0004](../../docs/adr/0004-env-variables-per-workspace-one-root-file.md)).
 
 ## API
 

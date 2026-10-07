@@ -35,7 +35,7 @@ export type DeploymentsFile = z.infer<typeof deploymentsFileSchema>;
 /** An environment that has its own RatingController deployments (ADR 0005). */
 export type DeployEnv = "staging" | "production";
 
-/** An environment's deployments: `current` takes new requests, `past` are paused (ADR 0027). */
+/** An environment's deployments: `current` takes new requests, `past` are paused (ADR 0023). */
 export interface RatingControllerDeployments {
   chainId: number;
   current: Deployment;

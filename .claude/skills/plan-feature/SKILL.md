@@ -13,7 +13,7 @@ Write the plan for **$ARGUMENTS**. Plan only: write no code and create no branch
 4. Fill in [TEMPLATE.md](TEMPLATE.md):
    - **Goal**: one sentence, from the caller's side.
    - **Behaviour**: Given / when / then, including failures. Each bullet must become one test, so keep them concrete and checkable.
-   - **Design**: the files to add or change, public signatures, which workspace owns what (core does no IO), and the ADRs that apply, by number and link. A new decision the plan takes gets its own ADR in the same branch (`docs/adr/README.md` → Adding an ADR).
+   - **Design**: the files to add or change, public signatures, which workspace owns what (core does no IO), and the ADRs that apply, by number and link. A decision the plan takes is recorded in the same branch: a new topic gets a new ADR (`docs/adr/README.md` → Adding an ADR), and a choice on a topic an ADR already covers goes into that ADR with a History line (→ Changing an ADR).
    - **Out of scope**, then **Done when**: keep the template's docs items and name the READMEs that will change.
    - Status `draft`; the user sets `ready`.
 5. Show the user the plan path and a 3-line summary. Next step: `/implement NNN`.
