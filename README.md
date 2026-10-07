@@ -55,7 +55,7 @@ Each environment has one context graph on the shared DKG node
 ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)). Our node
 publishes the ratings of every contract of an environment to that environment's
 graph, so a redeployed contract keeps the graph of the one it replaces; the old
-contract is paused and drained ([ADR 0027](docs/adr/0027-past-contracts-are-paused-and-drained.md)).
+contract is paused and drained ([ADR 0023](docs/adr/0023-contract-is-not-upgradeable.md)).
 Each contract's R-KA names are its own, because the request id hashes the chain
 id and contract address ([ADR 0016](docs/adr/0016-asset-names-derive-from-request-id.md)).
 Each environment also has its own oracle wallet, Alchemy webhook and Inngest

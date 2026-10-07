@@ -39,7 +39,7 @@ Then report:
 **ADRs** (each one blocks the PR; ADR 0025)
 
 ADRs are the source of truth, and only the user decides between them. Check only what the branch touches:
-1. Read `docs/adr/README.md` (the index, the "Adding an ADR" rules, the Open questions).
+1. Read `docs/adr/README.md` (the index, the "Adding an ADR" and "Changing an ADR" rules, Merged ADRs, the Open questions).
 2. Read every ADR the diff adds or changes, every ADR those cite, and every ADR that
    cites them (grep the file name or `NNNN` across `docs/adr/`).
 3. For code: read the ADRs listed in the `CLAUDE.md` of each workspace in the diff, and
@@ -48,12 +48,13 @@ ADRs are the source of truth, and only the user decides between them. Check only
 Then report:
 - Code in the diff that contradicts an accepted ADR: the ADR, its sentence, and the file:line.
 - An ADR the diff adds or changes that contradicts an ADR it cites or that cites it: both ADRs and both sentences.
-- A one-way link: `Amended by` without the matching `Amends` (or the reverse), `Superseded by` without `Supersedes` (or the reverse).
+- A one-way link: `Superseded by` without the matching `Supersedes` (or the reverse).
+- A link or citation (`ADR NNNN`, `[NNNN](…)`) to an ADR that is deleted or listed under Merged ADRs, anywhere in the diff; or a deleted ADR missing from Merged ADRs.
 - A new ADR without an index row, a row in the wrong group, or a row whose title, link or status disagrees with the file.
 - An open question an ADR in the diff answers whose row is still in the Open questions table.
-- A merged ADR (present on the base branch) changed anywhere but its status line: `git diff <base>...HEAD -- docs/adr/`.
+- A merged ADR (present on the base branch) changed with no new dated line under its `## History` saying what changed and why: `git diff <base>...HEAD -- docs/adr/`. A change that brings a whole new choice belongs in a new ADR instead.
 
-Every ADR finding ends with the user's options, never new wording: **amend** an ADR (new ADR, `Amends`), **supersede** it (new ADR, `Supersedes`), or **change the code**, whichever apply; for an index finding, **fix the index** row. Never propose text for an ADR.
+Every ADR finding ends with the user's options, never new wording: **amend** an ADR (rewrite it in place, with a dated `## History` line), **supersede** it (new ADR, `Supersedes`), or **change the code**, whichever apply; for an index finding, **fix the index** row. Never propose text for an ADR.
 
 Report each finding as: section (Code, Docs or ADRs), file:line, what is wrong, and why it matters. Most severe first. If a section has nothing, say so.
 
@@ -62,9 +63,9 @@ End with **Docs checked**: every doc file you read in step 2 or opened from a st
 ## ADR sweep mode
 
 Used by `/review-adrs` only: no diff, no Code or Docs sections. Read `docs/adr/README.md` and every ADR in `docs/adr/`, then report, in the ADRs format above (both ADRs and both sentences, then the options):
-- Two accepted ADRs that contradict each other (an amended ADR is read together with the ADR that amends it; a superseded one is history).
-- A one-way `Amends`/`Amended by` or `Supersedes`/`Superseded by` link.
-- An index row whose title, link, group or status disagrees with its file, a file with no row, or a row with no file.
+- Two accepted ADRs that contradict each other (a superseded one is history).
+- A one-way `Supersedes`/`Superseded by` link, or a link to an ADR that is deleted or listed under Merged ADRs.
+- An index row whose title, link, group or status disagrees with its file, a file with no row, or a row with no file; a Merged ADRs number that still has a file.
 - An open question an accepted ADR already answers.
 
 End with **ADRs checked**: every ADR, one per line, marked `ok` or `conflict`.

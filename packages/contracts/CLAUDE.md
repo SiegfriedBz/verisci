@@ -31,11 +31,12 @@ layout, toolchain versions and commands.
   implements it and uses `@inheritdoc`.
 - `src/RatingController.sol` implements `IRatingController`. Its invariants live in
   `test/RatingController.inv.t.sol`, driven by `test/handlers/RatingHandler.sol`.
-- It follows ADRs 0012 (one score per phase), 0015 (per-requester cap), 0016 (request id
-  scheme), 0020 (pending set, cancel reasons), 0022 (request ids indexed by target), 0023
-  (a fix is a redeploy), 0024 (only the oracle cancels), 0027 (the owner pauses new
-  requests; fulfil and cancel keep working), 0028 (deployed addresses are committed), 0029
-  (forge reads the root env file through `.env`), 0030 (owner and oracle are different
-  addresses), 0032 (two-step ownership transfer, no renounce) and 0033 (the owner
-  unpauses too). `HelperConfig` and `resolveDeployments` follow 0005 (staging,
+- It follows ADRs 0004 (forge reads the root env file through `.env`), 0012 (one score
+  per phase), 0015 (per-requester cap), 0016 (request id scheme), 0020 (pending set,
+  cancel reasons, only the oracle cancels), 0022 (request ids indexed by target), 0023 (a
+  fix is a redeploy; old contracts are paused and drained, with fulfil and cancel still
+  working; the owner pauses and unpauses, and transfers ownership in two steps with no
+  renounce), 0028 (deployed addresses are committed) and 0030 (owner and oracle are
+  different addresses). The NatSpec still cites ADRs 0024 and 0027, merged into 0020 and
+  0023: it changes at the next redeploy, so the source stays the one verified on Basescan. `HelperConfig` and `resolveDeployments` follow 0005 (staging,
   production and local). See [`docs/adr/`](../../docs/adr/README.md).
