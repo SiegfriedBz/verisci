@@ -38,6 +38,6 @@ layout, toolchain versions and commands.
   working; the owner pauses and unpauses, and transfers ownership in two steps with no
   renounce), 0028 (deployed addresses are committed) and 0030 (owner and oracle are
   different addresses). `HelperConfig` and `resolveDeployments` follow 0005 (staging,
-  production and local). The NatSpec still cites ADRs 0024 and 0027, folded into 0020
-  and 0023: it changes at the next redeploy, so the source stays the one verified on
-  Basescan. See [`docs/adr/`](../../docs/adr/README.md).
+  production and local). The NatSpec still cites two ADR numbers since folded
+  (`docs/adr/README.md` → Folded ADRs): it changes at the next redeploy, so the source
+  stays the one verified on Basescan. See [`docs/adr/`](../../docs/adr/README.md).
