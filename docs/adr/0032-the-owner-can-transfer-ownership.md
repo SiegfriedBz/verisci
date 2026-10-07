@@ -1,6 +1,6 @@
 # 0032. The owner can transfer ownership
 
-- Status: Accepted
+- Status: Amended by [0033](0033-the-owner-can-unpause.md)
 - Date: 2026-10-06
 - Amends: [0023](0023-contract-is-not-upgradeable.md) and [0027](0027-past-contracts-are-paused-and-drained.md) (what the owner can do)
 

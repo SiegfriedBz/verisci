@@ -32,7 +32,9 @@ taken, so a later ADR can sit in an earlier group.
 | [0027. Past contracts are paused and drained](0027-past-contracts-are-paused-and-drained.md) | The owner can pause new requests; after a redeploy the old contract is paused and the backend settles what is still pending on it; amends what "read-only" means in 0023 (amended by [0032](0032-the-owner-can-transfer-ownership.md)) |
 | [0028. Deployed addresses are committed](0028-deployed-addresses-are-committed.md) | Staging's and production's current contract, and every past one that took requests, live in a committed file in the contracts package, changed only after a deploy through a reviewed PR; local test runs are for the agents plan |
 | [0029. Forge reads the root env file](0029-forge-reads-the-root-env-file.md) | Forge reads the same root env file as the app; its settings are listed in `.env.example` with no `src/env.ts`; per-deploy choices go on the command; amends 0004 |
-| [0032. The owner can transfer ownership](0032-the-owner-can-transfer-ownership.md) | The owner sets the oracle and the pending cap, pauses new requests and transfers ownership, in two steps and never to the oracle; it cannot renounce, so the contract always has an owner; amends what the owner can do in 0023 and 0027 |
+| [0030. The owner and the oracle are different addresses](0030-owner-and-oracle-are-different-addresses.md) | The contract rejects an oracle equal to the owner and ownership moving to the oracle; each environment has a deployer (owner, offline) and an oracle (key on its deployment) |
+| [0032. The owner can transfer ownership](0032-the-owner-can-transfer-ownership.md) | The owner sets the oracle and the pending cap, pauses new requests and transfers ownership, in two steps and never to the oracle; it cannot renounce, so the contract always has an owner; amends what the owner can do in 0023 and 0027 (amended by [0033](0033-the-owner-can-unpause.md)) |
+| [0033. The owner can unpause new requests](0033-the-owner-can-unpause.md) | The owner sets the oracle and the pending cap, pauses and unpauses new requests, and transfers ownership; amends the list of owner powers in 0032 |
 
 ## Writing to the DKG
 
@@ -77,7 +79,6 @@ In the order a request lives: requested, named, ingested, scored, fulfilled, and
 | [0019. Oracle transactions are serialized](0019-oracle-transactions-are-serialized.md) | One function sends every oracle transaction, one at a time, replacing stuck ones; only `main` and `develop` hold the production and staging oracle keys |
 | [0020. A cron reconciler recovers stuck requests](0020-a-cron-reconciler-recovers-stuck-requests.md) | One singleton run per request finishes what is left, and past a maximum age fulfils if minted or cancels; a cron only restarts stuck requests from the contract's pending set (amended by [0024](0024-only-the-oracle-cancels-requests.md)) |
 | [0024. Only the oracle cancels requests](0024-only-the-oracle-cancels-requests.md) | Cancel reasons say why (maximum age, invalid target); the owner replaces the oracle in an emergency; amends the "owner" reason of 0020 |
-| [0030. The owner and the oracle are different addresses](0030-owner-and-oracle-are-different-addresses.md) | The contract rejects an oracle equal to the owner and ownership moving to the oracle; each environment has a deployer (owner, offline) and an oracle (key on its deployment) |
 
 ## App
 
