@@ -74,8 +74,8 @@ flowchart TB
   subgraph production["Production: main"]
     pc["RatingController (production)<br/>Base Sepolia<br/>+ past contracts, paused"]
   end
-  staging -. "R-KAs published by our node" .-> sg
-  production -. "R-KAs published by our node" .-> pg
+  staging -.->|"R-KAs published by our node"| sg
+  production -.->|"R-KAs published by our node"| pg
 ```
 
 ### Rating a paper
@@ -109,10 +109,11 @@ sequenceDiagram
     R->>O: fulfil(requestId, score, rKaUal)
     O->>C: fulfilPhase1(requestId, score, rKaUal)
   else minted
+    R->>N: read the score back from the R-KA
     R->>O: fulfil(requestId, score, rKaUal)
     O->>C: fulfilPhase1(requestId, score, rKaUal)
   end
-  Note over C,R: A cron reconciler pages through pendingRequestIds(offset, limit)<br/>and restarts the run of any stuck request.
+  Note over C,R: A cron reconciler pages through pendingRequestIds(offset, limit)<br/>on every contract of the environment, past ones included,<br/>and restarts the run of any stuck request.
 ```
 
 Every run reads the request on chain and its R-KA on the node, then does what
