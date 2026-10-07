@@ -1,4 +1,4 @@
-# 0004. Each workspace declares its own env variables
+# 0004. Env variables are declared per workspace, in one root file
 
 - Status: Accepted
 - Date: 2026-10-02
@@ -29,3 +29,4 @@ Foundry needs a few values of its own to deploy, such as an RPC URL and a block-
 
 - 2026-10-05: forge reads the root env file, its deploy settings are listed in `.env.example`, and per-deploy choices go on the command, so developers keep one file of values for the app and for deploys (was ADR 0029).
 - 2026-10-07: ADR 0029 folded into this one, so the env rules read in one file.
+- 2026-10-07: retitled to name everything it now covers (was "Each workspace declares its own env variables").

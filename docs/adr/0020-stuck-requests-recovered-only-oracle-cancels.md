@@ -1,4 +1,4 @@
-# 0020. A cron reconciler recovers stuck requests
+# 0020. Stuck requests are recovered, and only the oracle cancels
 
 - Status: Accepted
 - Date: 2026-10-02
@@ -7,7 +7,7 @@
 
 Requests can stop halfway ([0007](0007-all-writes-converge.md)), or never start because their webhook was lost ([0017](0017-chain-events-are-ingested-at-least-once.md)). The previous repo recovered only from the browser that made the request, and stuck requests cannot be found by scanning logs on the free RPC tier ([domain](../domain.md)).
 
-[0019](0019-oracle-transactions-are-serialized.md) sends every fulfil and cancel from the oracle account. The owner can already replace the oracle's address ([0023](0023-contract-is-not-upgradeable.md)), so an owner cancel would add a second way to cancel and no capability the system lacks.
+[0019](0019-oracle-transactions-are-serialized.md) sends every fulfil and cancel from the oracle account. The owner can already replace the oracle's address ([0023](0023-a-fix-is-a-redeploy-owner-powers-fixed.md)), so an owner cancel would add a second way to cancel and no capability the system lacks.
 
 ## Decision
 
@@ -31,3 +31,4 @@ Requests can stop halfway ([0007](0007-all-writes-converge.md)), or never start 
 
 - 2026-10-04: only the oracle cancels, and the cancel reasons are maximum age and invalid target. An owner cancel added a second way to cancel and no capability the system lacks, and an "owner" reason said who, not why (was ADR 0024).
 - 2026-10-07: ADR 0024 folded into this one, so recovery and cancelling read in one file.
+- 2026-10-07: retitled to name everything it now covers (was "A cron reconciler recovers stuck requests").

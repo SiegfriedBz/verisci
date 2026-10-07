@@ -5,7 +5,7 @@
 
 ## Context
 
-[0019](0019-oracle-transactions-are-serialized.md) puts the oracle's key on the `main` and `develop` deployments, where the rating functions sign with it, and keeps the owner's key away from Vercel and CI. The owner can pause requests, replace the oracle and transfer ownership ([0023](0023-contract-is-not-upgradeable.md)). If one address held both roles, putting the oracle's key on a server would put the owner's powers there too. The first staging deploy did exactly this, by passing the deployer's own address as the oracle.
+[0019](0019-oracle-transactions-are-serialized.md) puts the oracle's key on the `main` and `develop` deployments, where the rating functions sign with it, and keeps the owner's key away from Vercel and CI. The owner can pause requests, replace the oracle and transfer ownership ([0023](0023-a-fix-is-a-redeploy-owner-powers-fixed.md)). If one address held both roles, putting the oracle's key on a server would put the owner's powers there too. The first staging deploy did exactly this, by passing the deployer's own address as the oracle.
 
 ## Decision
 

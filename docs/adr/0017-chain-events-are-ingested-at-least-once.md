@@ -13,7 +13,7 @@ Rating requests reach verisci as Alchemy webhook calls carrying contract logs. W
 - Only the contract's request log becomes an Inngest event, with an id derived from the request id, so a duplicate delivery collapses into the existing event.
 - The route answers 200 only once Inngest has accepted the events; otherwise 5xx, so Alchemy delivers again.
 - Logs marked `removed` are ignored, and every run re-reads the request on chain before acting.
-- Delivery is not trusted for completeness: a request whose webhook never arrives is found by the reconciler ([0020](0020-a-cron-reconciler-recovers-stuck-requests.md)).
+- Delivery is not trusted for completeness: a request whose webhook never arrives is found by the reconciler ([0020](0020-stuck-requests-recovered-only-oracle-cancels.md)).
 
 ## Consequences
 

@@ -16,6 +16,6 @@ Every rating costs an LLM call (real money), the oracle's `fulfil` gas and a DKG
 ## Consequences
 
 - Fresh addresses get around the per-requester cap, so the throttle is the real bound on spend. Every request, spam included, takes at least one run and ends in one oracle transaction, so the throttle is sized against the Inngest execution cap and the oracle's gas ([domain](../domain.md)).
-- A spam backlog can delay genuine requests past the maximum age, and they are cancelled ([0020](0020-a-cron-reconciler-recovers-stuck-requests.md)). Accepted on testnet.
+- A spam backlog can delay genuine requests past the maximum age, and they are cancelled ([0020](0020-stuck-requests-recovered-only-oracle-cancels.md)). Accepted on testnet.
 - The oracle and node wallet balances are alerted on.
 - The contracts plan sets the cap; the agents plan sets the throttle.

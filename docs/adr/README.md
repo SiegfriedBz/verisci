@@ -25,10 +25,10 @@ taken, so a later ADR can sit in an earlier group.
 
 | ADR | Decision |
 | --- | --- |
-| [0004. Each workspace declares its own env variables](0004-each-workspace-declares-its-env.md) | Each workspace validates the variables it reads; forge reads the same root env file |
+| [0004. Env variables are declared per workspace, in one root file](0004-env-variables-per-workspace-one-root-file.md) | Each workspace validates the variables it reads; forge reads the same root env file |
 | [0005. Staging and production use separate resources](0005-staging-and-production-are-isolated.md) | Each environment has its own contract, graph, webhook, oracle wallet and Inngest environment; the DKG node is shared, so a `-prod` guard protects production |
 | [0006. The DKG node runs on a dedicated host](0006-dkg-node-runs-on-a-dedicated-host.md) | The node, GROBID and an RPC proxy run on their own host, behind authentication, with keys backed up |
-| [0023. The contract is not upgradeable](0023-contract-is-not-upgradeable.md) | A fix is a redeploy; old contracts are paused and drained; the owner sets the oracle and cap, pauses and unpauses, and transfers ownership in two steps, never to the oracle, with no renounce |
+| [0023. A fix is a redeploy, and the owner's powers are fixed](0023-a-fix-is-a-redeploy-owner-powers-fixed.md) | A fix is a redeploy; old contracts are paused and drained; the owner sets the oracle and cap, pauses and unpauses, and transfers ownership in two steps, never to the oracle, with no renounce |
 | [0028. Deployed addresses are committed](0028-deployed-addresses-are-committed.md) | Every environment's contract addresses live in a committed file, changed by a reviewed PR |
 | [0030. The owner and the oracle are different addresses](0030-owner-and-oracle-are-different-addresses.md) | The owner's key stays offline; the oracle's key is on the deployment; the contract keeps them apart |
 
@@ -55,7 +55,7 @@ A PDF becomes a Target KA.
 | ADR | Decision |
 | --- | --- |
 | [0011. A rating is a separate R-KA, linked by schema:about](0011-a-rating-is-a-separate-r-ka.md) | Each rating is its own R-KA pointing at the paper; the paper is never modified |
-| [0012. Ratings evolve in three phases](0012-ratings-evolve-in-three-phases.md) | Machine score, human review, wet-lab; the oracle records every phase's score |
+| [0012. Ratings evolve in three phases, each settled by the oracle](0012-three-phases-settled-by-the-oracle.md) | Machine score, human review, wet-lab; the oracle records every phase's score |
 | [0013. A paper can have several ratings](0013-several-ratings-per-paper.md) | A rating is identified by its request id and its R-KA's UAL |
 | [0014. The contract owns scores, the DKG owns content](0014-contract-owns-scores-dkg-owns-content.md) | The UI shows the contract's score and flags a gap with the DKG |
 | [0022. The contract indexes request ids by target](0022-contract-indexes-request-ids-by-target.md) | The contract lists each paper's request ids, oldest first, read by view calls |
@@ -72,7 +72,7 @@ In the order a request lives: requested, named, ingested, scored, fulfilled, and
 | [0017. Chain events are ingested at least once](0017-chain-events-are-ingested-at-least-once.md) | Signed webhooks, one event per request id, acked only after hand-off; the reconciler heals what is missed |
 | [0018. The phase-1 scorer has a fixed output contract](0018-phase-1-scorer-output-contract.md) | The scorer returns `{ score, rationale, observed, missing }`, computed once and read back |
 | [0019. Oracle transactions are serialized](0019-oracle-transactions-are-serialized.md) | One function sends every oracle transaction, one at a time; only `main` and `develop` hold the oracle keys |
-| [0020. A cron reconciler recovers stuck requests](0020-a-cron-reconciler-recovers-stuck-requests.md) | One run per request finishes what is left; a cron restarts stuck ones; only the oracle cancels |
+| [0020. Stuck requests are recovered, and only the oracle cancels](0020-stuck-requests-recovered-only-oracle-cancels.md) | One run per request finishes what is left; a cron restarts stuck ones; only the oracle cancels |
 
 ## App
 
@@ -86,12 +86,12 @@ Each was folded into the ADR that covers its topic. Their numbers stay retired, 
 
 | Was | Now in |
 | --- | --- |
-| 0024. Only the oracle cancels requests | [0020](0020-a-cron-reconciler-recovers-stuck-requests.md) |
-| 0026. The oracle settles every phase on chain | [0012](0012-ratings-evolve-in-three-phases.md) |
-| 0027. Past contracts are paused and drained | [0023](0023-contract-is-not-upgradeable.md) |
-| 0029. Forge reads the root env file | [0004](0004-each-workspace-declares-its-env.md) |
-| 0032. The owner can transfer ownership | [0023](0023-contract-is-not-upgradeable.md) |
-| 0033. The owner can unpause new requests | [0023](0023-contract-is-not-upgradeable.md) |
+| 0024. Only the oracle cancels requests | [0020](0020-stuck-requests-recovered-only-oracle-cancels.md) |
+| 0026. The oracle settles every phase on chain | [0012](0012-three-phases-settled-by-the-oracle.md) |
+| 0027. Past contracts are paused and drained | [0023](0023-a-fix-is-a-redeploy-owner-powers-fixed.md) |
+| 0029. Forge reads the root env file | [0004](0004-env-variables-per-workspace-one-root-file.md) |
+| 0032. The owner can transfer ownership | [0023](0023-a-fix-is-a-redeploy-owner-powers-fixed.md) |
+| 0033. The owner can unpause new requests | [0023](0023-a-fix-is-a-redeploy-owner-powers-fixed.md) |
 
 ## Open questions
 
@@ -102,7 +102,7 @@ Not decided yet. Each becomes an ADR in the plan that first needs the answer; th
 | How do users authenticate? | Wallet connection (Reown AppKit + wagmi). A submission is authorized by its EIP-712 signature ([0010](0010-pdf-to-target-ka-pipeline.md)), and rate limits key on the signing address; a SIWE session only if sign-in sessions are ever needed. | first web plan with a wallet |
 | Where do alerts go? | One chat-bot channel behind a single `notify()`, fed by a scheduled check (wallet balances, orphans, age of the oldest pending request) and an uptime check on the node's `/api/status`. | agents plan |
 | Where does mutable app state live? | Nowhere authoritative: the chain and the DKG hold the truth. Rate-limit counters go in one small key-value store (Upstash Redis); losing it only resets the limits. | first web plan with a wallet |
-| Who may request phases 2 and 3? | Anyone, not only the phase-1 requester. Whoever requests, our node writes the R-KA update, since it owns the R-KA ([0012](0012-ratings-evolve-in-three-phases.md)). Also open: whether a later phase's request gets its own id or reuses the rating's. | phase-2 plan |
+| Who may request phases 2 and 3? | Anyone, not only the phase-1 requester. Whoever requests, our node writes the R-KA update, since it owns the R-KA ([0012](0012-three-phases-settled-by-the-oracle.md)). Also open: whether a later phase's request gets its own id or reuses the rating's. | phase-2 plan |
 | How does a local test run target a developer's own contract? | One local-only address variable for that contract, read by the agents when `APP_ENV=local`; staging's and production's addresses stay in the committed file ([0028](0028-deployed-addresses-are-committed.md), [0019](0019-oracle-transactions-are-serialized.md)). | agents plan |
 | Who holds the DKG node's credential? | Caddy keeps the daemon's admin token on the host and checks one credential per environment, so each can be revoked alone. The `-prod` guard stays ([0005](0005-staging-and-production-are-isolated.md)). | dkg plan |
 

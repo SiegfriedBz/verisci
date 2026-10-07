@@ -5,7 +5,7 @@
 
 ## Context
 
-A rating has scores on the contract, one per phase ([0012](0012-ratings-evolve-in-three-phases.md)), and content (rationale, evidence) in its R-KA on the DKG. A phase's score is recorded only after its R-KA version is written, so the contract is never ahead of the DKG. They can still disagree: a request cancelled after its R-KA was written leaves content the contract never recorded, and the daemon can stop serving the R-KA the contract points to.
+A rating has scores on the contract, one per phase ([0012](0012-three-phases-settled-by-the-oracle.md)), and content (rationale, evidence) in its R-KA on the DKG. A phase's score is recorded only after its R-KA version is written, so the contract is never ahead of the DKG. They can still disagree: a request cancelled after its R-KA was written leaves content the contract never recorded, and the daemon can stop serving the R-KA the contract points to.
 
 ## Decision
 
