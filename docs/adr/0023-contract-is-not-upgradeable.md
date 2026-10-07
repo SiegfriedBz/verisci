@@ -24,11 +24,12 @@ Requests can still be pending on a contract when it is replaced, and no request 
 - The app, the agents and the reconciler read every contract of an environment listed in the deployments file ([0028](0028-deployed-addresses-are-committed.md)), current and past; the agents plan builds that.
 - The pause is reversible, so it also stops a wave of spam requests without a redeploy.
 - Control of a deployed contract can move to a safer wallet, such as a multisig, or away from an exposed key, with no redeploy. A mistyped address cannot take ownership: an address that never accepts leaves the current owner in place.
+- The contract keeps an owner for its whole life, so an emergency always has someone to act.
 - Whoever holds the owner key can hand the contract over, so that key stays offline ([0019](0019-oracle-transactions-are-serialized.md), [0030](0030-owner-and-oracle-are-different-addresses.md)).
 - Revisit before mainnet, with the payment plan.
 
 ## History
 
-- 2026-10-05: past contracts are paused and drained, and the owner can pause and unpause new requests (was ADR 0027).
-- 2026-10-06: the owner can transfer ownership in two steps, and cannot renounce (was ADR 0032).
-- 2026-10-07: corrected the owner's list to include unpausing (was ADR 0033). ADRs 0027, 0032 and 0033 merged into this one.
+- 2026-10-05: past contracts are paused and drained, and the owner can pause and unpause new requests, so requests pending on a replaced contract still settle and a pause can stop a wave of spam (was ADR 0027).
+- 2026-10-06: the owner can transfer ownership in two steps, never to the oracle, and cannot renounce, so a lost or exposed owner key is handled without a redeploy and an emergency always has an owner to act (was ADR 0032).
+- 2026-10-07: corrected the owner's list to include unpausing, which the contract already had (was ADR 0033). ADRs 0027, 0032 and 0033 folded into this one, so the contract's lifecycle and the owner's powers read in one file.

@@ -20,4 +20,4 @@
 
 ## History
 
-- 2026-10-07: corrected links to ADR 0027, merged into 0023.
+- 2026-10-07: corrected links to ADR 0027, folded into 0023.

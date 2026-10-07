@@ -7,7 +7,7 @@
 
 Every adapter needs configuration (URLs, keys, wallets). One central schema would make every workspace require every variable, secrets included, and a missing variable would surface late, deep in a request.
 
-Foundry needs a few values of its own to deploy, such as an RPC URL and a block-explorer key. Forge reads them from the shell or from a `.env` file next to `foundry.toml`, and fails when one it uses is missing; no TypeScript reads them. A deploy also takes choices that differ from one run to the next, such as which environment to deploy.
+Foundry needs a few values of its own to deploy, such as an RPC URL and a block-explorer key. Forge reads them from the shell or from a `.env` file next to `foundry.toml`, and fails when one it uses is missing. No TypeScript reads them, so a `src/env.ts` would declare values that nothing in TypeScript uses. A deploy also takes choices that differ from one run to the next, such as which environment to deploy.
 
 ## Decision
 
@@ -20,12 +20,12 @@ Foundry needs a few values of its own to deploy, such as an RPC URL and a block-
 
 ## Consequences
 
-- A workspace's env object exposes only what it declares, and a bad config fails at startup with a clear message. This is hygiene, not isolation: every module in a deployment shares one `process.env`, so a secret set on a host is readable by all the code it runs. Forge sees every value in the root file too.
+- A workspace's env object exposes only what it declares, and a bad config fails at startup with a clear message. This is hygiene, not isolation: every module in a deployment shares one `process.env`, so a secret set on a host is readable by all the code it runs. Forge sees every value in the root file, secrets included, as every module of a deployment does.
 - One place to fill in values, for the app and for deploys. A forge setting is checked only when a deploy uses it.
 - Each plan that reads a new variable adds it to its workspace's `src/env.ts` and to `.env.example`.
 - Usage is documented in the [`@verisci/env` README](../../packages/env/README.md).
 
 ## History
 
-- 2026-10-05: forge reads the root env file, its deploy settings are listed in `.env.example`, and per-deploy choices go on the command (was ADR 0029).
-- 2026-10-07: ADR 0029 merged into this one.
+- 2026-10-05: forge reads the root env file, its deploy settings are listed in `.env.example`, and per-deploy choices go on the command, so developers keep one file of values for the app and for deploys (was ADR 0029).
+- 2026-10-07: ADR 0029 folded into this one, so the env rules read in one file.

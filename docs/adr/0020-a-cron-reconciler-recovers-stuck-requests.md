@@ -29,5 +29,5 @@ Requests can stop halfway ([0007](0007-all-writes-converge.md)), or never start 
 
 ## History
 
-- 2026-10-04: only the oracle cancels; the "owner" cancel reason is gone (was ADR 0024).
-- 2026-10-07: ADR 0024 merged into this one.
+- 2026-10-04: only the oracle cancels, and the cancel reasons are maximum age and invalid target. An owner cancel added a second way to cancel and no capability the system lacks, and an "owner" reason said who, not why (was ADR 0024).
+- 2026-10-07: ADR 0024 folded into this one, so recovery and cancelling read in one file.

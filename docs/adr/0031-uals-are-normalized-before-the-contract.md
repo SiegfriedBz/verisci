@@ -23,4 +23,4 @@ The contract lists a target's request ids under the hash of the exact UAL string
 
 ## History
 
-- 2026-10-07: corrected the link to ADR 0024, merged into 0020.
+- 2026-10-07: corrected the link to ADR 0024, folded into 0020.

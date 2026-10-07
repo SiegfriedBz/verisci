@@ -26,9 +26,9 @@ taken, so a later ADR can sit in an earlier group.
 | ADR | Decision |
 | --- | --- |
 | [0004. Each workspace declares its own env variables](0004-each-workspace-declares-its-env.md) | Each workspace validates the variables it reads; forge reads the same root env file |
-| [0005. Staging and production use separate resources](0005-staging-and-production-are-isolated.md) | Each environment has its own contract, graph, webhook, oracle wallet and Inngest environment; the DKG node is shared |
+| [0005. Staging and production use separate resources](0005-staging-and-production-are-isolated.md) | Each environment has its own contract, graph, webhook, oracle wallet and Inngest environment; the DKG node is shared, so a `-prod` guard protects production |
 | [0006. The DKG node runs on a dedicated host](0006-dkg-node-runs-on-a-dedicated-host.md) | The node, GROBID and an RPC proxy run on their own host, behind authentication, with keys backed up |
-| [0023. The contract is not upgradeable](0023-contract-is-not-upgradeable.md) | A fix is a redeploy; old contracts are paused and drained; what the owner can do |
+| [0023. The contract is not upgradeable](0023-contract-is-not-upgradeable.md) | A fix is a redeploy; old contracts are paused and drained; the owner sets the oracle and cap, pauses and unpauses, and transfers ownership in two steps, never to the oracle, with no renounce |
 | [0028. Deployed addresses are committed](0028-deployed-addresses-are-committed.md) | Every environment's contract addresses live in a committed file, changed by a reviewed PR |
 | [0030. The owner and the oracle are different addresses](0030-owner-and-oracle-are-different-addresses.md) | The owner's key stays offline; the oracle's key is on the deployment; the contract keeps them apart |
 
@@ -58,8 +58,8 @@ A PDF becomes a Target KA.
 | [0012. Ratings evolve in three phases](0012-ratings-evolve-in-three-phases.md) | Machine score, human review, wet-lab; the oracle records every phase's score |
 | [0013. A paper can have several ratings](0013-several-ratings-per-paper.md) | A rating is identified by its request id and its R-KA's UAL |
 | [0014. The contract owns scores, the DKG owns content](0014-contract-owns-scores-dkg-owns-content.md) | The UI shows the contract's score and flags a gap with the DKG |
-| [0022. The contract indexes request ids by target](0022-contract-indexes-request-ids-by-target.md) | The contract lists each paper's request ids, read by view calls |
-| [0031. UALs are normalized before they reach the contract](0031-uals-are-normalized-before-the-contract.md) | Every UAL takes one canonical spelling before it is used; the oracle cancels other spellings |
+| [0022. The contract indexes request ids by target](0022-contract-indexes-request-ids-by-target.md) | The contract lists each paper's request ids, oldest first, read by view calls |
+| [0031. UALs are normalized before they reach the contract](0031-uals-are-normalized-before-the-contract.md) | Every UAL takes one canonical spelling before it is used; leading zeros are refused; the oracle cancels other spellings |
 
 ## Rating flow
 
@@ -68,10 +68,10 @@ In the order a request lives: requested, named, ingested, scored, fulfilled, and
 | ADR | Decision |
 | --- | --- |
 | [0015. Rating requests are free on testnet](0015-rating-requests-are-free-on-testnet.md) | Requesters pay only gas; a cap and a throttle bound spend until mainnet |
-| [0016. Asset names derive from the on-chain request id](0016-asset-names-derive-from-request-id.md) | Each request has an on-chain id; the rating's name and its recovery come from it |
-| [0017. Chain events are ingested at least once](0017-chain-events-are-ingested-at-least-once.md) | Signed webhooks, one event per request id; the reconciler heals what is missed |
+| [0016. Asset names derive from the on-chain request id](0016-asset-names-derive-from-request-id.md) | Each request has an on-chain id; the rating's name and its recovery come from it alone, on the server |
+| [0017. Chain events are ingested at least once](0017-chain-events-are-ingested-at-least-once.md) | Signed webhooks, one event per request id, acked only after hand-off; the reconciler heals what is missed |
 | [0018. The phase-1 scorer has a fixed output contract](0018-phase-1-scorer-output-contract.md) | The scorer returns `{ score, rationale, observed, missing }`, computed once and read back |
-| [0019. Oracle transactions are serialized](0019-oracle-transactions-are-serialized.md) | One function sends every oracle transaction, one at a time |
+| [0019. Oracle transactions are serialized](0019-oracle-transactions-are-serialized.md) | One function sends every oracle transaction, one at a time; only `main` and `develop` hold the oracle keys |
 | [0020. A cron reconciler recovers stuck requests](0020-a-cron-reconciler-recovers-stuck-requests.md) | One run per request finishes what is left; a cron restarts stuck ones; only the oracle cancels |
 
 ## App
@@ -80,9 +80,9 @@ In the order a request lives: requested, named, ingested, scored, fulfilled, and
 | --- | --- |
 | [0021. Server reads and actions return typed results](0021-server-reads-return-typed-results.md) | Expected failures come back as typed results that the caller handles |
 
-## Merged ADRs
+## Folded ADRs
 
-Their numbers stay retired; old commits and PRs that cite them lead here.
+Each was folded into the ADR that covers its topic. Their numbers stay retired, so old commits and PRs that cite them lead here.
 
 | Was | Now in |
 | --- | --- |
@@ -108,16 +108,18 @@ Not decided yet. Each becomes an ADR in the plan that first needs the answer; th
 
 ## Adding an ADR
 
-1. Take the next free number (one above the highest number used, Merged ADRs included) and name the file `NNNN-kebab-title.md`.
-2. Put it in the group it belongs to (or a new one). Numbers are permanent once merged, so a new ADR takes the next number even if its group comes earlier.
+1. Take the next free number (one above the highest number used, Folded ADRs included) and name the file `NNNN-kebab-title.md`.
+2. Put it in the group it belongs to (or a new one). Numbers are permanent once the PR is merged, so a new ADR takes the next number even if its group comes earlier.
 3. Use the same headings as the others: a title `# NNNN. Title`, then `Status` and `Date`, then `## Context`, `## Decision`, `## Consequences`. Keep it short: the decision and why, not the mechanics.
 4. Add a row to its group's table, and commit it on the branch of the plan that took the decision (scope `docs`, or the workspace it governs). If it answers an open question, remove that row in the same commit.
 
 ## Changing an ADR
 
-An ADR always states what is decided today, so a reader never follows a chain of ADRs.
+An ADR states what is decided today, so each topic reads in one file.
 
-- **A new choice gets a new ADR**: a decision where another option was really on the table.
-- **A change to part of a decision, or a correction**, is made in the ADR itself: rewrite it so it reads as the current decision, and add a dated line under `## History` at its end (`- 2026-10-07: what changed, and why`). A correction that leaves the decision unchanged, such as a forgotten word or an incomplete list, says "corrected". Every change is the user's call ([0025](0025-reviews-gate-on-adrs-and-lint.md)) and goes through a reviewed PR; git keeps the full text of each version.
+- **A new topic gets a new ADR.**
+- **A new choice on a topic an ADR already covers, a change to part of its decision, or a correction** goes into that ADR: rewrite it so it reads as the current decision, and add a dated line under `## History` at its end (`- 2026-10-07: what changed, and why`). A correction that keeps the decision, such as a forgotten word or an incomplete list, says "corrected". A choice that touches two ADRs' topics updates both, each with its History line.
 - **A whole decision replaced** gets a new ADR: the old one's status becomes `Superseded by NNNN`, and the new one's header gets `- Supersedes: NNNN`.
-- **Numbers are never reused.** An ADR merged into another is deleted and listed under Merged ADRs.
+- **Folding:** when one ADR's topic is part of another's, its text moves into that ADR, with a History line, its file is deleted, and its number is listed under Folded ADRs. Each number names one ADR for good.
+- Every change is the user's call and goes through a reviewed PR; amending an ADR, in [0025](0025-reviews-gate-on-adrs-and-lint.md)'s sense, means this in-place change. Git keeps the full text of each version.
+- A folded ADR's number stays cited in History lines, in the Folded ADRs table, and in the contract's NatSpec until its next redeploy, so the deployed source stays the one verified on Basescan.

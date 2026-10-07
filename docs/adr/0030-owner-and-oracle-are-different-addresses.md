@@ -20,4 +20,4 @@
 
 ## History
 
-- 2026-10-07: corrected the link for the owner's powers to ADR 0023, which now lists them all (ADRs 0024 and 0027 merged into 0020 and 0023).
+- 2026-10-07: corrected the link for the owner's powers to ADR 0023, which now lists them all (ADRs 0024 and 0027 folded into 0020 and 0023).

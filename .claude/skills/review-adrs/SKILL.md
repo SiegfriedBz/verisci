@@ -1,6 +1,6 @@
 ---
 name: review-adrs
-description: Check every ADR in docs/adr/ against every other with the reviewer subagent in sweep mode, and report contradictions, one-way Supersedes links, links to merged ADRs, index mismatches and answered open questions as decisions for the user. Use on demand, for example before a release; it edits nothing.
+description: Check every ADR in docs/adr/ against every other with the reviewer subagent in sweep mode, and report contradictions, one-way Supersedes links, links to folded ADRs, index mismatches and answered open questions as decisions for the user. Use on demand, for example before a release; it edits nothing.
 disable-model-invocation: true
 ---
 

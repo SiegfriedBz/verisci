@@ -37,6 +37,7 @@ layout, toolchain versions and commands.
   fix is a redeploy; old contracts are paused and drained, with fulfil and cancel still
   working; the owner pauses and unpauses, and transfers ownership in two steps with no
   renounce), 0028 (deployed addresses are committed) and 0030 (owner and oracle are
-  different addresses). The NatSpec still cites ADRs 0024 and 0027, merged into 0020 and
-  0023: it changes at the next redeploy, so the source stays the one verified on Basescan. `HelperConfig` and `resolveDeployments` follow 0005 (staging,
-  production and local). See [`docs/adr/`](../../docs/adr/README.md).
+  different addresses). `HelperConfig` and `resolveDeployments` follow 0005 (staging,
+  production and local). The NatSpec still cites ADRs 0024 and 0027, folded into 0020
+  and 0023: it changes at the next redeploy, so the source stays the one verified on
+  Basescan. See [`docs/adr/`](../../docs/adr/README.md).

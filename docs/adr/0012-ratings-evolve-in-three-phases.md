@@ -27,5 +27,5 @@ A machine score alone is a weak quality signal. A rating should grow stronger as
 
 ## History
 
-- 2026-10-05: the oracle agent records every phase's result on the contract, and reviewers and labs send their input to our backend (was ADR 0026).
-- 2026-10-07: ADR 0026 merged into this one.
+- 2026-10-05: the oracle agent records every phase's result on the contract, and reviewers and labs send their input to our backend, so one role writes scores and settles requests in every phase (was ADR 0026).
+- 2026-10-07: ADR 0026 folded into this one, so the phases read in one file.
