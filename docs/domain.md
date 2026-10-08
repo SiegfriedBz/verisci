@@ -70,6 +70,13 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
   its number, so each environment sees gaps in its numbering. Expected, not a bug.
 - **Authority resolution needs the node's local JSON-RPC proxy:** public Base Sepolia
   endpoints are not reliable enough for it.
+- **The daemon reads the chain far more than expected** (previous host, DKG 10.0.16, two
+  graphs; read from the proxy's journal on 2026-10-08): 60 to 80 million JSON-RPC requests a
+  day from 2026-09-16, about 983 million in three weeks. With every call sent to Alchemy
+  first and no limit, the free tier ran out around 2026-10-05; from then on the chain head
+  froze and every write failed, while `/api/status` still answered. The proxy now keeps
+  Alchemy last, within a daily budget (`infra/rpc-proxy`). Unverified: whether a later
+  release sends fewer requests.
 
 ## IPFS
 

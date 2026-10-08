@@ -16,6 +16,7 @@ Foundry needs a few values of its own to deploy, such as an RPC URL and a block-
 - `NODE_ENV` belongs to the tools. `APP_ENV` defaults to `local`, but is required in production builds, so a host that forgets it fails instead of running as `local`.
 - Env files live at the repo root, loaded by `apps/web/next.config.ts`. CI builds with `APP_ENV=local`.
 - Forge reads the same root env file as the app. Settings it needs for every deploy, such as the RPC URL and the block-explorer key, are listed in `.env.example` in their own section, with no `src/env.ts`; forge checks them when it uses them. Choices made per deploy, such as the environment, are passed on the deploy command, so each deploy names them.
+- Programs that run on the DKG node server read their settings themselves, so they run with plain Node and no install; they still fail at start-up on a bad setting, without showing its value.
 - `SKIP_ENV_VALIDATION` is needed by nothing today, and is never used for `next build` (it would prerender `undefined`) or in a running app.
 
 ## Consequences
@@ -30,3 +31,4 @@ Foundry needs a few values of its own to deploy, such as an RPC URL and a block-
 - 2026-10-05: forge reads the root env file, its deploy settings are listed in `.env.example`, and per-deploy choices go on the command, so developers keep one file of values for the app and for deploys (was ADR 0029).
 - 2026-10-07: ADR 0029 folded into this one, so the env rules read in one file.
 - 2026-10-07: retitled to name everything it now covers (was "Each workspace declares its own env variables").
+- 2026-10-08: programs that run on the DKG node server read their settings themselves, since the server runs them with plain Node and no install (the RPC proxy).
