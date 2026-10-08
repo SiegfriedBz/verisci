@@ -65,10 +65,23 @@ createServer((req, res) => {
     else chunks.push(chunk);
   });
   req.on("end", () => {
-    void proxy.handleBody(Buffer.concat(chunks).toString("utf8")).then((answer) => {
-      res.writeHead(200, { "content-type": "application/json" });
-      res.end(JSON.stringify(answer));
-    });
+    proxy
+      .handleBody(Buffer.concat(chunks).toString("utf8"))
+      .then((answer) => {
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify(answer));
+      })
+      .catch((e: unknown) => {
+        console.error(`rpc-proxy: request failed: ${e instanceof Error ? e.name : "error"}`);
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(
+          JSON.stringify({
+            jsonrpc: "2.0",
+            id: null,
+            error: { code: -32603, message: "internal error" },
+          }),
+        );
+      });
   });
 }).listen(config.port, "127.0.0.1", () => {
   console.log(`rpc-proxy listening on 127.0.0.1:${config.port}`);

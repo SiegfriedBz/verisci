@@ -53,6 +53,7 @@ const COOLDOWN_MS = 1_500;
 const DEFAULT_LOG_CACHE_MAX = 20_000;
 const READ_CACHE_MAX = 10_000;
 const SLICE_WORKERS = 4;
+const ALL_FAILED = "all endpoints failed";
 /** Read calls answered from memory for {@link READ_TTL_MS}; `eth_chainId` is kept for good. */
 const SHORT_LIVED_READS = new Set(["eth_call", "eth_getBlockByNumber", "eth_blockNumber"]);
 
@@ -88,6 +89,8 @@ export function createProxy(options: ProxyOptions): Proxy {
   const logCache = new Map<string, unknown[]>();
   const logsInFlight = new Map<string, Promise<unknown[]>>();
   const readCache = new Map<string, { reply: UpstreamReply; until: number }>();
+  const readsInFlight = new Map<string, Promise<UpstreamReply>>();
+  let highestHead = 0;
   let served = 0;
   let failed = 0;
 
@@ -99,13 +102,15 @@ export function createProxy(options: ProxyOptions): Proxy {
       slots.set(key, slot);
     }
     const s = slot;
+    // A freed slot passes straight to the next waiter, so a lane never runs over its limit.
     if (s.active >= LANES[lane].slots) await new Promise<void>((r) => s.waiters.push(r));
-    s.active++;
+    else s.active++;
     try {
       return await fn();
     } finally {
-      s.active--;
-      s.waiters.shift()?.();
+      const next = s.waiters.shift();
+      if (next) next();
+      else s.active--;
     }
   }
 
@@ -119,17 +124,26 @@ export function createProxy(options: ProxyOptions): Proxy {
     return reply;
   }
 
-  /** Tries each endpoint in order, retrying transient failures; Alchemy only within budget. */
+  /** Public endpoints with free slots come first, Alchemy last. */
+  function byLoad(urls: readonly string[], lane: Lane): string[] {
+    const load = (url: string) =>
+      url === alchemyUrl
+        ? Infinity
+        : (slots.get(`${url}|${lane}`)?.active ?? 0) / LANES[lane].slots;
+    return [...urls].sort((a, b) => load(a) - load(b));
+  }
+
+  /** Tries each endpoint, retrying transient failures; Alchemy only within budget. */
   async function resolve(body: object, lane: Lane, urls: readonly string[] = allUrls) {
     const { rounds } = LANES[lane];
     let last = "no endpoint attempted";
     for (let round = 0; round < rounds; round++) {
       const respectCooldown = round < rounds - 1;
       let attempted = false;
-      for (const url of urls) {
+      for (const url of byLoad(urls, lane)) {
         if (respectCooldown && (cooldownUntil.get(url) ?? 0) > now()) continue;
         if (url === alchemyUrl && !budget.tryUse()) {
-          last = "Alchemy daily budget used up";
+          last = "Alchemy budget used up";
           continue;
         }
         attempted = true;
@@ -139,10 +153,10 @@ export function createProxy(options: ProxyOptions): Proxy {
         if (isThrottle(last)) cooldownUntil.set(url, now() + COOLDOWN_MS);
       }
       const onlyAlchemyLeft = urls.every((u) => u === alchemyUrl);
-      if (onlyAlchemyLeft && budget.used() >= budget.limit) break;
+      if (onlyAlchemyLeft && !budget.available()) break;
       if (round < rounds - 1) await sleep(attempted ? 150 * 2 ** round : 500);
     }
-    return { error: { code: -32000, message: `all endpoints failed: ${last.slice(0, 120)}` } };
+    return { error: { code: -32000, message: `${ALL_FAILED}: ${last.slice(0, 120)}` } };
   }
 
   /** Reads answered from memory; only successful answers are kept. */
@@ -152,12 +166,21 @@ export function createProxy(options: ProxyOptions): Proxy {
     const key = `${method}|${JSON.stringify(params ?? [])}`;
     const hit = readCache.get(key);
     if (hit && hit.until > now()) return hit.reply;
-    const reply = await resolve(body, "fast");
-    if ("result" in reply) {
-      remember(readCache, key, { reply, until: forGood ? Infinity : now() + READ_TTL_MS });
-      if (readCache.size > READ_CACHE_MAX) dropExpired();
+    // Identical reads arriving together share one upstream call.
+    const pending = readsInFlight.get(key);
+    if (pending !== undefined) return pending;
+    const work = resolve(body, "fast");
+    readsInFlight.set(key, work);
+    try {
+      const reply = await work;
+      if ("result" in reply) {
+        remember(readCache, key, { reply, until: forGood ? Infinity : now() + READ_TTL_MS });
+        if (readCache.size > READ_CACHE_MAX) dropExpired();
+      }
+      return reply;
+    } finally {
+      readsInFlight.delete(key);
     }
-    return reply;
   }
 
   function dropExpired() {
@@ -168,9 +191,11 @@ export function createProxy(options: ProxyOptions): Proxy {
   async function headBlock(): Promise<number> {
     const body = { jsonrpc: "2.0", id: 1, method: "eth_blockNumber", params: [] };
     const reply = await cachedRead("eth_blockNumber", [], body);
-    const head = "result" in reply ? Number(reply.result) : Number.NaN;
-    if (!Number.isFinite(head)) throw new Error("chain head unavailable");
-    return head;
+    const head = "result" in reply ? fromHex(reply.result) : Number.NaN;
+    if (!Number.isFinite(head) || head <= 0) throw new Error("chain head unavailable");
+    // An endpoint a few blocks behind never moves the head backwards.
+    highestHead = Math.max(highestHead, head);
+    return highestHead;
   }
 
   function logsBody(filter: LogFilter, lo: number, hi: number) {
@@ -188,13 +213,15 @@ export function createProxy(options: ProxyOptions): Proxy {
       slices.push([a, Math.min(a + ALCHEMY_SPAN - 1, hi)]);
     const out: unknown[][] = new Array(slices.length);
     let cursor = 0;
+    let stopped = false;
     async function worker() {
-      while (cursor < slices.length) {
+      while (!stopped && cursor < slices.length) {
         const index = cursor++;
         const [a, b] = slices[index] ?? [lo, hi];
         const reply = await resolve(logsBody(filter, a, b), "bulk", [alchemyUrl]);
         if (!("result" in reply) || !Array.isArray(reply.result)) {
           const why = "error" in reply ? reply.error.message : "not a list";
+          stopped = true;
           throw new Error(`logs ${a}-${b}: ${why}`);
         }
         out[index] = reply.result;
@@ -204,10 +231,15 @@ export function createProxy(options: ProxyOptions): Proxy {
     return out.flat();
   }
 
-  /** One window: public endpoints, then smaller public windows, then Alchemy slices. */
+  /**
+   * One window: the public endpoints, then, if they refuse the range, smaller public windows,
+   * then Alchemy slices. An outage fails the request instead, so the daemon retries later.
+   */
   async function fetchWindow(filter: LogFilter, lo: number, hi: number): Promise<unknown[]> {
     const reply = await resolve(logsBody(filter, lo, hi), "bulk", publicUrls);
     if ("result" in reply && Array.isArray(reply.result)) return reply.result;
+    const message = "error" in reply ? reply.error.message : "not a list";
+    if (message.startsWith(ALL_FAILED)) throw new Error(message);
     if (hi - lo + 1 <= MIN_PUBLIC_SPAN) return alchemySlices(filter, lo, hi);
     const mid = Math.floor((lo + hi) / 2);
     return [...(await fetchWindow(filter, lo, mid)), ...(await fetchWindow(filter, mid + 1, hi))];
@@ -243,9 +275,13 @@ export function createProxy(options: ProxyOptions): Proxy {
     ) as LogFilter;
     if (filter.blockHash !== undefined) return resolve(body, "bulk");
     const head = await headBlock();
-    const from = toBlock(filter.fromBlock, 0, head);
-    const to = Math.min(toBlock(filter.toBlock, head, head), head);
-    if (!Number.isFinite(from) || !Number.isFinite(to) || to < from) return { result: [] };
+    // A missing bound means "latest", as in JSON-RPC.
+    const from = toBlock(filter.fromBlock, head);
+    const to = Math.min(toBlock(filter.toBlock, head), head);
+    if (!Number.isFinite(from) || !Number.isFinite(to)) {
+      return { error: { code: -32602, message: "invalid block range" } };
+    }
+    if (to < from) return { result: [] };
     const out: unknown[] = [];
     for (let lo = from; lo <= to; lo += PUBLIC_SPAN) {
       out.push(...(await windowLogs(filter, lo, Math.min(lo + PUBLIC_SPAN - 1, to), head)));
@@ -283,7 +319,11 @@ export function createProxy(options: ProxyOptions): Proxy {
       } catch {
         return { jsonrpc: "2.0", id: null, error: { code: -32700, message: "parse error" } };
       }
-      return Array.isArray(parsed) ? Promise.all(parsed.map(handle)) : handle(parsed);
+      if (!Array.isArray(parsed)) return handle(parsed);
+      if (parsed.length === 0) {
+        return { jsonrpc: "2.0", id: null, error: { code: -32600, message: "empty batch" } };
+      }
+      return Promise.all(parsed.map(handle));
     },
     statusLine() {
       const parts = allUrls.map((url) => {
@@ -314,11 +354,18 @@ function toResponse(id: unknown, reply: UpstreamReply): JsonRpcResponse {
   };
 }
 
-function toBlock(tag: unknown, fallback: number, head: number): number {
-  if (tag === undefined || tag === null) return fallback;
+/** A block tag or hex number as a block number; `NaN` for anything else. */
+function toBlock(tag: unknown, head: number): number {
+  if (tag === undefined || tag === null) return head;
   if (tag === "latest" || tag === "pending" || tag === "safe" || tag === "finalized") return head;
   if (tag === "earliest") return 0;
-  return typeof tag === "string" ? Number.parseInt(tag, 16) : Number(tag);
+  return fromHex(tag);
+}
+
+function fromHex(value: unknown): number {
+  return typeof value === "string" && /^0x[0-9a-fA-F]+$/.test(value)
+    ? Number.parseInt(value, 16)
+    : Number.NaN;
 }
 
 const toHex = (n: number) => `0x${n.toString(16)}`;

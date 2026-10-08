@@ -170,9 +170,10 @@ contract's calls and events are documented in the
 
 ## The repo
 
-A pnpm and Turborepo monorepo: a Next.js app and five internal packages.
-Packages ship TypeScript source, with no build step; Next.js compiles them
-through `transpilePackages`.
+A pnpm and Turborepo monorepo: a Next.js app, five internal packages, and the
+RPC proxy that runs on the DKG node server (`infra/rpc-proxy`). Packages ship
+TypeScript source, with no build step; Next.js compiles them through
+`transpilePackages`, and the server runs the proxy's source with plain Node.
 
 ## Requirements
 

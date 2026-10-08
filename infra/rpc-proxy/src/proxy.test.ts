@@ -29,14 +29,18 @@ function logsFor(filter: LogFilter): number[] {
 }
 
 /** Every endpoint answers the head and serves logs; `answer` overrides. */
-function setup(answer: Answer = () => ({ result: "ok" }), limit = 1_000) {
+function setup(
+  answer: Answer = () => ({ result: "ok" }),
+  limit = 24_000,
+  headReply: UpstreamReply = { result: hex(HEAD) },
+) {
   let now = 1_000_000;
   const calls: Call[] = [];
   const post: Post = async (url, body) => {
     const { method, params = [] } = body as { method: string; params?: unknown[] };
     const call = { url, method, params };
     calls.push(call);
-    if (method === "eth_blockNumber") return { result: hex(HEAD) };
+    if (method === "eth_blockNumber") return headReply;
     return answer(call);
   };
   const proxy = createProxy({
@@ -81,6 +85,29 @@ describe("routing", () => {
     const res = await proxy.handle({ jsonrpc: "2.0", id: 7, method: "eth_call", params: [{}] });
     expect(res).toEqual({ jsonrpc: "2.0", id: 7, result: "ok" });
     expect(calls.map((c) => c.url)).toEqual([PUBLIC[0]]);
+  });
+
+  it("spreads simultaneous calls over the public endpoints", async () => {
+    const waiting: (() => void)[] = [];
+    const calls: string[] = [];
+    const proxy = createProxy({
+      alchemyUrl: ALCHEMY,
+      publicUrls: PUBLIC,
+      budget: createDailyBudget(24_000, () => 0),
+      post: (url) => {
+        calls.push(url);
+        return new Promise<UpstreamReply>((r) => waiting.push(() => r({ result: "ok" })));
+      },
+      now: () => 0,
+      sleep: async () => {},
+    });
+    const pending = Array.from({ length: 6 }, (_, i) =>
+      proxy.handle({ jsonrpc: "2.0", id: i, method: "eth_gasPrice", params: [i] }),
+    );
+    expect(calls.filter((u) => u === PUBLIC[0])).toHaveLength(3);
+    expect(calls.filter((u) => u === PUBLIC[1])).toHaveLength(3);
+    for (const done of waiting) done();
+    await Promise.all(pending);
   });
 
   it("asks Alchemy only after every public endpoint failed", async () => {
@@ -134,7 +161,7 @@ describe("eth_getLogs", () => {
   it("falls back to 10-block Alchemy slices within the daily budget", async () => {
     const { proxy, callsOf } = setup(
       (c) => (c.url === ALCHEMY ? servesLogs(c) : { error: { message: "range too large" } }),
-      100,
+      240,
     );
     const res = await proxy.handle(getLogs(0, 99));
     expect(res.result).toEqual(Array.from({ length: 100 }, (_, i) => i));
@@ -145,7 +172,7 @@ describe("eth_getLogs", () => {
   it("answers with an error once the Alchemy budget is used up", async () => {
     const { proxy, calls } = setup(
       (c) => (c.url === ALCHEMY ? servesLogs(c) : { error: { message: "range too large" } }),
-      5,
+      120,
     );
     const res = await proxy.handle(getLogs(0, 99, 42));
     expect(res).toMatchObject({ jsonrpc: "2.0", id: 42, error: { code: -32000 } });
@@ -157,6 +184,52 @@ describe("eth_getLogs", () => {
     await proxy.handle(getLogs(HEAD - 10, HEAD + 500));
     const asked = callsOf("eth_getLogs").map((c) => Number((c.params[0] as LogFilter).toBlock));
     expect(Math.max(...asked)).toBe(HEAD);
+  });
+
+  it("reads a missing fromBlock as the chain head, as JSON-RPC does", async () => {
+    const { proxy, callsOf } = setup(servesLogs);
+    const res = await proxy.handle({ jsonrpc: "2.0", id: 1, method: "eth_getLogs", params: [{}] });
+    expect(res.result).toEqual([HEAD]);
+    expect(callsOf("eth_getLogs").map(spanOf)).toEqual([1]);
+  });
+
+  it("answers an invalid block tag with an invalid-params error", async () => {
+    const { proxy } = setup(servesLogs);
+    expect(await proxy.handle(getLogs(0, "soon"))).toMatchObject({
+      id: 1,
+      error: { code: -32602 },
+    });
+  });
+
+  it("fails an outage instead of splitting the range or asking Alchemy", async () => {
+    const { proxy, callsOf } = setup((c) =>
+      c.method === "eth_getLogs" && c.url !== ALCHEMY
+        ? { error: { message: "HTTP 503" } }
+        : servesLogs(c),
+    );
+    const res = await proxy.handle(getLogs(0, 1_999));
+    expect(res).toMatchObject({ error: { code: -32000 } });
+    expect(new Set(callsOf("eth_getLogs").map(spanOf))).toEqual(new Set([2_000]));
+    expect(callsOf("eth_getLogs").some((c) => c.url === ALCHEMY)).toBe(false);
+  });
+
+  it("stops asking Alchemy for slices once one has failed", async () => {
+    const { proxy, callsOf } = setup((c) =>
+      c.url === ALCHEMY
+        ? { error: { message: "execution reverted" } }
+        : { error: { message: "range too large" } },
+    );
+    const res = await proxy.handle(getLogs(0, 99));
+    expect(res).toMatchObject({ error: { code: -32000 } });
+    expect(callsOf("eth_getLogs").filter((c) => c.url === ALCHEMY).length).toBeLessThanOrEqual(4);
+  });
+
+  it("answers with an error when the chain head is unavailable", async () => {
+    const { proxy } = setup(servesLogs, 24_000, { result: null });
+    expect(await proxy.handle(getLogs(0, 9, 3))).toMatchObject({
+      id: 3,
+      error: { code: -32000, message: "chain head unavailable" },
+    });
   });
 
   it("reads 'latest' as the chain head", async () => {
@@ -204,6 +277,13 @@ describe("answers from memory", () => {
     expect(callsOf("eth_call")).toHaveLength(2);
   });
 
+  it("shares one upstream call between identical reads arriving together", async () => {
+    const { proxy, callsOf } = setup();
+    const call = { jsonrpc: "2.0", id: 1, method: "eth_call", params: [{ to: "0x1" }, "latest"] };
+    await Promise.all([proxy.handle(call), proxy.handle({ ...call, id: 2 })]);
+    expect(callsOf("eth_call")).toHaveLength(1);
+  });
+
   it("keeps eth_chainId after its first answer", async () => {
     const { proxy, callsOf, advance } = setup(() => ({ result: "0x14a34" }));
     await proxy.handle({ jsonrpc: "2.0", id: 1, method: "eth_chainId", params: [] });
@@ -235,6 +315,11 @@ describe("responses", () => {
       { jsonrpc: "2.0", id: "a", result: "eth_gasPrice" },
       { jsonrpc: "2.0", id: "b", result: "net_version" },
     ]);
+  });
+
+  it("answers an empty batch with an invalid-request error", async () => {
+    const { proxy } = setup();
+    expect(await proxy.handleBody("[]")).toMatchObject({ id: null, error: { code: -32600 } });
   });
 
   it("answers unparseable input with a JSON-RPC parse error", async () => {
@@ -274,7 +359,7 @@ describe("statusLine", () => {
     const line = proxy.statusLine();
     expect(line).toMatch(/served=1 failed=0/);
     expect(line).toMatch(/public-a\.test calls=1 failures=1/);
-    expect(line).toMatch(/alchemy calls=1 failures=0 budget=1\/1000/);
+    expect(line).toMatch(/alchemy calls=1 failures=0 budget=1\/24000/);
     expect(line).not.toMatch(/alchemy\.test/);
   });
 });

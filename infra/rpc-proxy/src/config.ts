@@ -2,10 +2,12 @@
 export const DEFAULT_PORT = 8545;
 
 /**
- * Alchemy calls allowed per UTC day. The free tier's monthly compute units cover about
- * 1 million units a day, and a call costs 10 to 75 units, so 20,000 calls stay inside it.
+ * Alchemy calls allowed per UTC day. Alchemy's free plan gives a monthly allowance of
+ * compute units (about 30 million, so about 1 million a day), and the calls this proxy
+ * sends there cost up to 75 units each (`eth_getLogs`): 10,000 calls use at most 750,000.
+ * Check Alchemy's current pricing before raising it.
  */
-export const DEFAULT_ALCHEMY_DAILY_LIMIT = 20_000;
+export const DEFAULT_ALCHEMY_DAILY_LIMIT = 10_000;
 
 /** What the proxy reads from its environment. */
 export interface ProxyConfig {
