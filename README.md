@@ -239,6 +239,7 @@ chain, Inngest, Vercel and tooling are in [`docs/domain.md`](docs/domain.md).
 | [`packages/dkg`](packages/dkg/README.md) | DKG adapter | core, env |
 | [`packages/contracts`](packages/contracts/README.md) | Solidity contracts and their TypeScript side | core, env |
 | [`packages/agents`](packages/agents/README.md) | Inngest workflows | core, env, dkg, contracts |
+| [`infra/rpc-proxy`](infra/rpc-proxy/README.md) | JSON-RPC proxy run on the DKG node server | none |
 
 Each workspace may only import the workspaces it declares. pnpm does not
 hoist undeclared workspace packages, so breaking this rule fails `pnpm

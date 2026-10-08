@@ -1,0 +1,19 @@
+# systemd unit for the RPC proxy on the DKG node server (docs/node-host.md).
+# Install: copy this file to /etc/systemd/system/, then
+#   sudo systemctl daemon-reload && sudo systemctl enable --now rpc-proxy
+# The env file holds UPSTREAM_RPC (Alchemy's URL, with its key) and is readable by ubuntu only.
+[Unit]
+Description=JSON-RPC proxy for the DKG daemon
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/rpc-proxy
+EnvironmentFile=/home/ubuntu/rpc-proxy/env
+ExecStart=/usr/bin/node /home/ubuntu/rpc-proxy/src/main.ts
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
