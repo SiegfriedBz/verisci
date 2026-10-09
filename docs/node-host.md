@@ -13,10 +13,14 @@ what it should print. A step marked `to check` was not verified.
 | Program | Address | Started with |
 | --- | --- | --- |
 | RPC proxy (`infra/rpc-proxy`) | `127.0.0.1:8545` | `node --env-file` (below) |
-| DKG daemon 10.0.22 | `127.0.0.1:9200` | `dkg start -f` |
+| DKG daemon 10.0.22, its API | `127.0.0.1:9200` | `dkg start -f` |
+| The daemon's graph store (Oxigraph) | `127.0.0.1:7878` | the daemon |
+| The daemon's peer-to-peer port | all interfaces, a random port (`listenPort: 0`) | the daemon |
 | GROBID `lfoppiano/grobid:0.9.1-crf` | `127.0.0.1:8070` | `docker run` (below) |
 
-Start the proxy before the daemon: the daemon reads the chain only through it.
+Start the proxy before the daemon: the daemon reads the chain only through it. The
+peer-to-peer port is how other DKG nodes reach this one; behind a home router they reach it
+through the testnet relay instead.
 
 ## Where secrets live
 
@@ -43,12 +47,14 @@ Check: `ls -d ~/.dkg*` lists only the renamed folder.
 
 ## 2. The RPC proxy
 
-Its settings file holds Alchemy's Base Sepolia URL:
+Its settings file holds Alchemy's Base Sepolia URL. Create it empty and readable only by
+you, then write the URL with a text editor, so the key never lands in the shell history:
 
 ```bash
 mkdir -p ~/.config/verisci
-printf 'UPSTREAM_RPC=https://base-sepolia.g.alchemy.com/v2/YOUR_ALCHEMY_KEY\n' > ~/.config/verisci/rpc-proxy.env
-chmod 600 ~/.config/verisci/rpc-proxy.env
+install -m 600 /dev/null ~/.config/verisci/rpc-proxy.env
+nano ~/.config/verisci/rpc-proxy.env
+# one line: UPSTREAM_RPC=https://base-sepolia.g.alchemy.com/v2/<key>
 ```
 
 `PORT` and `ALCHEMY_DAILY_LIMIT` keep their defaults
@@ -136,6 +142,8 @@ Check:
 ```bash
 curl -s 127.0.0.1:9200/api/status | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['version'], d['nodeRole'], d['networkName'])"
 # 10.0.22 edge DKG V10 Base Testnet
+ss -ltn | grep -E ':(9200|7878) '
+# both on 127.0.0.1 only
 ```
 
 The first start writes `agent-key.bin`, `agent-keystore.json` and `auth.token` to `~/.dkg`.
@@ -243,7 +251,8 @@ address, and `dkg ka status smoke-test-YYYY-MM-DD -c $CG` shows `"state": "publi
 
 ## 10. GROBID
 
-The CRF image runs on x86 and ARM alike; the full image is x86 only. Pinned to a release
+The CRF image is published for x86 and ARM (`amd64` and `arm64` on Docker Hub), and the
+previous server ran it on ARM; the full image is x86 only. Pinned to a release
 tag, never `latest`:
 
 ```bash

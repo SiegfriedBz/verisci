@@ -60,8 +60,9 @@ edge`, testnet), Base Sepolia.
 - **Mint time varies from about 5 s to over 300 s.** A mint can also fail fast on quorum
   (`storage_ack_insufficient`, `CORE_TEMPORARILY_UNAVAILABLE`); retrying after a couple of
   minutes usually works ([ADR 0009](adr/0009-retries-are-spaced-with-step-sleep.md)).
-- **The daemon has a single admin token:** `dkg init` writes one bearer token to
-  `~/.dkg/auth.token`, valid for every graph on the node; there are no tokens scoped per
+- **The daemon has a single admin token:** one bearer token in `~/.dkg/auth.token`
+  (written by `dkg init` on 10.0.16; on 10.0.22, 2026-10-09, by the first `dkg start`,
+  with the agent key), valid for every graph on the node; there are no tokens scoped per
   graph, so whoever holds it can write every environment's graph ([ADR 0005](adr/0005-staging-and-production-are-isolated.md)).
 - **Every context graph must be listed** under `contextGraphs` in the node's
   `~/.dkg/config.json`, or the node stops serving it after a restart.
@@ -76,7 +77,6 @@ edge`, testnet), Base Sepolia.
   `~/.dkg/wallets.json`), not its admin wallet (10.0.22, 2026-10-09).
 - **`dkg init` funds the node from OriginTrail's testnet faucet** (10.0.22): on
   2026-10-09 each wallet got 1,000 TRAC but no ETH, because the faucet had run out of ETH.
-
 - **A KA keeps its UAL across updates** (OriginTrail/dkg
   `packages/evm-module/docs/greenfield-ka-ual.md`): the KA is minted to its author as an
   ERC-721 token, and each update adds a new immutable version under the same token. Only
