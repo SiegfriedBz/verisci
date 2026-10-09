@@ -29,7 +29,8 @@ edge`, testnet), Base Sepolia.
   rules but caps the chain number at `Number.MAX_SAFE_INTEGER`
   ([ADR 0031](adr/0031-uals-are-normalized-before-the-contract.md)).
 - **Context graph ids** are the full `<agent address>/<name>`. A bare name refers to a
-  different, local graph, so queries with it silently return nothing.
+  different, local graph, so queries with it silently return nothing (`POST /api/query`
+  with `verisci-staging` returned no rows on 10.0.22, 2026-10-09).
 - **Asset names are scoped per context graph and per writing agent** (OriginTrail/dkg,
   checked at `74a515e`, 2026-10-07): a name is stored at
   `did:dkg:context-graph:<graph id>/assertion/<agent address>/<name>`
@@ -39,27 +40,63 @@ edge`, testnet), Base Sepolia.
   starting with `did:dkg:` or matching `0x<40 hex>:<number>` is read as a KA id
   (`packages/cli/src/daemon/routes/knowledge-assets.ts`). Ours start with `verisci-`
   (`packages/core/README.md` → Asset names).
-- **Store and mint are separate calls:** `POST /api/knowledge-assets`, then
-  `…/{name}/vm/publish`. Asset states are missing, stored (`promoted`) and minted
-  (`published`). A stored asset already has a `reservedUal`, so a UAL being present does
-  not mean minted: read `state` ([ADR 0007](adr/0007-all-writes-converge.md)).
-- **On 10.0.22 a KA passes through three memory layers** (2026-10-09): a working-memory
-  draft (`wm`: create, write, finalize), shared memory (`swm/share`, acknowledged by
-  peers), then verifiable memory (`vm/publish`, the mint). `dkg ka create --share` runs
-  the first two in one call; a minted KA reads `"state": "published"`, layer `VM`.
-  Unverified: whether `POST /api/knowledge-assets` still writes, finalizes and shares in
-  one call, as the fact above says for 10.0.16.
-- **Mints outlive the client:** the daemon finishes a mint after the client disconnects,
-  and `vm/publish-async` returns a job id to poll ([ADR 0008](adr/0008-mints-are-async-polled-in-short-steps.md)).
-- **Unverified: a second `vm/publish` while a mint is in flight.** An asset being minted
-  still reads as stored; whether the daemon refuses a publish for it or mints twice is not
-  known. Until checked, assume it could mint twice ([ADR 0008](adr/0008-mints-are-async-polled-in-short-steps.md)).
-- **Unverified: reading KAs from other context graphs.** Whether our node can read a
-  KA published to another node's context graph is not checked on V10; rating a target
-  verisci did not publish depends on it ([ADR 0011](adr/0011-a-rating-is-a-separate-r-ka.md)).
-- **Mint time varies from about 5 s to over 300 s.** A mint can also fail fast on quorum
-  (`storage_ack_insufficient`, `CORE_TEMPORARILY_UNAVAILABLE`); retrying after a couple of
-  minutes usually works ([ADR 0009](adr/0009-retries-are-spaced-with-step-sleep.md)).
+- **Publishing a KA is four calls on 10.0.22** (spike, 2026-10-09; all under
+  `/api/knowledge-assets`, with `contextGraphId` in the body):
+  1. `POST /api/knowledge-assets` with `name` and `quads` writes and seals a working-memory
+     draft (`status: wm-sealed`) and reserves its UAL (`kaUal`); it shares only with
+     `alsoShareSwm: true`.
+  2. `POST …/{name}/swm/share` copies it to shared memory (under 2 s).
+  3. `POST …/{name}/vm/publish` mints it: it returns `status: confirmed`, the `ual` and
+     the `txHash`.
+
+  Quads are `{ subject, predicate, object }` objects: IRIs bare, literals quoted
+  (`"\"7\""`).
+- **Read an asset's state with `GET …/{name}?contextGraphId=…`:** `state` is `created`
+  (sealed draft, layer `WM`), `promoted` (shared, `SWM`) or `published` (minted, `VM`, with
+  `publishedUal`); a name never stored answers 404. `reservedUal` is set from the first
+  call, so a UAL being present does not mean minted: read `state`
+  ([ADR 0007](adr/0007-all-writes-converge.md)). `GET …/{name}/wm/quads` returns the
+  draft's quads.
+- **A KA passes through three memory layers on 10.0.22:** a working-memory draft (`wm`:
+  create, write, finalize), shared memory (`swm/share`, acknowledged by peers), then
+  verifiable memory (`vm/publish`, the mint). `dkg ka create --share` runs the first two
+  in one call.
+- **Repeated writes are refused, with the first content kept** (spike, 2026-10-09):
+  - storing a sealed name again answers 409 `KA_ASSERTION_ALREADY_FINALIZED` and keeps
+    the first quads;
+  - storing a minted name answers 409 `KA_WM_LIFECYCLE_REQUIRED`;
+  - minting a name that is not shared, or is already minted, answers 409
+    `PUBLISH_NOT_FULL_SHARE` for both, so only the state tells them apart
+    ([ADR 0007](adr/0007-all-writes-converge.md)).
+- **A KA's id is fixed when it is sealed, so it is minted at most once** (spike,
+  2026-10-09, run twice):
+  - a second `vm/publish` sent 2 s into a running mint failed at gas estimation with
+    `KaIdAlreadyMinted`, and the daemon answered 500 after 17 s;
+  - three `vm/publish` calls sent at once were spread over the three publisher wallets.
+    One mint succeeded. A second reached the chain and reverted, still paying its gas.
+    The third sent only a TRAC approval.
+
+  During a mint the state still reads `promoted`, so a poll cannot tell a mint in flight
+  from none ([ADR 0008](adr/0008-mints-are-async-polled-in-short-steps.md)).
+- **Mints outlive the client:** a `vm/publish` whose client disconnected after 2 s was
+  minted anyway, its state reading `published` 13 to 16 s later (10.0.22, 2026-10-09,
+  run twice; also seen on 10.0.16).
+- **`vm/publish-async` needs the async publisher** (10.0.22, 2026-10-09). It is off by
+  default, and the route answers 503 `async_publisher_unavailable`
+  (`publisher_disabled`). It is turned on with `dkg publisher enable`, which needs at
+  least one publisher wallet of its own, added with `dkg publisher wallet add
+  <private-key>` (`~/.dkg/publisher-wallets.json`), then a daemon restart. Jobs are then
+  read at `GET /api/publisher/job?id=…` ([ADR 0008](adr/0008-mints-are-async-polled-in-short-steps.md)).
+- **Our node reads KAs from other nodes' context graphs** (spike, 2026-10-09). It first
+  subscribes to the graph (`POST /api/context-graph/subscribe`, `syncMode: "on-demand"`),
+  then calls `POST /api/context-graph/fetch-assets` with the graph id and 1 to 10 UALs.
+  The old verisci node's KAs 0 to 3 came back in 22 to 24 s per call with that node off, since other
+  peers hold copies, and `/api/query` then read them. The graph id must be known: a UAL
+  alone does not name its graph ([ADR 0011](adr/0011-a-rating-is-a-separate-r-ka.md)).
+- **Mint time varies from about 5 s to over 300 s** (13 to 17 s in the spike, 2026-10-09).
+  A mint can also fail fast on quorum (`storage_ack_insufficient`,
+  `CORE_TEMPORARILY_UNAVAILABLE`); retrying after a couple of minutes usually works
+  ([ADR 0009](adr/0009-retries-are-spaced-with-step-sleep.md)).
 - **The daemon has a single admin token:** one bearer token in `~/.dkg/auth.token`
   (written by `dkg init` on 10.0.16; on 10.0.22, 2026-10-09, by the first `dkg start`,
   with the agent key), valid for every graph on the node; there are no tokens scoped per
@@ -80,8 +117,14 @@ edge`, testnet), Base Sepolia.
 - **A KA keeps its UAL across updates** (OriginTrail/dkg
   `packages/evm-module/docs/greenfield-ka-ual.md`): the KA is minted to its author as an
   ERC-721 token, and each update adds a new immutable version under the same token. Only
-  the owner (the token holder) can update it. Unverified: the daemon API call for an update
-  ([ADR 0012](adr/0012-three-phases-settled-by-the-oracle.md)).
+  the owner (the token holder) can update it. On 10.0.22 (spike, 2026-10-09):
+  - an update is `POST …/{name}/wm/pull-from` with `layer: "vm"`, which reopens a draft
+    seeded with the minted quads;
+  - `wm/write` then adds quads (it only appends; there is no call to remove one);
+  - then `wm/finalize`, `swm/share` and `vm/publish`.
+
+  The UAL and the KA id stayed the same and `assertionVersion` went to 2. A query then
+  returns the latest version only ([ADR 0012](adr/0012-three-phases-settled-by-the-oracle.md)).
 - **KA numbers are counted per author** and reserved at store time (the `reservedUal`).
   Both our graphs publish as one author, and a stored asset that is never minted keeps
   its number, so each environment sees gaps in its numbering. Expected, not a bug.
