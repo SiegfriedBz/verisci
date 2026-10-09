@@ -19,4 +19,4 @@ Internal packages export `src/*.ts` with no build step. Next.js compiles them vi
 
 ## History
 
-- 2026-10-09: corrected to cover the programs on the DKG node server (`infra/*`), which also ship `.ts` source and run under plain Node's type stripping, and to limit `transpilePackages` to the packages the app imports.
+- 2026-10-09: changed to cover the programs on the DKG node server (`infra/*`), which also ship `.ts` source and run under plain Node's type stripping, and to limit `transpilePackages` to the packages the app imports.

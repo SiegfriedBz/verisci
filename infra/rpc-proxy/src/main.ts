@@ -3,7 +3,7 @@ import { createDailyBudget } from "./budget.ts";
 import { readConfig } from "./config.ts";
 import { createProxy, type Post } from "./proxy.ts";
 
-/** Free Base Sepolia endpoints, asked before Alchemy, in this order. */
+/** Free Base Sepolia endpoints, asked before Alchemy, the one with more free slots first. */
 const PUBLIC_RPCS = ["https://sepolia.base.org", "https://base-sepolia-rpc.publicnode.com"];
 const STATUS_EVERY_MS = 30_000;
 /** The daemon's requests are small; this bounds memory if something sends a huge body. */

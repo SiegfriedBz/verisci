@@ -20,7 +20,7 @@ export interface JsonRpcResponse {
 export interface ProxyOptions {
   /** Alchemy's URL, key included: asked last, within `budget`. */
   readonly alchemyUrl: string;
-  /** Free public endpoints, asked first, in order. */
+  /** Free public endpoints, asked before Alchemy, the one with more free slots first. */
   readonly publicUrls: readonly string[];
   readonly budget: DailyBudget;
   readonly post: Post;
@@ -54,12 +54,14 @@ const DEFAULT_LOG_CACHE_MAX = 20_000;
 const READ_CACHE_MAX = 10_000;
 const SLICE_WORKERS = 4;
 const ALL_FAILED = "all endpoints failed";
+/** Largest forward jump of the head accepted at once: about 5.5 hours of 2 s blocks. */
+const MAX_HEAD_STEP = 10_000;
 /** Read calls answered from memory for {@link READ_TTL_MS}; `eth_chainId` is kept for good. */
 const SHORT_LIVED_READS = new Set(["eth_call", "eth_getBlockByNumber", "eth_blockNumber"]);
 
 /**
- * The daemon's head probe times out after about 4 s, so fast calls get their own slots and
- * never wait behind the log backfill.
+ * The daemon's head probe times out after about 4 s, so fast calls get their own slots,
+ * separate from the log backfill's.
  */
 const LANES: Record<Lane, { rounds: number; timeoutMs: number; slots: number }> = {
   fast: { rounds: 3, timeoutMs: 6_000, slots: 6 },
@@ -193,8 +195,11 @@ export function createProxy(options: ProxyOptions): Proxy {
     const reply = await cachedRead("eth_blockNumber", [], body);
     const head = "result" in reply ? fromHex(reply.result) : Number.NaN;
     if (!Number.isFinite(head) || head <= 0) throw new Error("chain head unavailable");
-    // An endpoint a few blocks behind never moves the head backwards.
-    highestHead = Math.max(highestHead, head);
+    // The head moves forward only, and by a plausible step: an endpoint a few blocks
+    // behind, or one wrong answer far ahead, leaves it where it is.
+    if (highestHead === 0 || (head > highestHead && head - highestHead <= MAX_HEAD_STEP)) {
+      highestHead = head;
+    }
     return highestHead;
   }
 
@@ -370,15 +375,22 @@ function fromHex(value: unknown): number {
 
 const toHex = (n: number) => `0x${n.toString(16)}`;
 
+/**
+ * Throttling, as opposed to a refused range ("block range limit exceeded", "too many
+ * results"), which is answered by smaller windows instead.
+ */
 function isThrottle(message: string): boolean {
   const m = message.toLowerCase();
-  return ["429", "rate", "too many", "capacity", "limit exceeded"].some((w) => m.includes(w));
+  return ["429", "rate limit", "too many requests", "over capacity"].some((w) => m.includes(w));
 }
 
+/** Failures worth retrying elsewhere: throttling, the network, timeouts and any HTTP 5xx. */
 function isTransient(message: string): boolean {
   const m = message.toLowerCase();
   return (
-    isThrottle(message) || ["fetch", "timeout", "abort", "502", "503"].some((w) => m.includes(w))
+    isThrottle(message) ||
+    /\bhttp 5\d\d\b/.test(m) ||
+    ["fetch failed", "timeout", "aborted"].some((w) => m.includes(w))
   );
 }
 

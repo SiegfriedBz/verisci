@@ -34,4 +34,4 @@ Programs that run on the DKG node server, such as its RPC proxy, run alone there
 - 2026-10-07: ADR 0029 folded into this one, so the env rules read in one file.
 - 2026-10-07: retitled to name everything it now covers (was "Each workspace declares its own env variables").
 - 2026-10-08: programs that run on the DKG node server read their settings themselves, since the server runs them with plain Node and no install (the RPC proxy).
-- 2026-10-09: corrected the rule's scope so it reads as one decision: `src/env.ts`, the root env file and `.env.example` cover the app and its packages; programs on the DKG node server keep their settings in an env file there, listed in their README.
+- 2026-10-09: changed the rule's scope so it reads as one decision: `src/env.ts`, the root env file and `.env.example` cover the app and its packages; programs on the DKG node server keep their settings in an env file there, listed in their README.

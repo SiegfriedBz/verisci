@@ -110,6 +110,18 @@ describe("routing", () => {
     await Promise.all(pending);
   });
 
+  it.each(["HTTP 500 Internal Server Error", "HTTP 504 Gateway Time-out"])(
+    "tries the next public endpoint after %s",
+    async (message) => {
+      const { proxy, calls } = setup((c) =>
+        c.url === PUBLIC[0] ? { error: { message } } : { result: "ok" },
+      );
+      const res = await proxy.handle({ jsonrpc: "2.0", id: 1, method: "eth_gasPrice", params: [] });
+      expect(res.result).toBe("ok");
+      expect(calls.map((c) => c.url)).toEqual([PUBLIC[0], PUBLIC[1]]);
+    },
+  );
+
   it("asks Alchemy only after every public endpoint failed", async () => {
     const { proxy, calls } = setup((c) =>
       c.url === ALCHEMY ? { result: "from alchemy" } : { error: { message: "HTTP 503" } },
@@ -211,6 +223,54 @@ describe("eth_getLogs", () => {
     expect(res).toMatchObject({ error: { code: -32000 } });
     expect(new Set(callsOf("eth_getLogs").map(spanOf))).toEqual(new Set([2_000]));
     expect(callsOf("eth_getLogs").some((c) => c.url === ALCHEMY)).toBe(false);
+  });
+
+  it("treats a gateway timeout on every public endpoint as an outage", async () => {
+    const { proxy, callsOf } = setup((c) =>
+      c.method === "eth_getLogs" && c.url !== ALCHEMY
+        ? { error: { message: "HTTP 504 Gateway Time-out" } }
+        : servesLogs(c),
+    );
+    const res = await proxy.handle(getLogs(0, 1_999));
+    expect(res).toMatchObject({ error: { code: -32000 } });
+    expect(callsOf("eth_getLogs").some((c) => c.url === ALCHEMY)).toBe(false);
+  });
+
+  it.each([
+    "block range limit exceeded",
+    "query returned more than 10000 results",
+    "too many results",
+  ])("halves a window refused with %j", async (message) => {
+    const { proxy, callsOf } = setup((c) =>
+      c.method === "eth_getLogs" && spanOf(c) > 1_000 ? { error: { message } } : servesLogs(c),
+    );
+    const res = await proxy.handle(getLogs(0, 1_999));
+    expect(res.result).toHaveLength(2_000);
+    expect(callsOf("eth_getLogs").filter((c) => spanOf(c) === 1_000)).toHaveLength(2);
+  });
+
+  it("keeps the head when an answer jumps implausibly far ahead", async () => {
+    let now = 0;
+    let head = HEAD;
+    const proxy = createProxy({
+      alchemyUrl: ALCHEMY,
+      publicUrls: PUBLIC,
+      budget: createDailyBudget(24_000, () => now),
+      post: async (_url, body) => {
+        const { method, params = [] } = body as { method: string; params?: unknown[] };
+        if (method === "eth_blockNumber") return { result: hex(head) };
+        return { result: logsFor(params[0] as LogFilter) };
+      },
+      now: () => now,
+      sleep: async () => {},
+    });
+    await proxy.handle(getLogs(HEAD, "latest"));
+    head = HEAD + 1_000_000;
+    now += 3_001;
+    expect((await proxy.handle(getLogs(HEAD, "latest"))).result).toEqual([HEAD]);
+    head = HEAD + 5;
+    now += 3_001;
+    expect((await proxy.handle(getLogs(HEAD + 5, "latest"))).result).toEqual([HEAD + 5]);
   });
 
   it("stops asking Alchemy for slices once one has failed", async () => {

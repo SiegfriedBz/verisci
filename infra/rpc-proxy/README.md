@@ -30,8 +30,11 @@ weeks (`docs/domain.md` → DKG).
 - **Answers from memory.** Log windows more than 64 blocks below the head are kept (20,000
   at most, oldest dropped). The same `eth_call`, `eth_getBlockByNumber` or
   `eth_blockNumber` within 3 s, or arriving together, takes one upstream call;
-  `eth_chainId` is kept after its first answer. The head only moves forward.
-- **Throttled endpoints rest** for 1.5 s, and transient failures are retried.
+  `eth_chainId` is kept after its first answer. The head moves forward only, at most
+  10,000 blocks at once, so one wrong answer cannot push it ahead.
+- **Throttled endpoints rest** for 1.5 s (HTTP 429, rate limits), and transient failures
+  (the network, timeouts, any HTTP 5xx) are retried on the next endpoint. A refused range
+  ("block range limit exceeded", "too many results") is halved instead.
 - **Two lanes:** the daemon's quick calls (its head probe times out after about 4 s) have
   their own slots, separate from the log backfill.
 - **Always well-formed JSON-RPC**, with the request's `id`, batches included: the daemon
