@@ -200,8 +200,8 @@ gpg -d ~/verisci-dkg-keys-YYYY-MM-DD.tar.gz.gpg 2>/dev/null | tar -tzf - | wc -l
 ## 7. Fund the node wallets
 
 `~/.dkg/wallets.json` holds an admin wallet and three publisher wallets. The node's agent
-address is the first publisher wallet: it signs publishes and owns the graphs. Print the
-addresses (public, no key):
+address is the first publisher wallet: it owns the graphs. Mints are signed by any of the
+three, so each needs ETH and TRAC. Print the addresses (public, no key):
 
 ```bash
 python3 -c "import json,os; w=json.load(open(os.path.expanduser('~/.dkg/wallets.json'))); print('admin', w['adminWallet']['address']); [print('publisher', x['address']) for x in w['wallets']]"

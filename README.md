@@ -145,10 +145,7 @@ sequenceDiagram
     O->>C: fulfilPhase1(requestId, score, rKaUal)
   else stored
     R->>N: read the stored score back
-    R->>N: poll for an earlier mint, up to the maximum mint time
-    opt still stored
-      R->>N: mint and poll until minted
-    end
+    R->>N: mint and poll until minted
     R->>O: fulfil(requestId, score, rKaUal)
     O->>C: fulfilPhase1(requestId, score, rKaUal)
   else minted
@@ -165,8 +162,8 @@ is left: a retry, or a run restarted by the reconciler, recomputes the same name
 from the request id and converges on the same R-KA
 ([ADR 0007](docs/adr/0007-all-writes-converge.md), [ADR 0017](docs/adr/0017-chain-events-are-ingested-at-least-once.md),
 [ADR 0020](docs/adr/0020-stuck-requests-recovered-only-oracle-cancels.md)). A run
-that finds an R-KA stored by an earlier run polls for a mint still in flight
-and mints only if the R-KA is still stored
+that finds an R-KA stored by an earlier run mints it at once: a KA cannot be
+minted twice
 ([ADR 0008](docs/adr/0008-mints-are-async-polled-in-short-steps.md)). Every
 fulfil and cancel goes through the one serialized oracle function, which reads
 the request again and sends nothing if it is already settled

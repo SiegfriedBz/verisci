@@ -15,7 +15,7 @@ other services can target it.
 | `main` | Production | testnets, until a payment plan allows mainnet | release PRs from `develop` |
 
 Each environment has its own contract, context graph, webhook, oracle wallet and
-Inngest environment. The DKG node is shared: one node wallet and one admin token
+Inngest environment. The DKG node is shared: its publisher wallets and one admin token
 serve both graphs, so a guard in the dkg package will refuse the production
 graph outside production (enforced once its env module lands)
 ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)). Mainnet
