@@ -9,7 +9,7 @@ A DKG node is a long-lived peer-to-peer daemon, and GROBID (PDF parsing) is a lo
 
 ## Decision
 
-- The DKG daemon, GROBID and a JSON-RPC proxy for the daemon run on their own host (a VM), their APIs bound to `127.0.0.1`.
+- The DKG daemon, GROBID and a JSON-RPC proxy for the daemon run on their own host (a VM) by the time a deployed environment calls the node, their APIs bound to `127.0.0.1`.
 - Caddy is the only public HTTP entry: it terminates TLS and requires authentication on every route except `/api/status`, the health check.
 - One host serves both environments ([0005](0005-staging-and-production-are-isolated.md)).
 - Until a deployed environment calls the node, it runs on a developer's computer, started by hand. It moves to the host from its backup, with the same agent address, before the first deployed environment calls it.
@@ -26,3 +26,4 @@ A DKG node is a long-lived peer-to-peer daemon, and GROBID (PDF parsing) is a lo
 ## History
 
 - 2026-10-09: the node runs on a developer's computer until a deployed environment calls it, since no host is available yet; it moves to the host from its backup, and previews reach the node only once it is on the host.
+- 2026-10-09: a new node replaced the previous one, with a new agent address, so that the node is built only from the documented steps; the previous node's graphs are no longer used ([0005](0005-staging-and-production-are-isolated.md)).
