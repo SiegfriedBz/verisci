@@ -209,9 +209,10 @@ python3 -c "import json,os; w=json.load(open(os.path.expanduser('~/.dkg/wallets.
 
 Each needs Base Sepolia ETH for gas and TRAC for publishing and registering. `init` sent
 1,000 TRAC to each (step 4). On 2026-10-09, 0.02 ETH was sent to each from a developer's
-MetaMask testnet account (MetaMask on the Base Sepolia network). Faucets also work: the
-Coinbase Developer Platform faucet, the Superchain faucet (`console.optimism.io/faucet`),
-Alchemy's faucet (`to check`: which still pay out, and how much).
+MetaMask testnet account (MetaMask on the Base Sepolia network). Public faucets are the
+other source, not tried here (`to check`: which still pay out, and how much): the Coinbase
+Developer Platform faucet, the Superchain faucet (`console.optimism.io/faucet`), Alchemy's
+faucet.
 
 Check, for each address:
 

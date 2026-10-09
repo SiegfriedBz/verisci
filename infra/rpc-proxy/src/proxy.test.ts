@@ -367,6 +367,24 @@ describe("eth_getLogs", () => {
     expect(callsOf("eth_getLogs").filter((c) => c.url === PUBLIC[0]).length).toBeLessThan(20);
   });
 
+  it("keeps the latest history start an endpoint announced, so planning ends", async () => {
+    let calls = 0;
+    const { proxy, callsOf } = setup((c) => {
+      if (c.method !== "eth_getLogs" || c.url === ALCHEMY) return servesLogs(c);
+      if (Number((c.params[0] as LogFilter).fromBlock) >= 1_000) return servesLogs(c);
+      if (c.url === PUBLIC[1]) {
+        return { error: { message: "pruned history unavailable: earliest available 1000" } };
+      }
+      // Starts that disagree: trusting the lower one again would plan the window forever.
+      calls++;
+      const from = calls % 2 === 1 ? 1_000 : 500;
+      return { error: { message: `pruned history unavailable: earliest available ${from}` } };
+    });
+    const res = await proxy.handle(getLogs(900, 1_099));
+    expect(res.result).toEqual(Array.from({ length: 200 }, (_, i) => 900 + i));
+    expect(callsOf("eth_getLogs").filter((c) => c.url === PUBLIC[0]).length).toBeLessThan(20);
+  });
+
   it("ignores a range cap below one block", async () => {
     const { proxy, callsOf } = setup((c) =>
       c.method === "eth_getLogs" && c.url !== ALCHEMY
