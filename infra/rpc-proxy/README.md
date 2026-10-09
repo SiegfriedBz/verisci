@@ -63,9 +63,9 @@ and used up the free tier after a few weeks (`docs/domain.md` → DKG).
 
 ## Settings
 
-Read from the environment; on the server, from the unit's `EnvironmentFile`. The server
-runs the proxy with plain Node, so it reads them itself rather than through
-`@verisci/env` ([ADR 0004](../../docs/adr/0004-env-variables-per-workspace-one-root-file.md)).
+Read from the environment: by hand, from a file passed with `node --env-file` (below); on
+a server, from the systemd unit's `EnvironmentFile`. It runs with plain Node, so it reads
+them itself rather than through `@verisci/env` ([ADR 0004](../../docs/adr/0004-env-variables-per-workspace-one-root-file.md)).
 
 | Variable | Required | Default | Meaning |
 | --- | --- | --- | --- |

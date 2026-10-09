@@ -367,6 +367,17 @@ describe("eth_getLogs", () => {
     expect(callsOf("eth_getLogs").filter((c) => c.url === PUBLIC[0]).length).toBeLessThan(20);
   });
 
+  it("ignores a range cap below one block", async () => {
+    const { proxy, callsOf } = setup((c) =>
+      c.method === "eth_getLogs" && c.url !== ALCHEMY
+        ? { error: { message: "eth_getLogs is limited to a 0 range" } }
+        : servesLogs(c),
+    );
+    const res = await proxy.handle(getLogs(0, 99));
+    expect(res.result).toEqual(Array.from({ length: 100 }, (_, i) => i));
+    expect(callsOf("eth_getLogs").filter((c) => c.url === ALCHEMY).length).toBe(10);
+  });
+
   it("falls back to 10-block Alchemy slices within the daily budget", async () => {
     const { proxy, callsOf } = setup(
       (c) => (c.url === ALCHEMY ? servesLogs(c) : { error: { message: "range too large" } }),

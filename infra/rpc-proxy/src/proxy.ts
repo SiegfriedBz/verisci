@@ -170,7 +170,7 @@ export function createProxy(options: ProxyOptions): Proxy {
    */
   function learn(url: string, message: string) {
     const cap = /limited to an? (\d+)(?: block)? range/i.exec(message)?.[1];
-    if (cap !== undefined && Number(cap) < (spanLimit.get(url) ?? Infinity)) {
+    if (cap !== undefined && Number(cap) >= 1 && Number(cap) < (spanLimit.get(url) ?? Infinity)) {
       spanLimit.set(url, Number(cap));
       lessons++;
     }
@@ -309,9 +309,11 @@ export function createProxy(options: ProxyOptions): Proxy {
 
   /**
    * One window, on the public endpoints that keep its history and accept its size. When
-   * none accepts the size, it is cut to the largest cap they announced. A refusal that
+   * none accepts the size, or the ones that do are down, it is cut to the largest cap of the
+   * others. Only the part no public endpoint keeps goes to Alchemy slices. A refusal that
    * teaches a cap or a pruned history plans the window again; any other refusal halves it,
-   * down to Alchemy slices. An outage fails the request instead, so the daemon retries later.
+   * down to Alchemy slices. An outage of every endpoint that keeps the window's history fails
+   * the request, so the daemon retries later.
    */
   async function fetchWindow(filter: LogFilter, lo: number, hi: number): Promise<unknown[]> {
     const span = hi - lo + 1;

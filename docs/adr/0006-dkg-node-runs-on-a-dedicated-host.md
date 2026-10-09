@@ -21,7 +21,7 @@ A DKG node is a long-lived peer-to-peer daemon, and GROBID (PDF parsing) is a lo
 - The host is infrastructure to run, patch and monitor, and a single point of failure for both environments. Its node wallet pays every publish and is alerted on.
 - A lost host is rebuilt from the backup, with the same agent address.
 - Its setup must be documented, since no code deploys it.
-- Meanwhile, the staging graph is reachable only from that computer, while it runs the node; previews reach it only once it is on the host.
+- Meanwhile, the node is reachable only from that computer, while it runs; previews reach it only once it is on the host.
 
 ## History
 
