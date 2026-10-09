@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "inngest": "pnpm dlx inngest-cli@1.46.0 dev -u http://localhost:3000/api/inngest --no-discovery"
   },
   "dependencies": {
     "@next/env": "16.3.8",
@@ -17,6 +18,7 @@
     "@verisci/core": "workspace:*",
     "@verisci/dkg": "workspace:*",
     "@verisci/env": "workspace:*",
+    "inngest": "4.22.0",
     "next": "16.3.8",
     "react": "19.3.0",
     "react-dom": "19.3.0"

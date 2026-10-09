@@ -13,6 +13,7 @@ here.
   the caller polls `readAsset` (0008); the env module refuses a `-prod` context graph
   unless `APP_ENV=production` (0005). See [`docs/adr/`](../../docs/adr/README.md).
 - `src/env.ts` validates on import, so only `@verisci/dkg/env` imports it; the main
-  entry (`src/index.ts`) never does, since the web app imports it.
+  entry (`src/index.ts`) never does, since the web app imports it. The main entry
+  exports `createDkgEnv`, which validates only when called.
 - Calls return typed results (`DkgFailure`), never throw for an expected failure, and
   never put the token in a result.

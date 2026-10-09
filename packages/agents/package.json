@@ -4,16 +4,24 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./env": "./src/env.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "publish-pdf": "node --env-file-if-exists=../../.env.local scripts/publish-pdf.ts"
   },
   "dependencies": {
+    "@verisci/contracts": "workspace:*",
     "@verisci/core": "workspace:*",
-    "@verisci/env": "workspace:*",
     "@verisci/dkg": "workspace:*",
-    "@verisci/contracts": "workspace:*"
+    "@verisci/env": "workspace:*",
+    "inngest": "4.22.0",
+    "viem": "2.57.4",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.1"
   }
 }

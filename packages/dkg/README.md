@@ -43,7 +43,8 @@ main entry, so a workspace that only imports the client's types never needs them
 | `client.startMint(name, { listenMs? })` | Starts the mint of a stored asset; returns `minted` with its UAL, or `minting` when no reply came within `listenMs` (10 s by default) or a mint may be in flight |
 | `DkgClient`, `DkgClientConfig` | The client's calls and its settings |
 | `Quad`, `AssetState`, `AssetResult`, `MintResult`, `DkgFailure` | The client's input and result types |
-| `env`, `createDkgEnv(runtimeEnv)`, `DkgEnv` (from `@verisci/dkg/env`) | The validated settings, the function that builds them from a given object, and their type |
+| `env` (from `@verisci/dkg/env`) | The settings, validated from `process.env` on import |
+| `createDkgEnv(runtimeEnv)`, `DkgEnv` (from either entry) | The function that validates the settings from a given object, when called, and their type; another workspace's env extends it |
 
 ```ts
 import { createDkgClient } from "@verisci/dkg";
