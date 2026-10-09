@@ -34,8 +34,8 @@ Toolchain: Node 24.21.0 (`.nvmrc`), pnpm 10.34.6 via Corepack, Foundry 1.8.4. If
   packages. Biome enforces this in `packages/core/biome.json`.
 - Relative imports keep the `.ts` extension (`./shared.ts`); `allowImportingTsExtensions`
   is on in `tsconfig.base.json` because nothing emits.
-- Environment variables: each workspace declares what it reads in `src/env.ts` with
-  `defineEnv` from `@verisci/env`, and adds it to `.env.example` in the same PR. Programs
+- Environment variables: each workspace declares what it reads in its env module
+  (`src/env.ts`) with `defineEnv` from `@verisci/env`, and adds it to `.env.example` in the same PR. Programs
   that run on the DKG node server (`infra/*`) read their own settings instead, listed in
   their README (ADR 0004). Forge's
   deploy settings go in `.env.example`'s Foundry section instead; per-deploy choices such

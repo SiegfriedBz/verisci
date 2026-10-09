@@ -21,11 +21,24 @@ interface Call {
   body: unknown;
 }
 
+const GRAPHS = "GET /api/context-graph/list";
+const graphList = (id: string, subscribed = true): Reply => ({
+  status: 200,
+  body: {
+    contextGraphs: [
+      { id: "agents", subscribed: true },
+      { id, subscribed },
+    ],
+  },
+});
+
 /**
  * A fake node: each route (`METHOD /path`) answers its replies in order, repeating the last
- * one. Records every call. An unknown route fails the test.
+ * one. Records every call. An unknown route fails the test. The graph list serves `GRAPH`
+ * unless a test gives its own.
  */
-function fakeNode(routes: Record<string, Reply[]>) {
+function fakeNode(routes: Record<string, Reply[]>, options: { timeoutMs?: number } = {}) {
+  routes = { [GRAPHS]: [graphList(GRAPH)], ...routes };
   const calls: Call[] = [];
   const fetch = async (input: string | URL | Request, init?: RequestInit) => {
     const url = new URL(String(input));
@@ -58,6 +71,7 @@ function fakeNode(routes: Record<string, Reply[]>) {
     token: TOKEN,
     contextGraphId: GRAPH,
     fetch,
+    ...options,
   });
   const writes = () => calls.filter((call) => call.method === "POST").map((call) => call.path);
   return { client, calls, writes };
@@ -73,6 +87,36 @@ const published: Reply = {
 const conflict = (code: string): Reply => ({ status: 409, body: { code, error: "refused" } });
 
 describe("readAsset", () => {
+  it.each([
+    ["not listed", graphList(`${AGENT}/other`)],
+    ["listed but not subscribed", graphList(GRAPH, false)],
+  ])("reads a 404 as graph-not-served when the graph is %s", async (_, list) => {
+    const { client } = fakeNode({ [`GET ${ASSET}`]: [missing], [GRAPHS]: [list] });
+
+    expect(await client.readAsset(NAME)).toEqual({ ok: false, reason: "graph-not-served" });
+  });
+
+  it("lists the graphs once per client, after the first 404", async () => {
+    const { client, calls } = fakeNode({ [`GET ${ASSET}`]: [missing] });
+
+    await client.readAsset(NAME);
+    await client.readAsset(NAME);
+
+    expect(calls.filter((call) => call.path === "/api/context-graph/list")).toHaveLength(1);
+  });
+
+  it("reports a graph list it cannot read", async () => {
+    const odd = fakeNode({ [`GET ${ASSET}`]: [missing], [GRAPHS]: [{ status: 200, body: {} }] });
+    const down = fakeNode({ [`GET ${ASSET}`]: [missing], [GRAPHS]: ["network-error"] });
+
+    expect(await odd.client.readAsset(NAME)).toEqual({
+      ok: false,
+      reason: "unexpected",
+      status: 200,
+    });
+    expect(await down.client.readAsset(NAME)).toEqual({ ok: false, reason: "unreachable" });
+  });
+
   it("reads a name never stored as missing", async () => {
     const { client } = fakeNode({ [`GET ${ASSET}`]: [missing] });
 
@@ -152,6 +196,38 @@ describe("storeAsset", () => {
 
     expect(await client.storeAsset(NAME, QUADS)).toEqual(expected);
     expect(writes()).toEqual([]);
+  });
+
+  it.each([
+    [
+      "stored",
+      "KA_ASSERTION_ALREADY_FINALIZED",
+      promoted,
+      { state: "stored", reservedUal: RESERVED },
+    ],
+    ["minted", "KA_WM_LIFECYCLE_REQUIRED", published, { state: "minted", ual: RESERVED }],
+  ])("returns %s when a racing store got there first (%s)", async (_, code, reply, expected) => {
+    const { client, writes } = fakeNode({
+      [`GET ${ASSET}`]: [missing, reply],
+      "POST /api/knowledge-assets": [conflict(code)],
+    });
+
+    expect(await client.storeAsset(NAME, QUADS)).toEqual({ ok: true, ...expected });
+    expect(writes()).toEqual(["/api/knowledge-assets"]);
+  });
+
+  it("fails when the share is refused and the asset stays a draft", async () => {
+    const { client } = fakeNode({
+      [`GET ${ASSET}`]: [created],
+      [`POST ${ASSET}/swm/share`]: [conflict("SHARE_REFUSED")],
+    });
+
+    expect(await client.storeAsset(NAME, QUADS)).toEqual({
+      ok: false,
+      reason: "unexpected",
+      status: 409,
+      code: "SHARE_REFUSED",
+    });
   });
 
   it("goes on from the state when a racing store already sealed the name", async () => {
@@ -250,6 +326,12 @@ describe("startMint", () => {
 });
 
 describe("failures shared by every call", () => {
+  it("reports a read that times out as unreachable", async () => {
+    const { client } = fakeNode({ [`GET ${ASSET}`]: ["hang"] }, { timeoutMs: 20 });
+
+    expect(await client.readAsset(NAME)).toEqual({ ok: false, reason: "unreachable" });
+  });
+
   it("reports a node that cannot be reached", async () => {
     const { client } = fakeNode({ [`GET ${ASSET}`]: ["network-error"] });
 

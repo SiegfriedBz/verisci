@@ -1,17 +1,9 @@
 import { normalizeUal } from "@verisci/core";
-import {
-  type Connection,
-  errorCode,
-  field,
-  isSuccess,
-  type Reply,
-  send,
-  toFailure,
-} from "./http.ts";
-import type { AssetResult, MintResult, Quad } from "./types.ts";
+import { type Connection, field, isSuccess, type Reply, send, toFailure } from "./http.ts";
+import type { AssetResult, DkgFailure, MintResult, Quad } from "./types.ts";
 
-/** How long a read, store or share waits for the node before reporting it unreachable. */
-const REQUEST_TIMEOUT_MS = 30_000;
+/** How long a read, store or share waits for the node by default before reporting it unreachable. */
+const DEFAULT_TIMEOUT_MS = 30_000;
 /** How long `startMint` listens for the mint's reply by default (ADR 0008). */
 const DEFAULT_LISTEN_MS = 10_000;
 /** Codes of a mint the network could not take now; a retry after a pause usually works (ADR 0009). */
@@ -25,18 +17,26 @@ export interface DkgClientConfig {
   readonly token: string;
   /** The full context graph id, `<agent address>/<name>` (`docs/domain.md` → DKG). */
   readonly contextGraphId: string;
+  /** How long a read, store or share waits for the node; 30 s by default. */
+  readonly timeoutMs?: number;
   /** Defaults to the global `fetch`; tests pass a fake node. */
   readonly fetch?: typeof fetch;
 }
 
 /** The calls `createDkgClient` returns. */
 export interface DkgClient {
-  /** Reads where the asset stands: missing, draft, stored or minted. */
+  /**
+   * Reads where the asset stands: missing, draft, stored or minted. The node answers 404
+   * both for an asset never stored and for a graph it does not serve, so a 404 is read as
+   * `missing` only once the node lists the graph as subscribed; otherwise the result is
+   * `graph-not-served`.
+   */
   readAsset(name: string): Promise<AssetResult>;
   /**
    * Stores the asset and shares it, so it is ready to mint. Reads the state first and does
    * only what is left (ADR 0007): a stored or minted asset keeps its first content, and
-   * `quads` are sent only when the name was never stored.
+   * `quads` are sent only when the name was never stored. Returns `stored` or `minted`, or
+   * a failure: never `draft`.
    */
   storeAsset(name: string, quads: readonly Quad[]): Promise<AssetResult>;
   /**
@@ -56,23 +56,40 @@ export function createDkgClient(config: DkgClientConfig): DkgClient {
     fetch: config.fetch ?? globalThis.fetch,
   };
   const graph = { contextGraphId: config.contextGraphId };
+  const timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  // Set once the node lists the graph; a graph does not stop being served within one client's life.
+  let graphServed = false;
   const assetPath = (name: string) => `/api/knowledge-assets/${encodeURIComponent(name)}`;
 
   async function readAsset(name: string): Promise<AssetResult> {
     const query = new URLSearchParams(graph).toString();
-    const reply = await send(connection, "GET", `${assetPath(name)}?${query}`, {
-      timeoutMs: REQUEST_TIMEOUT_MS,
-    });
-    if (reply.kind === "answer" && reply.status === 404) return { ok: true, state: "missing" };
+    const reply = await send(connection, "GET", `${assetPath(name)}?${query}`, { timeoutMs });
+    if (reply.kind === "answer" && reply.status === 404) {
+      const served = await isGraphServed();
+      if (served === true) return { ok: true, state: "missing" };
+      return served === false ? { ok: false, reason: "graph-not-served" } : served;
+    }
     if (reply.kind !== "answer" || !isSuccess(reply)) return toFailure(reply);
     return toAssetState(reply.body) ?? { ok: false, reason: "unexpected", status: reply.status };
   }
 
+  /** True when the node lists the graph as subscribed; a failure when the list cannot be read. */
+  async function isGraphServed(): Promise<boolean | DkgFailure> {
+    if (graphServed) return true;
+    const reply = await send(connection, "GET", "/api/context-graph/list", { timeoutMs });
+    if (reply.kind !== "answer" || !isSuccess(reply)) return toFailure(reply);
+    const graphs = field(reply.body, "contextGraphs");
+    if (!Array.isArray(graphs)) return { ok: false, reason: "unexpected", status: reply.status };
+    const wanted = config.contextGraphId.toLowerCase();
+    graphServed = graphs.some(
+      (entry) =>
+        String(field(entry, "id")).toLowerCase() === wanted && field(entry, "subscribed") === true,
+    );
+    return graphServed;
+  }
+
   async function share(name: string): Promise<Reply> {
-    return send(connection, "POST", `${assetPath(name)}/swm/share`, {
-      body: graph,
-      timeoutMs: REQUEST_TIMEOUT_MS,
-    });
+    return send(connection, "POST", `${assetPath(name)}/swm/share`, { body: graph, timeoutMs });
   }
 
   async function storeAsset(name: string, quads: readonly Quad[]): Promise<AssetResult> {
@@ -82,12 +99,12 @@ export function createDkgClient(config: DkgClientConfig): DkgClient {
     if (current.state === "missing") {
       const created = await send(connection, "POST", "/api/knowledge-assets", {
         body: { ...graph, name, quads },
-        timeoutMs: REQUEST_TIMEOUT_MS,
+        timeoutMs,
       });
       if (isSuccess(created)) {
         current = { ok: true, state: "draft" };
-      } else if (errorCode(created) === "KA_ASSERTION_ALREADY_FINALIZED") {
-        // A racing store sealed it first: go on from what it left.
+      } else if (isConflict(created)) {
+        // A racing store sealed or minted it first: each 409 is final, so go on from the state.
         current = await readAsset(name);
         if (!current.ok) return current;
       } else {
@@ -98,10 +115,11 @@ export function createDkgClient(config: DkgClientConfig): DkgClient {
     if (current.state === "draft") {
       const shared = await share(name);
       // A 409 may be a racing share: the state says where things stand.
-      if (!isSuccess(shared) && !(shared.kind === "answer" && shared.status === 409)) {
-        return toFailure(shared);
-      }
-      return readAsset(name);
+      if (!isSuccess(shared) && !isConflict(shared)) return toFailure(shared);
+      const after = await readAsset(name);
+      // Still a draft: the node refused the share for another reason.
+      if (after.ok && after.state === "draft") return toFailure(shared);
+      return after;
     }
 
     return current;
@@ -142,6 +160,10 @@ export function createDkgClient(config: DkgClientConfig): DkgClient {
   }
 
   return { readAsset, storeAsset, startMint };
+}
+
+function isConflict(reply: Reply): boolean {
+  return reply.kind === "answer" && reply.status === 409;
 }
 
 /** Maps the node's state body to an `AssetState`; `undefined` when it cannot be read. */

@@ -54,7 +54,10 @@ edge`, testnet), Base Sepolia.
   (`"\"7\""`).
 - **Read an asset's state with `GET …/{name}?contextGraphId=…`:** `state` is `created`
   (sealed draft, layer `WM`), `promoted` (shared, `SWM`) or `published` (minted, `VM`, with
-  `publishedUal`); a name never stored answers 404. `reservedUal` is set from the first
+  `publishedUal`); a name never stored answers 404. So does a graph the node does not
+  serve, with the same body (`No knowledge asset "<name>" in context graph "<id>"`, no
+  `code`), so only `GET /api/context-graph/list` tells them apart: it lists each graph's
+  `id` and `subscribed` (10.0.22, 2026-10-09). Error bodies are `{ error, code }`. `reservedUal` is set from the first
   call, so a UAL being present does not mean minted: read `state`
   ([ADR 0007](adr/0007-all-writes-converge.md)). `GET …/{name}/wm/quads` returns the
   draft's quads.

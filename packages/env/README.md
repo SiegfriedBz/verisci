@@ -34,23 +34,28 @@ declares its own variables and why `APP_ENV` is required in production builds is
 
 ## Declaring a workspace's variables
 
-Each workspace keeps its schema in its own `src/env.ts` and extends `sharedEnv`.
-A workspace declares only what it reads, so no workspace requires (or sees) a
-secret it does not use.
+Each workspace declares its variables in its env module (`src/env.ts`, which may
+import the schema from a file next to it) and extends the shared env. A workspace
+declares only what it reads, so no workspace requires (or sees) a secret it does not use.
 
 ```ts
-// packages/dkg/src/env.ts
+// packages/<workspace>/src/env.ts
 import { defineEnv, sharedEnv } from "@verisci/env";
 import { z } from "zod";
 
 export const env = defineEnv({
   extends: [sharedEnv],
-  server: { DKG_URL: z.url() },
+  server: { SOME_URL: z.url() },
 });
 
-env.DKG_URL; // string
+env.SOME_URL; // string
 env.APP_ENV; // "local" | "staging" | "production"
 ```
+
+When tests must check the rules with their own values, put them in a function that takes
+a `runtimeEnv` and extends `createSharedEnv(runtimeEnv)`, and have `src/env.ts` call it
+once: `packages/dkg` does this (`createDkgEnv` in `src/dkg-env.ts`), since `src/env.ts`
+validates `process.env` as soon as it is imported.
 
 Envs in `extends` keep the values they were built with; they are not re-read from
 the given `runtimeEnv`. `sharedEnv` is always built from `process.env`, so a test

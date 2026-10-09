@@ -22,6 +22,8 @@ export type AssetState =
  * Why a call did not succeed:
  * - `unreachable`: no answer from the node (down, network error or timeout);
  * - `unauthorized`: the node refused the token (401 or 403);
+ * - `graph-not-served`: the node does not serve the context graph (not subscribed, or
+ *   dropped from its config after a restart), so no asset in it can be read or written;
  * - `not-stored`: a mint was asked for an asset that is not stored and shared yet;
  * - `retry-later`: the network could not take the mint now (quorum); retry after a pause;
  * - `unexpected`: any other answer, with its HTTP status and the node's error code if any.
@@ -30,7 +32,13 @@ export type AssetState =
  */
 export interface DkgFailure {
   readonly ok: false;
-  readonly reason: "unreachable" | "unauthorized" | "not-stored" | "retry-later" | "unexpected";
+  readonly reason:
+    | "unreachable"
+    | "unauthorized"
+    | "graph-not-served"
+    | "not-stored"
+    | "retry-later"
+    | "unexpected";
   readonly status?: number;
   readonly code?: string;
 }

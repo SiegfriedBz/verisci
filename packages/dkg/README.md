@@ -37,12 +37,13 @@ main entry, so a workspace that only imports the client's types never needs them
 
 | Export | What it does |
 | --- | --- |
-| `createDkgClient({ url, token, contextGraphId, fetch? })` | A client for one context graph on one node; `fetch` defaults to the global one |
-| `client.readAsset(name)` | Where the asset stands: `missing`, `draft` (sealed, not shared), `stored` (with `reservedUal`) or `minted` (with `ual`) |
-| `client.storeAsset(name, quads)` | Stores and shares the asset, doing only what is left; a stored or minted asset keeps its first content |
+| `createDkgClient({ url, token, contextGraphId, timeoutMs?, fetch? })` | A `DkgClient` for one context graph on one node; `timeoutMs` (30 s by default) bounds each read, store and share; `fetch` defaults to the global one |
+| `client.readAsset(name)` | Where the asset stands: `missing`, `draft` (sealed, not shared), `stored` (with `reservedUal`) or `minted` (with `ual`); `graph-not-served` when the node does not serve the graph |
+| `client.storeAsset(name, quads)` | Stores and shares the asset, doing only what is left, and returns `stored` or `minted`; a stored or minted asset keeps its first content |
 | `client.startMint(name, { listenMs? })` | Starts the mint of a stored asset; returns `minted` with its UAL, or `minting` when no reply came within `listenMs` (10 s by default) or a mint may be in flight |
+| `DkgClient`, `DkgClientConfig` | The client's calls and its settings |
 | `Quad`, `AssetState`, `AssetResult`, `MintResult`, `DkgFailure` | The client's input and result types |
-| `env`, `createDkgEnv(runtimeEnv)` (from `@verisci/dkg/env`) | The validated settings, and the function that builds them from a given object |
+| `env`, `createDkgEnv(runtimeEnv)`, `DkgEnv` (from `@verisci/dkg/env`) | The validated settings, the function that builds them from a given object, and their type |
 
 ```ts
 import { createDkgClient } from "@verisci/dkg";
@@ -60,10 +61,13 @@ const mint = await dkg.startMint(name);
 ```
 
 Every call returns a typed result and never throws for an expected failure. A failure's
-`reason` is `unreachable`, `unauthorized`, `not-stored`, `retry-later` (a quorum failure:
+`reason` is `unreachable`, `unauthorized`, `graph-not-served`, `not-stored`, `retry-later` (a quorum failure:
 retry after a pause, [ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md))
 or `unexpected`, with the HTTP status and the node's error code. No result carries the
-token. Every UAL returned is normalized
+token. The node answers 404 both for an asset never stored and for a graph it does not
+serve, so before reading a 404 as `missing` the client checks, once per client, that the
+node lists the graph as subscribed: otherwise a rating whose graph was dropped after a
+restart would read as never stored. Every UAL returned is normalized
 ([ADR 0031](../../docs/adr/0031-uals-are-normalized-before-the-contract.md)).
 
 Stores and mints converge: each reads the state first and does only what is left, so a
