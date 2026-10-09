@@ -11,17 +11,74 @@ with a credential. The node reads the chain through
 with `authority-resolution-failed` is often a chain-read problem there, not in this
 package (`docs/domain.md` → DKG).
 
-Status: placeholder.
+Status: a client to read an asset's state, store it and start its mint.
 
 ## Depends on
 
-`@verisci/core`, `@verisci/env`
+`@verisci/core` (UAL normalization), `@verisci/env`, and Zod.
+
+## Environment
+
+Declared in `src/env.ts` and validated on first import of `@verisci/dkg/env`, not of the
+main entry, so a workspace that only imports the client's types never needs them.
+
+| Variable | Value |
+| --- | --- |
+| `DKG_URL` | The node's base URL: `http://127.0.0.1:9200` locally |
+| `DKG_TOKEN` | Bearer token: the node's admin token (`~/.dkg/auth.token`) locally; the environment's credential once the node is on its server |
+| `DKG_CONTEXT_GRAPH` | The full context graph id, `<agent address>/<graph name>`, such as `0x…/verisci-staging` |
+
+`DKG_CONTEXT_GRAPH` is refused when it is a bare name (which reads another, empty graph,
+`docs/domain.md` → DKG), when it ends in `-prod` and `APP_ENV` is not `production`, and when
+`APP_ENV` is `production` and it does not
+([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)).
+
+## API
+
+| Export | What it does |
+| --- | --- |
+| `createDkgClient({ url, token, contextGraphId, fetch? })` | A client for one context graph on one node; `fetch` defaults to the global one |
+| `client.readAsset(name)` | Where the asset stands: `missing`, `draft` (sealed, not shared), `stored` (with `reservedUal`) or `minted` (with `ual`) |
+| `client.storeAsset(name, quads)` | Stores and shares the asset, doing only what is left; a stored or minted asset keeps its first content |
+| `client.startMint(name, { listenMs? })` | Starts the mint of a stored asset; returns `minted` with its UAL, or `minting` when no reply came within `listenMs` (10 s by default) or a mint may be in flight |
+| `Quad`, `AssetState`, `AssetResult`, `MintResult`, `DkgFailure` | The client's input and result types |
+| `env`, `createDkgEnv(runtimeEnv)` (from `@verisci/dkg/env`) | The validated settings, and the function that builds them from a given object |
+
+```ts
+import { createDkgClient } from "@verisci/dkg";
+import { env } from "@verisci/dkg/env";
+
+const dkg = createDkgClient({
+  url: env.DKG_URL,
+  token: env.DKG_TOKEN,
+  contextGraphId: env.DKG_CONTEXT_GRAPH,
+});
+
+const stored = await dkg.storeAsset(name, quads);
+const mint = await dkg.startMint(name);
+// mint.state === "minting": poll dkg.readAsset(name) until it reads "minted".
+```
+
+Every call returns a typed result and never throws for an expected failure. A failure's
+`reason` is `unreachable`, `unauthorized`, `not-stored`, `retry-later` (a quorum failure:
+retry after a pause, [ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md))
+or `unexpected`, with the HTTP status and the node's error code. No result carries the
+token. Every UAL returned is normalized
+([ADR 0031](../../docs/adr/0031-uals-are-normalized-before-the-contract.md)).
+
+Stores and mints converge: each reads the state first and does only what is left, so a
+retry never repeats a write already done
+([ADR 0007](../../docs/adr/0007-all-writes-converge.md)). A mint keeps running on the node
+after the client stops listening; the caller polls `readAsset`, and restarts the mint only
+after the maximum mint time
+([ADR 0008](../../docs/adr/0008-mints-are-async-polled-in-short-steps.md)). The node's
+routes and refusals are in `docs/domain.md` → DKG.
 
 ## Scripts
 
 | Command | What it does |
 | --- | --- |
 | `pnpm --filter @verisci/dkg typecheck` | Typechecks the package |
-| `pnpm --filter @verisci/dkg test` | Runs its Vitest project (`vitest run`) |
+| `pnpm --filter @verisci/dkg test` | Runs its Vitest project (`vitest run`) against a fake node |
 
-Ships TypeScript source (`src/index.ts`), with no build step.
+Ships TypeScript source (`src/index.ts`, `src/env.ts`), with no build step.

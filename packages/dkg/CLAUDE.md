@@ -11,3 +11,7 @@ here.
   includes the share, and a mint starts `vm/publish` without waiting for it, then
   polls the asset's state (0008); the env module refuses a `-prod` context graph unless
   `APP_ENV=production` (0005). See [`docs/adr/`](../../docs/adr/README.md).
+- `src/env.ts` validates on import, so only `@verisci/dkg/env` imports it; the main
+  entry (`src/index.ts`) never does, since the web app imports it.
+- Calls return typed results (`DkgFailure`), never throw for an expected failure, and
+  never put the token in a result.
