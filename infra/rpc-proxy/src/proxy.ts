@@ -104,6 +104,12 @@ export function createProxy(options: ProxyOptions): Proxy {
   const logsInFlight = new Map<string, Promise<unknown[]>>();
   const readCache = new Map<string, { reply: UpstreamReply; until: number }>();
   const readsInFlight = new Map<string, Promise<UpstreamReply>>();
+  /** Largest log range each endpoint said it accepts ("limited to a 200 range"). */
+  const spanLimit = new Map<string, number>();
+  /** First block each endpoint said it keeps ("earliest available 46500000"). */
+  const historyFrom = new Map<string, number>();
+  /** Counts what the endpoints taught, so a refused window is planned again only after news. */
+  let lessons = 0;
   let highestHead = 0;
   let served = 0;
   let failed = 0;
@@ -129,7 +135,14 @@ export function createProxy(options: ProxyOptions): Proxy {
   }
 
   async function call(url: string, body: object, lane: Lane): Promise<UpstreamReply> {
-    const reply = await withSlot(url, lane, () => post(url, body, LANES[lane].timeoutMs));
+    const raw = await withSlot(url, lane, () => post(url, body, LANES[lane].timeoutMs));
+    // Alchemy's URL holds its key: an error that echoes it shows "(alchemy)" instead.
+    const reply: UpstreamReply =
+      "error" in raw
+        ? {
+            error: { ...raw.error, message: raw.error.message.split(alchemyUrl).join("(alchemy)") },
+          }
+        : raw;
     const stats = upstreamStats.get(url);
     if (stats) {
       stats.calls++;
@@ -138,7 +151,22 @@ export function createProxy(options: ProxyOptions): Proxy {
         stats.last = reply.error.message;
       }
     }
+    if ("error" in reply) learn(url, reply.error.message);
     return reply;
+  }
+
+  /** Remembers an endpoint's range cap or pruned history from its error message. */
+  function learn(url: string, message: string) {
+    const cap = /limited to an? (\d+)(?: block)? range/i.exec(message)?.[1];
+    if (cap !== undefined && spanLimit.get(url) !== Number(cap)) {
+      spanLimit.set(url, Number(cap));
+      lessons++;
+    }
+    const from = /earliest available (\d+)/i.exec(message)?.[1];
+    if (from !== undefined && Number(from) > (historyFrom.get(url) ?? 0)) {
+      historyFrom.set(url, Number(from));
+      lessons++;
+    }
   }
 
   /** Public endpoints with free slots come first, Alchemy last. */
@@ -268,18 +296,37 @@ export function createProxy(options: ProxyOptions): Proxy {
   }
 
   /**
-   * One window: every public endpoint, then, if they all refuse the range, smaller public
-   * windows, then Alchemy slices. An outage fails the request instead, so the daemon retries
-   * later.
+   * One window, on the public endpoints that keep its history and accept its size. When
+   * none accepts the size, it is cut to the largest cap they announced. A refusal that
+   * teaches a cap or a pruned history plans the window again; any other refusal halves it,
+   * down to Alchemy slices. An outage fails the request instead, so the daemon retries later.
    */
   async function fetchWindow(filter: LogFilter, lo: number, hi: number): Promise<unknown[]> {
-    const reply = await resolve(logsBody(filter, lo, hi), "bulk", publicUrls, true);
+    const span = hi - lo + 1;
+    const holding = publicUrls.filter((u) => (historyFrom.get(u) ?? 0) <= lo);
+    if (holding.length === 0) return alchemySlices(filter, lo, hi);
+    const fitting = holding.filter((u) => span <= (spanLimit.get(u) ?? Infinity));
+    if (fitting.length === 0) {
+      const cap = Math.max(1, ...holding.map((u) => spanLimit.get(u) ?? 0));
+      return cut(filter, lo, hi, cap);
+    }
+    const before = lessons;
+    const reply = await resolve(logsBody(filter, lo, hi), "bulk", fitting, true);
     if ("result" in reply && Array.isArray(reply.result)) return reply.result;
+    if (lessons !== before) return fetchWindow(filter, lo, hi);
     const message = "error" in reply ? reply.error.message : "not a list";
     if (message.startsWith(ALL_FAILED)) throw new Error(message);
-    if (hi - lo + 1 <= MIN_PUBLIC_SPAN) return alchemySlices(filter, lo, hi);
-    const mid = Math.floor((lo + hi) / 2);
-    return [...(await fetchWindow(filter, lo, mid)), ...(await fetchWindow(filter, mid + 1, hi))];
+    if (span <= MIN_PUBLIC_SPAN) return alchemySlices(filter, lo, hi);
+    return cut(filter, lo, hi, Math.ceil(span / 2));
+  }
+
+  /** Fetches `lo`..`hi` as consecutive windows of `size` blocks, in order. */
+  async function cut(filter: LogFilter, lo: number, hi: number, size: number) {
+    const out: unknown[] = [];
+    for (let a = lo; a <= hi; a += size) {
+      out.push(...(await fetchWindow(filter, a, Math.min(a + size - 1, hi))));
+    }
+    return out;
   }
 
   async function windowLogs(filter: LogFilter, lo: number, hi: number, head: number) {
@@ -367,8 +414,7 @@ export function createProxy(options: ProxyOptions): Proxy {
         const s = upstreamStats.get(url) ?? { calls: 0, failures: 0, last: "" };
         const name = url === alchemyUrl ? "alchemy" : new URL(url).host;
         const extra = url === alchemyUrl ? ` budget=${budget.used()}/${budget.limit}` : "";
-        // Alchemy's URL holds its key: an error that echoes it shows "(alchemy)" instead.
-        const why = s.last.split(alchemyUrl).join("(alchemy)").replace(/\s+/g, " ");
+        const why = s.last.replace(/\s+/g, " ");
         const last = why ? ` last="${why.slice(0, LAST_ERROR_CHARS)}"` : "";
         return `${name} calls=${s.calls} failures=${s.failures}${last}${extra}`;
       });

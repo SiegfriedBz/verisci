@@ -1,6 +1,6 @@
 # @verisci/rpc-proxy
 
-A small JSON-RPC proxy that runs on the DKG node server, on `127.0.0.1:8545`. The DKG
+A small JSON-RPC proxy that runs beside the DKG daemon, on `127.0.0.1:8545`. The DKG
 daemon takes a single `chain.rpcUrl`; this proxy is that URL. It spreads the daemon's Base
 Sepolia reads over free public endpoints and keeps Alchemy, the fallback, within
 a daily budget.
@@ -22,12 +22,17 @@ and used up the free tier after a few weeks (`docs/domain.md` → DKG).
   budget in minutes. When it is used up, a call the public endpoints cannot answer gets a
   JSON-RPC error.
 - **`eth_getLogs` in windows.** A range is cut into 2,000-block windows up to the chain
-  head; a missing `fromBlock` or `toBlock` means the head, as in JSON-RPC. A window one
-  public endpoint refuses goes to the other (publicnode takes 2,000 blocks,
-  `sepolia.base.org` 200); one they both refuse is halved down to 125 blocks, then sent to
-  Alchemy in 10-block slices within the budget; the slices stop at the first failure. An
-  outage (timeouts,
-  5xx, throttling everywhere) fails the request, and the daemon retries it later.
+  head; a missing `fromBlock` or `toBlock` means the head, as in JSON-RPC.
+- **It learns each endpoint's limits** from its refusals and plans windows around them:
+  a range cap ("limited to a 200 range": `sepolia.base.org`) and where its history starts
+  ("earliest available 46500000": publicnode). A window goes only to the public endpoints
+  that keep its history and accept its size; when none accepts the size, it is cut to the
+  largest cap they announced. History no public endpoint keeps goes to Alchemy in 10-block
+  slices within the budget.
+- **Other refused ranges are halved** ("block range limit exceeded", "too many results"),
+  down to 125 blocks, then sent to Alchemy in 10-block slices within the budget; the slices
+  stop at the first failure. An outage (timeouts, 5xx, throttling everywhere) fails the
+  request, and the daemon retries it later.
 - **Answers from memory.** Log windows more than 64 blocks below the head are kept (20,000
   at most, oldest dropped). The same `eth_call`, `eth_getBlockByNumber` or
   `eth_blockNumber` within 3 s, or arriving together, takes one upstream call;
@@ -35,8 +40,8 @@ and used up the free tier after a few weeks (`docs/domain.md` → DKG).
   10,000 blocks at once, so one wrong answer cannot push it ahead.
 - **Throttled endpoints rest** for 1.5 s (HTTP 429, rate limits), and transient failures
   (the network, timeouts, any HTTP 5xx) are retried on the next endpoint, as is history an
-  endpoint has pruned (publicnode keeps recent blocks only). A refused range
-  ("block range limit exceeded", "too many results") is halved instead.
+  endpoint has pruned. A call at history every public endpoint pruned goes to Alchemy,
+  which keeps it all, within the budget.
 - **Two lanes:** the daemon's quick calls (its head probe times out after about 4 s) have
   their own slots, separate from the log backfill.
 - **Always well-formed JSON-RPC**, with the request's `id`, batches included: the daemon
@@ -44,8 +49,8 @@ and used up the free tier after a few weeks (`docs/domain.md` → DKG).
   data), which the daemon decodes, for example to approve a TRAC deposit before registering
   a context graph.
 - **A status line every 30 s** in the log: requests served and failed, then calls and
-  failures per endpoint with the last failure's reason (Alchemy's URL never shown), and
-  Alchemy's use of its daily budget.
+  failures per endpoint with the last failure's reason, and Alchemy's use of its daily
+  budget. Alchemy's URL is never shown, in the log or in an error sent to the daemon.
 
 ## Settings
 
