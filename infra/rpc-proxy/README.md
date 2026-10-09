@@ -5,6 +5,14 @@ daemon takes a single `chain.rpcUrl`; this proxy is that URL. It spreads the dae
 Sepolia reads over free public endpoints and keeps Alchemy, the fallback, within
 a daily budget.
 
+## Where it sits
+
+The proxy is a separate process beside the DKG daemon, not part of it. It listens on
+`127.0.0.1` only and has no public entry: the daemon is its only client, and the daemon's
+blockchain calls go nowhere else. The daemon's peer-to-peer traffic with other DKG nodes
+does not pass through it ([`docs/node-host.md`](../../docs/node-host.md) → How the parts
+connect).
+
 ## Why it exists
 
 Before it accepts a write, the daemon resolves each context graph's policy from chain

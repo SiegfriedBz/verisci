@@ -8,6 +8,28 @@ later by restoring its backup, so its agent address and graph ids stay the same
 Built on 2026-10-09 on Ubuntu 24.04 (x86_64). Each step ends with a check: a command and
 what it should print. A step marked `to check` was not verified.
 
+## How the parts connect
+
+Each program listens on `127.0.0.1`, reachable only from the same machine, except the
+daemon's peer-to-peer port. On a server, Caddy is the only public entry
+([ADR 0006](adr/0006-dkg-node-runs-on-a-dedicated-host.md)); on the developer's computer
+there is no public entry, since nothing outside calls the node yet.
+
+```text
+the app (Vercel) ──HTTPS 443, credential──▶ Caddy ──┬──▶ DKG daemon API  127.0.0.1:9200
+                                          (server)  └──▶ GROBID          127.0.0.1:8070
+
+DKG daemon ──JSON-RPC──▶ RPC proxy 127.0.0.1:8545 ──▶ public Base Sepolia endpoints, then Alchemy
+DKG daemon ◀──peer-to-peer──▶ other DKG nodes and the testnet relays
+```
+
+| Traffic | Path |
+| --- | --- |
+| The app → the node or GROBID | Through Caddy only, over HTTPS, with a credential |
+| The node → Base Sepolia (reads, transactions) | Through the RPC proxy only: `chain.rpcUrl` is `http://127.0.0.1:8545` and no backup RPC URL is set |
+| The node ↔ other DKG nodes | Directly, on its peer-to-peer port (sync, storage acknowledgements, relays) |
+| The RPC proxy → the chain | Directly, to the public endpoints first and Alchemy last |
+
 ## What runs
 
 | Program | Address | Started with |
