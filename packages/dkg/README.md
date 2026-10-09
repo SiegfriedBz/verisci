@@ -65,7 +65,7 @@ Every call returns a typed result and never throws for an expected failure. A fa
 retry after a pause, [ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md))
 or `unexpected`, with the HTTP status and the node's error code. No result carries the
 token. The node answers 404 both for an asset never stored and for a graph it does not
-serve, so before reading a 404 as `missing` the client checks, once per client, that the
+serve, so before reading a 404 as `missing` the client checks, on every 404, that the
 node lists the graph as subscribed: otherwise a rating whose graph was dropped after a
 restart would read as never stored. Every UAL returned is normalized
 ([ADR 0031](../../docs/adr/0031-uals-are-normalized-before-the-contract.md)).

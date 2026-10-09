@@ -96,13 +96,28 @@ describe("readAsset", () => {
     expect(await client.readAsset(NAME)).toEqual({ ok: false, reason: "graph-not-served" });
   });
 
-  it("lists the graphs once per client, after the first 404", async () => {
-    const { client, calls } = fakeNode({ [`GET ${ASSET}`]: [missing] });
+  it("checks the graph list on every 404, since a restart can drop the graph", async () => {
+    const { client } = fakeNode({
+      [`GET ${ASSET}`]: [missing],
+      [GRAPHS]: [graphList(GRAPH), graphList(`${AGENT}/other`)],
+    });
 
-    await client.readAsset(NAME);
-    await client.readAsset(NAME);
+    expect(await client.readAsset(NAME)).toEqual({ ok: true, state: "missing" });
+    expect(await client.readAsset(NAME)).toEqual({ ok: false, reason: "graph-not-served" });
+  });
 
-    expect(calls.filter((call) => call.path === "/api/context-graph/list")).toHaveLength(1);
+  it("matches the graph's address in any case but its name exactly", async () => {
+    const address = fakeNode({
+      [`GET ${ASSET}`]: [missing],
+      [GRAPHS]: [graphList(GRAPH.toLowerCase())],
+    });
+    const name = fakeNode({
+      [`GET ${ASSET}`]: [missing],
+      [GRAPHS]: [graphList(`${AGENT}/Verisci-Staging`)],
+    });
+
+    expect(await address.client.readAsset(NAME)).toEqual({ ok: true, state: "missing" });
+    expect(await name.client.readAsset(NAME)).toEqual({ ok: false, reason: "graph-not-served" });
   });
 
   it("reports a graph list it cannot read", async () => {

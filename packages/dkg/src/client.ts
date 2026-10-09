@@ -57,8 +57,6 @@ export function createDkgClient(config: DkgClientConfig): DkgClient {
   };
   const graph = { contextGraphId: config.contextGraphId };
   const timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  // Set once the node lists the graph; a graph does not stop being served within one client's life.
-  let graphServed = false;
   const assetPath = (name: string) => `/api/knowledge-assets/${encodeURIComponent(name)}`;
 
   async function readAsset(name: string): Promise<AssetResult> {
@@ -73,19 +71,20 @@ export function createDkgClient(config: DkgClientConfig): DkgClient {
     return toAssetState(reply.body) ?? { ok: false, reason: "unexpected", status: reply.status };
   }
 
-  /** True when the node lists the graph as subscribed; a failure when the list cannot be read. */
+  /**
+   * True when the node lists the graph as subscribed; a failure when the list cannot be read.
+   * Asked on every 404, never remembered: a node restart can drop the graph at any time.
+   */
   async function isGraphServed(): Promise<boolean | DkgFailure> {
-    if (graphServed) return true;
     const reply = await send(connection, "GET", "/api/context-graph/list", { timeoutMs });
     if (reply.kind !== "answer" || !isSuccess(reply)) return toFailure(reply);
     const graphs = field(reply.body, "contextGraphs");
     if (!Array.isArray(graphs)) return { ok: false, reason: "unexpected", status: reply.status };
-    const wanted = config.contextGraphId.toLowerCase();
-    graphServed = graphs.some(
+    return graphs.some(
       (entry) =>
-        String(field(entry, "id")).toLowerCase() === wanted && field(entry, "subscribed") === true,
+        sameGraphId(String(field(entry, "id")), config.contextGraphId) &&
+        field(entry, "subscribed") === true,
     );
-    return graphServed;
   }
 
   async function share(name: string): Promise<Reply> {
@@ -160,6 +159,13 @@ export function createDkgClient(config: DkgClientConfig): DkgClient {
   }
 
   return { readAsset, storeAsset, startMint };
+}
+
+/** Same graph: the agent address in any case, the graph name exactly. */
+function sameGraphId(a: string, b: string): boolean {
+  const [addressA, ...nameA] = a.split("/");
+  const [addressB, ...nameB] = b.split("/");
+  return addressA?.toLowerCase() === addressB?.toLowerCase() && nameA.join("/") === nameB.join("/");
 }
 
 function isConflict(reply: Reply): boolean {
