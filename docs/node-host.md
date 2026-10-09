@@ -3,7 +3,11 @@
 How to build verisci's DKG node: the DKG daemon, its RPC proxy (`infra/rpc-proxy`) and
 GROBID. It runs on the developer's computer for now, started by hand, and moves to a server
 later by restoring its backup, so its agent address and graph ids stay the same
-([ADR 0006](adr/0006-dkg-node-runs-on-a-dedicated-host.md)).
+([ADR 0006](adr/0006-dkg-node-runs-on-a-dedicated-host.md)). Moving it is documented here
+when it happens.
+
+"The DKG node server", in the repo's docs, is whichever machine runs the node: today the
+developer's computer, later a dedicated host.
 
 Built on 2026-10-09 on Ubuntu 24.04 (x86_64). Each step ends with a check: a command and
 what it should print. A step marked `to check` was not verified.

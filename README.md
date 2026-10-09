@@ -64,9 +64,8 @@ environment calls it; until then on a developer's computer, started by hand
 ([ADR 0006](docs/adr/0006-dkg-node-runs-on-a-dedicated-host.md)). The node reads
 Base Sepolia only through that proxy, [`infra/rpc-proxy`](infra/rpc-proxy/README.md),
 which asks free public endpoints first and keeps Alchemy within a daily budget.
-[`docs/node-host.md`](docs/node-host.md) is how to build the node, and to move it to a
-server from its backup; it also shows how the parts connect: on a server, Caddy is the
-only public entry.
+[`docs/node-host.md`](docs/node-host.md) is how to build the node and back it up; it
+also shows how the parts connect: on a server, Caddy is the only public entry.
 Each environment also has its own oracle wallet, Alchemy webhook and Inngest
 environment. Only `develop` holds staging's oracle key and runs its ratings;
 previews and local development share staging's contract and graph, and a

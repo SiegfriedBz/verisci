@@ -33,14 +33,15 @@ and used up the free tier after a few weeks (`docs/domain.md` → DKG).
   head; a missing `fromBlock` or `toBlock` means the head, as in JSON-RPC.
 - **It learns each endpoint's limits** from its refusals and plans windows around them:
   a range cap ("limited to a 200 range": `sepolia.base.org`) and where its history starts
-  ("earliest available 46500000": publicnode). A window goes only to the public endpoints
-  that keep its history and accept its size; when none accepts the size, it is cut to the
-  largest cap they announced. History no public endpoint keeps goes to Alchemy in 10-block
-  slices within the budget.
+  ("earliest available 46500000": publicnode). A cap only shrinks and a history start
+  only rises. A window goes only to the public endpoints that keep its history and accept
+  its size; when none accepts the size, or the ones that do are down, it is cut to the
+  largest cap of the others. Only the part of a window that no public endpoint keeps goes
+  to Alchemy, in 10-block slices within the budget.
 - **Other refused ranges are halved** ("block range limit exceeded", "too many results"),
   down to 125 blocks, then sent to Alchemy in 10-block slices within the budget; the slices
-  stop at the first failure. An outage (timeouts, 5xx, throttling everywhere) fails the
-  request, and the daemon retries it later.
+  stop at the first failure. An outage of every public endpoint that keeps the window's
+  history (timeouts, 5xx, throttling) fails the request, and the daemon retries it later.
 - **Answers from memory.** Log windows more than 64 blocks below the head are kept (20,000
   at most, oldest dropped). The same `eth_call`, `eth_getBlockByNumber` or
   `eth_blockNumber` within 3 s, or arriving together, takes one upstream call;
