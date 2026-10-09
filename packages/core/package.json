@@ -14,6 +14,7 @@
     "fast-check": "4.10.2"
   },
   "dependencies": {
+    "@xmldom/xmldom": "0.9.12",
     "multiformats": "14.0.5"
   }
 }

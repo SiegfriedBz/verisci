@@ -11,4 +11,5 @@ Pure domain logic. See `README.md` here.
   Biome checks core's own imports, not what a library does inside, so read a library
   before adding it, and import only its pure subpaths. From `multiformats`, core uses
   `multiformats/cid`, `multiformats/bases/*` and `multiformats/hashes/digest`;
-  `multiformats/hashes/sha1` and `multiformats/hashes/sha2` load `node:crypto`.
+  `multiformats/hashes/sha1` and `multiformats/hashes/sha2` load `node:crypto`. From
+  `@xmldom/xmldom` (pure JS, no dependencies), core uses `DOMParser`.
