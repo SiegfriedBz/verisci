@@ -17,7 +17,7 @@ taken, so a later ADR can sit in an earlier group.
 | ADR | Decision |
 | --- | --- |
 | [0001. Toolchain: Biome, TypeScript 6, Soldeer, exact pins](0001-toolchain-biome-ts6-soldeer-exact-pins.md) | Biome, TypeScript 6, Soldeer and solc 0.8.37; every dependency pinned exactly |
-| [0002. Internal packages ship TypeScript source](0002-internal-packages-ship-typescript-source.md) | Packages export their `.ts` source, with no build step |
+| [0002. Internal packages ship TypeScript source](0002-internal-packages-ship-typescript-source.md) | Packages export their `.ts` source, with no build step; programs on the DKG node server run theirs with plain Node |
 | [0003. Inngest workflows live in the agents package](0003-inngest-workflows-live-in-agents.md) | Inngest functions live in `agents`; `web` only serves them |
 | [0025. Reviews gate on ADR consistency and Foundry lint](0025-reviews-gate-on-adrs-and-lint.md) | A review blocks on an ADR conflict until the user decides; every Foundry lint warning fails |
 
