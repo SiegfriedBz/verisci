@@ -30,11 +30,12 @@ const post: Post = async (url, body, timeoutMs) => {
     try {
       const json = JSON.parse(text) as {
         result?: unknown;
-        error?: { code?: number; message?: unknown };
+        error?: { code?: number; message?: unknown; data?: unknown };
       };
       if (json && "result" in json) return { result: json.result };
       if (json?.error) {
-        return { error: { code: json.error.code, message: String(json.error.message) } };
+        const { code, message, data } = json.error;
+        return { error: { code, message: String(message), data } };
       }
     } catch {
       // Not JSON: reported below with the HTTP status.

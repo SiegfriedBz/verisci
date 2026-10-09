@@ -40,7 +40,9 @@ and used up the free tier after a few weeks (`docs/domain.md` → DKG).
 - **Two lanes:** the daemon's quick calls (its head probe times out after about 4 s) have
   their own slots, separate from the log backfill.
 - **Always well-formed JSON-RPC**, with the request's `id`, batches included: the daemon
-  fails with `BAD_DATA` on anything else.
+  fails with `BAD_DATA` on anything else. An upstream's error keeps its `data` (revert
+  data), which the daemon decodes, for example to approve a TRAC deposit before registering
+  a context graph.
 - **A status line every 30 s** in the log: requests served and failed, then calls and
   failures per endpoint with the last failure's reason (Alchemy's URL never shown), and
   Alchemy's use of its daily budget.
@@ -62,7 +64,14 @@ A bad setting stops the proxy at start-up with a message naming it, never its va
 ## Running it
 
 Node 22.18 or later runs the TypeScript source directly (type stripping): the server needs
-only this folder's `src/`. [`rpc-proxy.service`](rpc-proxy.service) is its systemd unit.
+only this folder's `src/`. By hand, from the repo root, with the settings in a file
+([`docs/node-host.md`](../../docs/node-host.md) → The RPC proxy):
+
+```bash
+node --env-file="$HOME/.config/verisci/rpc-proxy.env" infra/rpc-proxy/src/main.ts
+```
+
+On a server, [`rpc-proxy.service`](rpc-proxy.service) is its systemd unit.
 The DKG daemon must start after it, or a reboot leaves the daemon without a chain:
 
 ```ini

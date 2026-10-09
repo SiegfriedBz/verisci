@@ -3,7 +3,14 @@ import type { DailyBudget } from "./budget.ts";
 /** What one upstream answered: a result, or an error (its own, or the transport's). */
 export type UpstreamReply =
   | { readonly result: unknown }
-  | { readonly error: { readonly code?: number; readonly message: string } };
+  | {
+      readonly error: {
+        readonly code?: number;
+        readonly message: string;
+        /** Revert data, kept: the daemon decodes contract errors from it. */
+        readonly data?: unknown;
+      };
+    };
 
 /** Sends one JSON-RPC body to one upstream URL. Never throws: a failure is an `error` reply. */
 export type Post = (url: string, body: object, timeoutMs: number) => Promise<UpstreamReply>;
@@ -13,7 +20,7 @@ export interface JsonRpcResponse {
   readonly jsonrpc: "2.0";
   readonly id: unknown;
   readonly result?: unknown;
-  readonly error?: { readonly code: number; readonly message: string };
+  readonly error?: { readonly code: number; readonly message: string; readonly data?: unknown };
 }
 
 /** What {@link createProxy} needs; the network and the clock are injected. */
@@ -383,7 +390,11 @@ function toResponse(id: unknown, reply: UpstreamReply): JsonRpcResponse {
   return {
     jsonrpc: "2.0",
     id,
-    error: { code: reply.error.code ?? -32000, message: reply.error.message },
+    error: {
+      code: reply.error.code ?? -32000,
+      message: reply.error.message,
+      ...(reply.error.data === undefined ? {} : { data: reply.error.data }),
+    },
   };
 }
 

@@ -446,12 +446,14 @@ describe("responses", () => {
     });
   });
 
-  it("passes an upstream's own error through, with the request's id", async () => {
-    const { proxy } = setup(() => ({ error: { code: 3, message: "execution reverted" } }));
+  it("passes an upstream's own error through, revert data included, with the request's id", async () => {
+    const { proxy } = setup(() => ({
+      error: { code: 3, message: "execution reverted", data: "0x7000ca77" },
+    }));
     expect(await proxy.handle({ jsonrpc: "2.0", id: 5, method: "eth_call", params: [] })).toEqual({
       jsonrpc: "2.0",
       id: 5,
-      error: { code: 3, message: "execution reverted" },
+      error: { code: 3, message: "execution reverted", data: "0x7000ca77" },
     });
   });
 });
