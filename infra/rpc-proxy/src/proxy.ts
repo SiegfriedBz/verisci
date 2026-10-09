@@ -41,11 +41,14 @@ export interface Proxy {
 
 type Lane = "fast" | "bulk";
 
-/** Public endpoints accept 2,000-block log ranges; Alchemy's free tier accepts 10. */
+/**
+ * Log ranges per request: publicnode accepts 2,000 blocks, sepolia.base.org 200 (checked
+ * 2026-10-09), Alchemy's free tier 10.
+ */
 const PUBLIC_SPAN = 2_000;
 const ALCHEMY_SPAN = 10;
 /** Below this, a window the public endpoints refuse goes to Alchemy in slices. */
-const MIN_PUBLIC_SPAN = 250;
+const MIN_PUBLIC_SPAN = 125;
 /** Logs this many blocks below the head no longer change, so they are cached. */
 const FINALITY_BLOCKS = 64;
 const READ_TTL_MS = 3_000;
@@ -54,6 +57,8 @@ const DEFAULT_LOG_CACHE_MAX = 20_000;
 const READ_CACHE_MAX = 10_000;
 const SLICE_WORKERS = 4;
 const ALL_FAILED = "all endpoints failed";
+/** Characters of an upstream's last error shown in the status line. */
+const LAST_ERROR_CHARS = 80;
 /** Largest forward jump of the head accepted at once: about 5.5 hours of 2 s blocks. */
 const MAX_HEAD_STEP = 10_000;
 /** Read calls answered from memory for {@link READ_TTL_MS}; `eth_chainId` is kept for good. */
@@ -87,7 +92,7 @@ export function createProxy(options: ProxyOptions): Proxy {
 
   const cooldownUntil = new Map<string, number>();
   const slots = new Map<string, { active: number; waiters: (() => void)[] }>();
-  const upstreamStats = new Map(allUrls.map((url) => [url, { calls: 0, failures: 0 }]));
+  const upstreamStats = new Map(allUrls.map((url) => [url, { calls: 0, failures: 0, last: "" }]));
   const logCache = new Map<string, unknown[]>();
   const logsInFlight = new Map<string, Promise<unknown[]>>();
   const readCache = new Map<string, { reply: UpstreamReply; until: number }>();
@@ -121,7 +126,10 @@ export function createProxy(options: ProxyOptions): Proxy {
     const stats = upstreamStats.get(url);
     if (stats) {
       stats.calls++;
-      if ("error" in reply) stats.failures++;
+      if ("error" in reply) {
+        stats.failures++;
+        stats.last = reply.error.message;
+      }
     }
     return reply;
   }
@@ -135,11 +143,21 @@ export function createProxy(options: ProxyOptions): Proxy {
     return [...urls].sort((a, b) => load(a) - load(b));
   }
 
-  /** Tries each endpoint, retrying transient failures; Alchemy only within budget. */
-  async function resolve(body: object, lane: Lane, urls: readonly string[] = allUrls) {
+  /**
+   * Tries each endpoint, retrying transient failures; Alchemy only within budget. With
+   * `askEvery`, an endpoint's own error (a refused log range) moves on to the next endpoint,
+   * and is answered only if none succeeds in that round.
+   */
+  async function resolve(
+    body: object,
+    lane: Lane,
+    urls: readonly string[] = allUrls,
+    askEvery = false,
+  ): Promise<UpstreamReply> {
     const { rounds } = LANES[lane];
     let last = "no endpoint attempted";
     for (let round = 0; round < rounds; round++) {
+      let refusal: UpstreamReply | undefined;
       const respectCooldown = round < rounds - 1;
       let attempted = false;
       for (const url of byLoad(urls, lane)) {
@@ -150,10 +168,16 @@ export function createProxy(options: ProxyOptions): Proxy {
         }
         attempted = true;
         const reply = await call(url, body, lane);
-        if ("result" in reply || !isTransient(reply.error.message)) return reply;
+        if ("result" in reply) return reply;
+        if (!isTransient(reply.error.message)) {
+          if (!askEvery) return reply;
+          refusal ??= reply;
+          continue;
+        }
         last = reply.error.message;
         if (isThrottle(last)) cooldownUntil.set(url, now() + COOLDOWN_MS);
       }
+      if (refusal) return refusal;
       const onlyAlchemyLeft = urls.every((u) => u === alchemyUrl);
       if (onlyAlchemyLeft && !budget.available()) break;
       if (round < rounds - 1) await sleep(attempted ? 150 * 2 ** round : 500);
@@ -237,11 +261,12 @@ export function createProxy(options: ProxyOptions): Proxy {
   }
 
   /**
-   * One window: the public endpoints, then, if they refuse the range, smaller public windows,
-   * then Alchemy slices. An outage fails the request instead, so the daemon retries later.
+   * One window: every public endpoint, then, if they all refuse the range, smaller public
+   * windows, then Alchemy slices. An outage fails the request instead, so the daemon retries
+   * later.
    */
   async function fetchWindow(filter: LogFilter, lo: number, hi: number): Promise<unknown[]> {
-    const reply = await resolve(logsBody(filter, lo, hi), "bulk", publicUrls);
+    const reply = await resolve(logsBody(filter, lo, hi), "bulk", publicUrls, true);
     if ("result" in reply && Array.isArray(reply.result)) return reply.result;
     const message = "error" in reply ? reply.error.message : "not a list";
     if (message.startsWith(ALL_FAILED)) throw new Error(message);
@@ -332,10 +357,13 @@ export function createProxy(options: ProxyOptions): Proxy {
     },
     statusLine() {
       const parts = allUrls.map((url) => {
-        const s = upstreamStats.get(url) ?? { calls: 0, failures: 0 };
+        const s = upstreamStats.get(url) ?? { calls: 0, failures: 0, last: "" };
         const name = url === alchemyUrl ? "alchemy" : new URL(url).host;
         const extra = url === alchemyUrl ? ` budget=${budget.used()}/${budget.limit}` : "";
-        return `${name} calls=${s.calls} failures=${s.failures}${extra}`;
+        // Alchemy's URL holds its key: an error that echoes it shows "(alchemy)" instead.
+        const why = s.last.split(alchemyUrl).join("(alchemy)").replace(/\s+/g, " ");
+        const last = why ? ` last="${why.slice(0, LAST_ERROR_CHARS)}"` : "";
+        return `${name} calls=${s.calls} failures=${s.failures}${last}${extra}`;
       });
       return [`served=${served} failed=${failed}`, ...parts, `logCache=${logCache.size}`].join(
         " | ",
@@ -384,13 +412,16 @@ function isThrottle(message: string): boolean {
   return ["429", "rate limit", "too many requests", "over capacity"].some((w) => m.includes(w));
 }
 
-/** Failures worth retrying elsewhere: throttling, the network, timeouts and any HTTP 5xx. */
+/**
+ * Failures worth retrying elsewhere: throttling, the network, timeouts, any HTTP 5xx, and
+ * history this endpoint has pruned (another may keep it: publicnode keeps recent blocks only).
+ */
 function isTransient(message: string): boolean {
   const m = message.toLowerCase();
   return (
     isThrottle(message) ||
     /\bhttp 5\d\d\b/.test(m) ||
-    ["fetch failed", "timeout", "aborted"].some((w) => m.includes(w))
+    ["fetch failed", "timeout", "aborted", "pruned"].some((w) => m.includes(w))
   );
 }
 
