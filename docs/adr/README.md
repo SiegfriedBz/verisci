@@ -68,7 +68,7 @@ In the order a request lives: requested, named, ingested, scored, fulfilled, and
 | ADR | Decision |
 | --- | --- |
 | [0015. Rating requests are free on testnet](0015-rating-requests-are-free-on-testnet.md) | Requesters pay only gas; a cap and a throttle bound spend until mainnet |
-| [0016. Asset names derive from the on-chain request id](0016-asset-names-derive-from-request-id.md) | Each request has an on-chain id; any process computes the rating's name and its recovery from it alone |
+| [0016. Asset names derive from the on-chain request id](0016-asset-names-derive-from-request-id.md) | Each phase-1 request has an on-chain id; any process computes the rating's name and its recovery from it alone |
 | [0017. Chain events are ingested at least once](0017-chain-events-are-ingested-at-least-once.md) | Signed webhooks, one event per request id, acked only after hand-off; the reconciler heals what is missed |
 | [0018. The phase-1 scorer has a fixed output contract](0018-phase-1-scorer-output-contract.md) | The scorer returns `{ score, rationale, observed, missing }`, computed once and read back |
 | [0019. Oracle transactions are serialized](0019-oracle-transactions-are-serialized.md) | One function sends every oracle transaction, one at a time; only `main` and `develop` hold the oracle keys |

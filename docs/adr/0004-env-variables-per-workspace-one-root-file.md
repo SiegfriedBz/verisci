@@ -13,7 +13,7 @@ Programs that run on the DKG node server, such as its RPC proxy, run alone there
 
 ## Decision
 
-- Each workspace of the app and its packages declares only the variables it reads, in its own env module, with `defineEnv` from `@verisci/env` over the shared `NODE_ENV`/`APP_ENV` base. Envs passed to `extends` keep the values they were built with.
+- Each workspace of the app and its packages declares only the variables it reads, in its own env module, with `defineEnv` from `@verisci/env` over the shared `NODE_ENV`/`APP_ENV` base.
 - Validation fails fast on import, with one `EnvError` naming every bad variable and never carrying a value.
 - `NODE_ENV` belongs to the tools. `APP_ENV` defaults to `local`, but is required in production builds, so a host that forgets it fails instead of running as `local`.
 - The app's env files live at the repo root, loaded by `apps/web/next.config.ts`. CI builds with `APP_ENV=local`.
@@ -36,3 +36,4 @@ Programs that run on the DKG node server, such as its RPC proxy, run alone there
 - 2026-10-08: programs that run on the DKG node server read their settings themselves, since the server runs them with plain Node and no install (the RPC proxy).
 - 2026-10-09: changed the rule's scope so it reads as one decision: `src/env.ts`, the root env file and `.env.example` cover the app and its packages; programs on the DKG node server keep their settings in an env file there, listed in their README.
 - 2026-10-09: corrected: variables are declared in a workspace's env module rather than a named file, since the dkg package keeps its schema in a function tests can call with their own values; the Foundry sentences say "env module" too (DKG client).
+- 2026-10-09: corrected: dropped "Envs passed to `extends` keep the values they were built with", a mechanic of `defineEnv` already in the `@verisci/env` README, not a decision.
