@@ -140,7 +140,11 @@ export function createProxy(options: ProxyOptions): Proxy {
     const reply: UpstreamReply =
       "error" in raw
         ? {
-            error: { ...raw.error, message: raw.error.message.split(alchemyUrl).join("(alchemy)") },
+            error: {
+              ...raw.error,
+              message: masked(raw.error.message),
+              ...(typeof raw.error.data === "string" ? { data: masked(raw.error.data) } : {}),
+            },
           }
         : raw;
     const stats = upstreamStats.get(url);
@@ -155,10 +159,18 @@ export function createProxy(options: ProxyOptions): Proxy {
     return reply;
   }
 
-  /** Remembers an endpoint's range cap or pruned history from its error message. */
+  /** Alchemy's URL holds its key: text that echoes it shows "(alchemy)" instead. */
+  function masked(text: string): string {
+    return text.split(alchemyUrl).join("(alchemy)");
+  }
+
+  /**
+   * Remembers an endpoint's range cap or pruned history from its error message. A cap only
+   * shrinks and a history start only rises, so planning a window always ends.
+   */
   function learn(url: string, message: string) {
     const cap = /limited to an? (\d+)(?: block)? range/i.exec(message)?.[1];
-    if (cap !== undefined && spanLimit.get(url) !== Number(cap)) {
+    if (cap !== undefined && Number(cap) < (spanLimit.get(url) ?? Infinity)) {
       spanLimit.set(url, Number(cap));
       lessons++;
     }
@@ -304,18 +316,30 @@ export function createProxy(options: ProxyOptions): Proxy {
   async function fetchWindow(filter: LogFilter, lo: number, hi: number): Promise<unknown[]> {
     const span = hi - lo + 1;
     const holding = publicUrls.filter((u) => (historyFrom.get(u) ?? 0) <= lo);
-    if (holding.length === 0) return alchemySlices(filter, lo, hi);
-    const fitting = holding.filter((u) => span <= (spanLimit.get(u) ?? Infinity));
-    if (fitting.length === 0) {
-      const cap = Math.max(1, ...holding.map((u) => spanLimit.get(u) ?? 0));
-      return cut(filter, lo, hi, cap);
+    if (holding.length === 0) {
+      // Only the part no public endpoint keeps goes to Alchemy.
+      const kept = Math.min(...publicUrls.map((u) => historyFrom.get(u) ?? 0));
+      if (kept > hi) return alchemySlices(filter, lo, hi);
+      return [
+        ...(await alchemySlices(filter, lo, kept - 1)),
+        ...(await fetchWindow(filter, kept, hi)),
+      ];
     }
+    const capOf = (urls: readonly string[]) =>
+      Math.max(1, ...urls.map((u) => spanLimit.get(u) ?? 0));
+    const fitting = holding.filter((u) => span <= (spanLimit.get(u) ?? Infinity));
+    if (fitting.length === 0) return cut(filter, lo, hi, capOf(holding));
     const before = lessons;
     const reply = await resolve(logsBody(filter, lo, hi), "bulk", fitting, true);
     if ("result" in reply && Array.isArray(reply.result)) return reply.result;
     if (lessons !== before) return fetchWindow(filter, lo, hi);
     const message = "error" in reply ? reply.error.message : "not a list";
-    if (message.startsWith(ALL_FAILED)) throw new Error(message);
+    if (message.startsWith(ALL_FAILED)) {
+      // The endpoints that fit are down: one with a smaller cap may still serve smaller windows.
+      const smaller = holding.filter((u) => !fitting.includes(u));
+      if (smaller.length > 0) return cut(filter, lo, hi, capOf(smaller));
+      throw new Error(message);
+    }
     if (span <= MIN_PUBLIC_SPAN) return alchemySlices(filter, lo, hi);
     return cut(filter, lo, hi, Math.ceil(span / 2));
   }
