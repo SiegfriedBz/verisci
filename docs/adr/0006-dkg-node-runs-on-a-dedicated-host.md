@@ -18,7 +18,7 @@ A DKG node is a long-lived peer-to-peer daemon, and GROBID (PDF parsing) is a lo
 ## Consequences
 
 - Nothing long-running lives on Vercel.
-- The host is infrastructure to run, patch and monitor, and a single point of failure for both environments. Its node wallet pays every publish and is alerted on.
+- The host is infrastructure to run, patch and monitor, and a single point of failure for both environments. Its publisher wallets pay every publish, and each is alerted on.
 - A lost host is rebuilt from the backup, with the same agent address.
 - Its setup must be documented, since no code deploys it.
 - Meanwhile, the node is reachable only from that computer, while it runs; previews reach it only once it is on the host.
@@ -27,3 +27,4 @@ A DKG node is a long-lived peer-to-peer daemon, and GROBID (PDF parsing) is a lo
 
 - 2026-10-09: the node runs on a developer's computer until a deployed environment calls it, since no host is available yet; it moves to the host from its backup, and previews reach the node only once it is on the host.
 - 2026-10-09: a new node replaced the previous one, with a new agent address, so that the node is built only from the documented steps; the previous node's graphs are no longer used ([0005](0005-staging-and-production-are-isolated.md)).
+- 2026-10-09: corrected: the node pays publishes from several publisher wallets, not one; each is funded and alerted on (DKG spike, [domain](../domain.md)).

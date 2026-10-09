@@ -5,7 +5,7 @@
 
 ## Context
 
-Publishing a Knowledge Asset takes a store (on DKG 10.0.22, a create and a share) and a mint; a rating then ends with the oracle's on-chain `fulfil` (or a `cancel`). Any of them can succeed while its response is lost, so a retry may repeat a write that already happened. The daemon refuses to store or mint a name again, and its mint refusal is the same whether the asset was never shared or is already minted ([domain](../domain.md)), and the contract reverts a second `fulfil`. The previous repo's store generated new ids on every attempt.
+Publishing a Knowledge Asset takes a store (writing the asset and sharing it with peers) and a mint; a rating then ends with the oracle's on-chain `fulfil` (or a `cancel`). Any of them can succeed while its response is lost, so a retry may repeat a write that already happened. The daemon refuses to store a stored name again, and to mint a minted one; a second mint sent while the first is still in flight is not refused by the daemon, and at worst reverts on chain ([0008](0008-mints-are-async-polled-in-short-steps.md)). The contract reverts a second `fulfil`. The previous repo's store generated new ids on every attempt.
 
 ## Decision
 
@@ -24,4 +24,4 @@ Publishing a Knowledge Asset takes a store (on DKG 10.0.22, a create and a share
 
 ## History
 
-- 2026-10-09: the store includes the share, and the daemon's refusals are named, after the DKG spike showed a third call (`swm/share`) between store and mint on 10.0.22, and one refusal code for "not shared" and "already minted" ([domain](../domain.md)).
+- 2026-10-09: the store includes the share, after the DKG spike showed a share between store and mint; the daemon's refusals of a repeated store or mint are stated, and a mint racing one in flight is left to 0008 ([domain](../domain.md)).
