@@ -3,7 +3,14 @@ import type { DailyBudget } from "./budget.ts";
 /** What one upstream answered: a result, or an error (its own, or the transport's). */
 export type UpstreamReply =
   | { readonly result: unknown }
-  | { readonly error: { readonly code?: number; readonly message: string } };
+  | {
+      readonly error: {
+        readonly code?: number;
+        readonly message: string;
+        /** Revert data, kept: the daemon decodes contract errors from it. */
+        readonly data?: unknown;
+      };
+    };
 
 /** Sends one JSON-RPC body to one upstream URL. Never throws: a failure is an `error` reply. */
 export type Post = (url: string, body: object, timeoutMs: number) => Promise<UpstreamReply>;
@@ -13,7 +20,7 @@ export interface JsonRpcResponse {
   readonly jsonrpc: "2.0";
   readonly id: unknown;
   readonly result?: unknown;
-  readonly error?: { readonly code: number; readonly message: string };
+  readonly error?: { readonly code: number; readonly message: string; readonly data?: unknown };
 }
 
 /** What {@link createProxy} needs; the network and the clock are injected. */
@@ -41,11 +48,14 @@ export interface Proxy {
 
 type Lane = "fast" | "bulk";
 
-/** Public endpoints accept 2,000-block log ranges; Alchemy's free tier accepts 10. */
+/**
+ * Log ranges per request: publicnode accepts 2,000 blocks, sepolia.base.org 200 (checked
+ * 2026-10-09), Alchemy's free tier 10.
+ */
 const PUBLIC_SPAN = 2_000;
 const ALCHEMY_SPAN = 10;
 /** Below this, a window the public endpoints refuse goes to Alchemy in slices. */
-const MIN_PUBLIC_SPAN = 250;
+const MIN_PUBLIC_SPAN = 125;
 /** Logs this many blocks below the head no longer change, so they are cached. */
 const FINALITY_BLOCKS = 64;
 const READ_TTL_MS = 3_000;
@@ -54,6 +64,8 @@ const DEFAULT_LOG_CACHE_MAX = 20_000;
 const READ_CACHE_MAX = 10_000;
 const SLICE_WORKERS = 4;
 const ALL_FAILED = "all endpoints failed";
+/** Characters of an upstream's last error shown in the status line. */
+const LAST_ERROR_CHARS = 80;
 /** Largest forward jump of the head accepted at once: about 5.5 hours of 2 s blocks. */
 const MAX_HEAD_STEP = 10_000;
 /** Read calls answered from memory for {@link READ_TTL_MS}; `eth_chainId` is kept for good. */
@@ -87,11 +99,17 @@ export function createProxy(options: ProxyOptions): Proxy {
 
   const cooldownUntil = new Map<string, number>();
   const slots = new Map<string, { active: number; waiters: (() => void)[] }>();
-  const upstreamStats = new Map(allUrls.map((url) => [url, { calls: 0, failures: 0 }]));
+  const upstreamStats = new Map(allUrls.map((url) => [url, { calls: 0, failures: 0, last: "" }]));
   const logCache = new Map<string, unknown[]>();
   const logsInFlight = new Map<string, Promise<unknown[]>>();
   const readCache = new Map<string, { reply: UpstreamReply; until: number }>();
   const readsInFlight = new Map<string, Promise<UpstreamReply>>();
+  /** Largest log range each endpoint said it accepts ("limited to a 200 range"). */
+  const spanLimit = new Map<string, number>();
+  /** First block each endpoint said it keeps ("earliest available 46500000"). */
+  const historyFrom = new Map<string, number>();
+  /** Counts what the endpoints taught, so a refused window is planned again only after news. */
+  let lessons = 0;
   let highestHead = 0;
   let served = 0;
   let failed = 0;
@@ -117,13 +135,50 @@ export function createProxy(options: ProxyOptions): Proxy {
   }
 
   async function call(url: string, body: object, lane: Lane): Promise<UpstreamReply> {
-    const reply = await withSlot(url, lane, () => post(url, body, LANES[lane].timeoutMs));
+    const raw = await withSlot(url, lane, () => post(url, body, LANES[lane].timeoutMs));
+    // Alchemy's URL holds its key: an error that echoes it shows "(alchemy)" instead.
+    const reply: UpstreamReply =
+      "error" in raw
+        ? {
+            error: {
+              ...raw.error,
+              message: masked(raw.error.message),
+              ...(typeof raw.error.data === "string" ? { data: masked(raw.error.data) } : {}),
+            },
+          }
+        : raw;
     const stats = upstreamStats.get(url);
     if (stats) {
       stats.calls++;
-      if ("error" in reply) stats.failures++;
+      if ("error" in reply) {
+        stats.failures++;
+        stats.last = reply.error.message;
+      }
     }
+    if ("error" in reply) learn(url, reply.error.message);
     return reply;
+  }
+
+  /** Alchemy's URL holds its key: text that echoes it shows "(alchemy)" instead. */
+  function masked(text: string): string {
+    return text.split(alchemyUrl).join("(alchemy)");
+  }
+
+  /**
+   * Remembers an endpoint's range cap or pruned history from its error message. A cap only
+   * shrinks and a history start only rises, so planning a window always ends.
+   */
+  function learn(url: string, message: string) {
+    const cap = /limited to an? (\d+)(?: block)? range/i.exec(message)?.[1];
+    if (cap !== undefined && Number(cap) >= 1 && Number(cap) < (spanLimit.get(url) ?? Infinity)) {
+      spanLimit.set(url, Number(cap));
+      lessons++;
+    }
+    const from = /earliest available (\d+)/i.exec(message)?.[1];
+    if (from !== undefined && Number(from) > (historyFrom.get(url) ?? 0)) {
+      historyFrom.set(url, Number(from));
+      lessons++;
+    }
   }
 
   /** Public endpoints with free slots come first, Alchemy last. */
@@ -135,11 +190,21 @@ export function createProxy(options: ProxyOptions): Proxy {
     return [...urls].sort((a, b) => load(a) - load(b));
   }
 
-  /** Tries each endpoint, retrying transient failures; Alchemy only within budget. */
-  async function resolve(body: object, lane: Lane, urls: readonly string[] = allUrls) {
+  /**
+   * Tries each endpoint, retrying transient failures; Alchemy only within budget. With
+   * `askEvery`, an endpoint's own error (a refused log range) moves on to the next endpoint,
+   * and is answered only if none succeeds in that round.
+   */
+  async function resolve(
+    body: object,
+    lane: Lane,
+    urls: readonly string[] = allUrls,
+    askEvery = false,
+  ): Promise<UpstreamReply> {
     const { rounds } = LANES[lane];
     let last = "no endpoint attempted";
     for (let round = 0; round < rounds; round++) {
+      let refusal: UpstreamReply | undefined;
       const respectCooldown = round < rounds - 1;
       let attempted = false;
       for (const url of byLoad(urls, lane)) {
@@ -150,10 +215,16 @@ export function createProxy(options: ProxyOptions): Proxy {
         }
         attempted = true;
         const reply = await call(url, body, lane);
-        if ("result" in reply || !isTransient(reply.error.message)) return reply;
+        if ("result" in reply) return reply;
+        if (!isTransient(reply.error.message)) {
+          if (!askEvery) return reply;
+          refusal ??= reply;
+          continue;
+        }
         last = reply.error.message;
         if (isThrottle(last)) cooldownUntil.set(url, now() + COOLDOWN_MS);
       }
+      if (refusal) return refusal;
       const onlyAlchemyLeft = urls.every((u) => u === alchemyUrl);
       if (onlyAlchemyLeft && !budget.available()) break;
       if (round < rounds - 1) await sleep(attempted ? 150 * 2 ** round : 500);
@@ -237,17 +308,51 @@ export function createProxy(options: ProxyOptions): Proxy {
   }
 
   /**
-   * One window: the public endpoints, then, if they refuse the range, smaller public windows,
-   * then Alchemy slices. An outage fails the request instead, so the daemon retries later.
+   * One window, on the public endpoints that keep its history and accept its size. When
+   * none accepts the size, or the ones that do are down, it is cut to the largest cap of the
+   * others. Only the part no public endpoint keeps goes to Alchemy slices. A refusal that
+   * teaches a cap or a pruned history plans the window again; any other refusal halves it,
+   * down to Alchemy slices. An outage of every endpoint that keeps the window's history fails
+   * the request, so the daemon retries later.
    */
   async function fetchWindow(filter: LogFilter, lo: number, hi: number): Promise<unknown[]> {
-    const reply = await resolve(logsBody(filter, lo, hi), "bulk", publicUrls);
+    const span = hi - lo + 1;
+    const holding = publicUrls.filter((u) => (historyFrom.get(u) ?? 0) <= lo);
+    if (holding.length === 0) {
+      // Only the part no public endpoint keeps goes to Alchemy.
+      const kept = Math.min(...publicUrls.map((u) => historyFrom.get(u) ?? 0));
+      if (kept > hi) return alchemySlices(filter, lo, hi);
+      return [
+        ...(await alchemySlices(filter, lo, kept - 1)),
+        ...(await fetchWindow(filter, kept, hi)),
+      ];
+    }
+    const capOf = (urls: readonly string[]) =>
+      Math.max(1, ...urls.map((u) => spanLimit.get(u) ?? 0));
+    const fitting = holding.filter((u) => span <= (spanLimit.get(u) ?? Infinity));
+    if (fitting.length === 0) return cut(filter, lo, hi, capOf(holding));
+    const before = lessons;
+    const reply = await resolve(logsBody(filter, lo, hi), "bulk", fitting, true);
     if ("result" in reply && Array.isArray(reply.result)) return reply.result;
+    if (lessons !== before) return fetchWindow(filter, lo, hi);
     const message = "error" in reply ? reply.error.message : "not a list";
-    if (message.startsWith(ALL_FAILED)) throw new Error(message);
-    if (hi - lo + 1 <= MIN_PUBLIC_SPAN) return alchemySlices(filter, lo, hi);
-    const mid = Math.floor((lo + hi) / 2);
-    return [...(await fetchWindow(filter, lo, mid)), ...(await fetchWindow(filter, mid + 1, hi))];
+    if (message.startsWith(ALL_FAILED)) {
+      // The endpoints that fit are down: one with a smaller cap may still serve smaller windows.
+      const smaller = holding.filter((u) => !fitting.includes(u));
+      if (smaller.length > 0) return cut(filter, lo, hi, capOf(smaller));
+      throw new Error(message);
+    }
+    if (span <= MIN_PUBLIC_SPAN) return alchemySlices(filter, lo, hi);
+    return cut(filter, lo, hi, Math.ceil(span / 2));
+  }
+
+  /** Fetches `lo`..`hi` as consecutive windows of `size` blocks, in order. */
+  async function cut(filter: LogFilter, lo: number, hi: number, size: number) {
+    const out: unknown[] = [];
+    for (let a = lo; a <= hi; a += size) {
+      out.push(...(await fetchWindow(filter, a, Math.min(a + size - 1, hi))));
+    }
+    return out;
   }
 
   async function windowLogs(filter: LogFilter, lo: number, hi: number, head: number) {
@@ -332,10 +437,12 @@ export function createProxy(options: ProxyOptions): Proxy {
     },
     statusLine() {
       const parts = allUrls.map((url) => {
-        const s = upstreamStats.get(url) ?? { calls: 0, failures: 0 };
+        const s = upstreamStats.get(url) ?? { calls: 0, failures: 0, last: "" };
         const name = url === alchemyUrl ? "alchemy" : new URL(url).host;
         const extra = url === alchemyUrl ? ` budget=${budget.used()}/${budget.limit}` : "";
-        return `${name} calls=${s.calls} failures=${s.failures}${extra}`;
+        const why = s.last.replace(/\s+/g, " ");
+        const last = why ? ` last="${why.slice(0, LAST_ERROR_CHARS)}"` : "";
+        return `${name} calls=${s.calls} failures=${s.failures}${last}${extra}`;
       });
       return [`served=${served} failed=${failed}`, ...parts, `logCache=${logCache.size}`].join(
         " | ",
@@ -355,7 +462,11 @@ function toResponse(id: unknown, reply: UpstreamReply): JsonRpcResponse {
   return {
     jsonrpc: "2.0",
     id,
-    error: { code: reply.error.code ?? -32000, message: reply.error.message },
+    error: {
+      code: reply.error.code ?? -32000,
+      message: reply.error.message,
+      ...(reply.error.data === undefined ? {} : { data: reply.error.data }),
+    },
   };
 }
 
@@ -384,13 +495,16 @@ function isThrottle(message: string): boolean {
   return ["429", "rate limit", "too many requests", "over capacity"].some((w) => m.includes(w));
 }
 
-/** Failures worth retrying elsewhere: throttling, the network, timeouts and any HTTP 5xx. */
+/**
+ * Failures worth retrying elsewhere: throttling, the network, timeouts, any HTTP 5xx, and
+ * history this endpoint has pruned (another may keep it: publicnode keeps recent blocks only).
+ */
 function isTransient(message: string): boolean {
   const m = message.toLowerCase();
   return (
     isThrottle(message) ||
     /\bhttp 5\d\d\b/.test(m) ||
-    ["fetch failed", "timeout", "aborted"].some((w) => m.includes(w))
+    ["fetch failed", "timeout", "aborted", "pruned"].some((w) => m.includes(w))
   );
 }
 

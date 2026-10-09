@@ -131,6 +131,71 @@ describe("routing", () => {
     expect(calls.map((c) => c.url)).toEqual([...PUBLIC, ALCHEMY]);
   });
 
+  it("asks the next endpoint when one has pruned the history asked for", async () => {
+    const { proxy, calls } = setup((c) =>
+      c.url === PUBLIC[0]
+        ? {
+            error: {
+              code: 4444,
+              message: "pruned history unavailable: requested 0, earliest available 46500000",
+            },
+          }
+        : { result: { number: "0x0" } },
+    );
+    const res = await proxy.handle({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "eth_getBlockByNumber",
+      params: ["0x0", false],
+    });
+    expect(res.result).toEqual({ number: "0x0" });
+    expect(calls.map((c) => c.url)).toEqual([PUBLIC[0], PUBLIC[1]]);
+  });
+
+  it("sends a call at history every public endpoint pruned to Alchemy, within budget", async () => {
+    const pruned = { error: { message: "pruned history unavailable: earliest available 50000" } };
+    const { proxy, calls } = setup(
+      (c) => (c.url === ALCHEMY ? { result: "old block" } : pruned),
+      24,
+    );
+    const first = await proxy.handle({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "eth_call",
+      params: [{}, "0x1"],
+    });
+    expect(first.result).toBe("old block");
+    expect(calls.filter((c) => c.url === ALCHEMY)).toHaveLength(1);
+    const second = await proxy.handle({
+      jsonrpc: "2.0",
+      id: 2,
+      method: "eth_call",
+      params: [{}, "0x2"],
+    });
+    expect(second).toMatchObject({ error: { code: -32000 } });
+    expect(calls.filter((c) => c.url === ALCHEMY)).toHaveLength(1);
+  });
+
+  it("never passes Alchemy's URL back to the daemon in an error", async () => {
+    const { proxy } = setup((c) =>
+      c.url === ALCHEMY
+        ? { error: { code: -32001, message: `unauthorized: ${ALCHEMY}/secret-key` } }
+        : { error: { message: "HTTP 503" } },
+    );
+    const res = await proxy.handle({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [] });
+    expect(res.error?.message).toBe("unauthorized: (alchemy)/secret-key");
+  });
+
+  it("masks Alchemy's URL in an error's data too", async () => {
+    const { proxy } = setup((c) =>
+      c.url === ALCHEMY
+        ? { error: { code: 3, message: "execution reverted", data: `see ${ALCHEMY}/key` } }
+        : { error: { message: "HTTP 503" } },
+    );
+    const res = await proxy.handle({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [] });
+    expect(res.error?.data).toBe("see (alchemy)/key");
+  });
+
   it("moves a throttled endpoint aside and lets it cool down", async () => {
     const { proxy, calls, advance } = setup((c) =>
       c.url === PUBLIC[0] ? { error: { message: "HTTP 429 throttled" } } : { result: "ok" },
@@ -168,6 +233,167 @@ describe("eth_getLogs", () => {
     const res = await proxy.handle(getLogs(0, 1_999));
     expect(res.result).toEqual(Array.from({ length: 2_000 }, (_, i) => i));
     expect(callsOf("eth_getLogs").some((c) => c.url === ALCHEMY)).toBe(false);
+  });
+
+  it("asks the other public endpoint before splitting a window one of them refuses", async () => {
+    const { proxy, callsOf } = setup((c) =>
+      c.method === "eth_getLogs" && c.url === PUBLIC[0]
+        ? { error: { code: -32614, message: "eth_getLogs is limited to a 200 range" } }
+        : servesLogs(c),
+    );
+    const res = await proxy.handle(getLogs(0, 1_999));
+    expect(res.result).toEqual(Array.from({ length: 2_000 }, (_, i) => i));
+    expect(callsOf("eth_getLogs").map((c) => [c.url, spanOf(c)])).toEqual([
+      [PUBLIC[0], 2_000],
+      [PUBLIC[1], 2_000],
+    ]);
+  });
+
+  it("splits a refused window down to an endpoint's 200-block limit before Alchemy", async () => {
+    const { proxy, callsOf } = setup((c) =>
+      c.method === "eth_getLogs" && spanOf(c) > 200
+        ? { error: { code: -32614, message: "eth_getLogs is limited to a 200 range" } }
+        : servesLogs(c),
+    );
+    const res = await proxy.handle(getLogs(0, 1_999));
+    expect(res.result).toEqual(Array.from({ length: 2_000 }, (_, i) => i));
+    expect(callsOf("eth_getLogs").some((c) => c.url === ALCHEMY)).toBe(false);
+  });
+
+  it("learns an endpoint's range cap and stops sending it larger windows", async () => {
+    const { proxy, callsOf } = setup((c) =>
+      c.method === "eth_getLogs" && c.url === PUBLIC[0] && spanOf(c) > 200
+        ? { error: { code: -32614, message: "eth_getLogs is limited to a 200 range" } }
+        : servesLogs(c),
+    );
+    const res = await proxy.handle(getLogs(0, 5_999));
+    expect(res.result).toEqual(Array.from({ length: 6_000 }, (_, i) => i));
+    expect(callsOf("eth_getLogs").filter((c) => c.url === PUBLIC[0])).toHaveLength(1);
+  });
+
+  it("gets history one endpoint pruned from the other, in windows of its cap, never Alchemy", async () => {
+    const { proxy, callsOf } = setup((c) => {
+      if (c.method !== "eth_getLogs") return { result: "ok" };
+      if (c.url === PUBLIC[1]) {
+        return {
+          error: { message: "pruned history unavailable: requested 0, earliest available 50000" },
+        };
+      }
+      if (c.url === PUBLIC[0] && spanOf(c) > 200) {
+        return { error: { code: -32614, message: "eth_getLogs is limited to a 200 range" } };
+      }
+      return servesLogs(c);
+    });
+    const res = await proxy.handle(getLogs(0, 3_999));
+    expect(res.result).toEqual(Array.from({ length: 4_000 }, (_, i) => i));
+    const logs = callsOf("eth_getLogs");
+    expect(logs.some((c) => c.url === ALCHEMY)).toBe(false);
+    // One refusal and one pruned answer teach the limits; then 20 windows of 200 blocks.
+    expect(logs).toHaveLength(22);
+  });
+
+  it("waits for a busy endpoint instead of splitting when the other refuses the range", async () => {
+    let throttled = 1;
+    const { proxy, callsOf } = setup((c) => {
+      if (c.method !== "eth_getLogs") return { result: "ok" };
+      if (c.url === PUBLIC[0] && spanOf(c) > 200) {
+        return { error: { code: -32614, message: "eth_getLogs is limited to a 200 range" } };
+      }
+      if (c.url === PUBLIC[1] && throttled-- > 0) return { error: { message: "HTTP 429" } };
+      return servesLogs(c);
+    });
+    const res = await proxy.handle(getLogs(0, 1_999));
+    expect(res.result).toEqual(Array.from({ length: 2_000 }, (_, i) => i));
+    const fromB = callsOf("eth_getLogs").filter((c) => c.url === PUBLIC[1]);
+    expect(fromB.map(spanOf)).toEqual([2_000, 2_000]);
+  });
+
+  it("cuts a window to the other endpoint's cap when the one that fits it is down", async () => {
+    const { proxy, callsOf } = setup((c) => {
+      if (c.method !== "eth_getLogs") return { result: "ok" };
+      if (c.url === PUBLIC[1]) return { error: { message: "HTTP 503" } };
+      if (spanOf(c) > 200) {
+        return { error: { code: -32614, message: "eth_getLogs is limited to a 200 range" } };
+      }
+      return servesLogs(c);
+    });
+    const res = await proxy.handle(getLogs(0, 1_999));
+    expect(res.result).toEqual(Array.from({ length: 2_000 }, (_, i) => i));
+    expect(callsOf("eth_getLogs").some((c) => c.url === ALCHEMY)).toBe(false);
+  });
+
+  it("sends a window no public endpoint keeps to Alchemy slices, within budget", async () => {
+    const { proxy, callsOf } = setup((c) =>
+      c.url === ALCHEMY
+        ? servesLogs(c)
+        : { error: { message: "pruned history unavailable: earliest available 50000" } },
+    );
+    const res = await proxy.handle(getLogs(0, 99));
+    expect(res.result).toEqual(Array.from({ length: 100 }, (_, i) => i));
+    const alchemy = callsOf("eth_getLogs").filter((c) => c.url === ALCHEMY);
+    expect(alchemy.map(spanOf)).toEqual(Array(10).fill(10));
+  });
+
+  it("splits a window at the pruned-history boundary: only the older part goes to Alchemy", async () => {
+    const { proxy, callsOf } = setup((c) => {
+      if (c.method !== "eth_getLogs" || c.url === ALCHEMY) return servesLogs(c);
+      const f = c.params[0] as LogFilter;
+      return Number(f.fromBlock) < 1_000
+        ? { error: { message: "pruned history unavailable: earliest available 1000" } }
+        : servesLogs(c);
+    });
+    const res = await proxy.handle(getLogs(900, 1_999));
+    expect(res.result).toEqual(Array.from({ length: 1_100 }, (_, i) => 900 + i));
+    const alchemy = callsOf("eth_getLogs").filter((c) => c.url === ALCHEMY);
+    expect(alchemy.map((c) => Number((c.params[0] as LogFilter).toBlock))).toSatisfy(
+      (ends: number[]) => ends.length === 10 && ends.every((b) => b < 1_000),
+    );
+  });
+
+  it("keeps the smallest range cap an endpoint announced, so planning ends", async () => {
+    let flip = false;
+    const { proxy, callsOf } = setup((c) => {
+      if (c.method !== "eth_getLogs") return { result: "ok" };
+      if (c.url === PUBLIC[1]) return { error: { message: "HTTP 503" } };
+      if (spanOf(c) > 100) {
+        flip = !flip;
+        // Caps that disagree, both above the window: re-planning on each would never end.
+        return { error: { message: `eth_getLogs is limited to a ${flip ? 1_000 : 500} range` } };
+      }
+      return servesLogs(c);
+    });
+    const res = await proxy.handle(getLogs(0, 399));
+    expect(res.result).toEqual(Array.from({ length: 400 }, (_, i) => i));
+    expect(callsOf("eth_getLogs").filter((c) => c.url === PUBLIC[0]).length).toBeLessThan(20);
+  });
+
+  it("keeps the latest history start an endpoint announced, so planning ends", async () => {
+    let calls = 0;
+    const { proxy, callsOf } = setup((c) => {
+      if (c.method !== "eth_getLogs" || c.url === ALCHEMY) return servesLogs(c);
+      if (Number((c.params[0] as LogFilter).fromBlock) >= 1_000) return servesLogs(c);
+      if (c.url === PUBLIC[1]) {
+        return { error: { message: "pruned history unavailable: earliest available 1000" } };
+      }
+      // Starts that disagree: trusting the lower one again would plan the window forever.
+      calls++;
+      const from = calls % 2 === 1 ? 1_000 : 500;
+      return { error: { message: `pruned history unavailable: earliest available ${from}` } };
+    });
+    const res = await proxy.handle(getLogs(900, 1_099));
+    expect(res.result).toEqual(Array.from({ length: 200 }, (_, i) => 900 + i));
+    expect(callsOf("eth_getLogs").filter((c) => c.url === PUBLIC[0]).length).toBeLessThan(20);
+  });
+
+  it("ignores a range cap below one block", async () => {
+    const { proxy, callsOf } = setup((c) =>
+      c.method === "eth_getLogs" && c.url !== ALCHEMY
+        ? { error: { message: "eth_getLogs is limited to a 0 range" } }
+        : servesLogs(c),
+    );
+    const res = await proxy.handle(getLogs(0, 99));
+    expect(res.result).toEqual(Array.from({ length: 100 }, (_, i) => i));
+    expect(callsOf("eth_getLogs").filter((c) => c.url === ALCHEMY).length).toBe(10);
   });
 
   it("falls back to 10-block Alchemy slices within the daily budget", async () => {
@@ -400,12 +626,14 @@ describe("responses", () => {
     });
   });
 
-  it("passes an upstream's own error through, with the request's id", async () => {
-    const { proxy } = setup(() => ({ error: { code: 3, message: "execution reverted" } }));
+  it("passes an upstream's own error through, revert data included, with the request's id", async () => {
+    const { proxy } = setup(() => ({
+      error: { code: 3, message: "execution reverted", data: "0x7000ca77" },
+    }));
     expect(await proxy.handle({ jsonrpc: "2.0", id: 5, method: "eth_call", params: [] })).toEqual({
       jsonrpc: "2.0",
       id: 5,
-      error: { code: 3, message: "execution reverted" },
+      error: { code: 3, message: "execution reverted", data: "0x7000ca77" },
     });
   });
 });
@@ -421,5 +649,19 @@ describe("statusLine", () => {
     expect(line).toMatch(/public-a\.test calls=1 failures=1/);
     expect(line).toMatch(/alchemy calls=1 failures=0 budget=1\/24000/);
     expect(line).not.toMatch(/alchemy\.test/);
+  });
+
+  it("shows each upstream's last failure, shortened, never Alchemy's URL", async () => {
+    const { proxy } = setup((c) =>
+      c.url === ALCHEMY
+        ? { error: { message: `HTTP 500 at ${ALCHEMY}/key ${"x".repeat(200)}` } }
+        : { error: { message: "fetch failed:\n  TimeoutError" } },
+    );
+    await proxy.handle({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [] });
+    const line = proxy.statusLine();
+    expect(line).toMatch(/public-a\.test calls=\d+ failures=\d+ last="fetch failed: TimeoutError"/);
+    expect(line).toMatch(/alchemy calls=\d+ failures=\d+ last="HTTP 500 at \(alchemy\)\/key x+"/);
+    expect(line).not.toMatch(/alchemy\.test/);
+    expect(line).not.toMatch(/x{81}/);
   });
 });

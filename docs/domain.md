@@ -9,7 +9,8 @@ facts before relying on them. Add a fact when you learn one the hard way.
 
 ## DKG
 
-Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base Sepolia.
+Observed on OriginTrail V10 nodes (`10.0.16`, then `10.0.22` from 2026-10-09; `nodeRole:
+edge`, testnet), Base Sepolia.
 
 - **A UAL has two shapes on V10,** chosen by the on-chain id (OriginTrail/dkg
   `packages/core/src/ka-ual-identity.ts`, checked at `abfd785`, 2026-09):
@@ -42,6 +43,12 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
   `…/{name}/vm/publish`. Asset states are missing, stored (`promoted`) and minted
   (`published`). A stored asset already has a `reservedUal`, so a UAL being present does
   not mean minted: read `state` ([ADR 0007](adr/0007-all-writes-converge.md)).
+- **On 10.0.22 a KA passes through three memory layers** (2026-10-09): a working-memory
+  draft (`wm`: create, write, finalize), shared memory (`swm/share`, acknowledged by
+  peers), then verifiable memory (`vm/publish`, the mint). `dkg ka create --share` runs
+  the first two in one call; a minted KA reads `"state": "published"`, layer `VM`.
+  Unverified: whether `POST /api/knowledge-assets` still writes, finalizes and shares in
+  one call, as the fact above says for 10.0.16.
 - **Mints outlive the client:** the daemon finishes a mint after the client disconnects,
   and `vm/publish-async` returns a job id to poll ([ADR 0008](adr/0008-mints-are-async-polled-in-short-steps.md)).
 - **Unverified: a second `vm/publish` while a mint is in flight.** An asset being minted
@@ -53,13 +60,23 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
 - **Mint time varies from about 5 s to over 300 s.** A mint can also fail fast on quorum
   (`storage_ack_insufficient`, `CORE_TEMPORARILY_UNAVAILABLE`); retrying after a couple of
   minutes usually works ([ADR 0009](adr/0009-retries-are-spaced-with-step-sleep.md)).
-- **The daemon has a single admin token:** `dkg init` writes one bearer token to
-  `~/.dkg/auth.token`, valid for every graph on the node; there are no tokens scoped per
+- **The daemon has a single admin token:** one bearer token in `~/.dkg/auth.token`
+  (written by `dkg init` on 10.0.16; on 10.0.22, 2026-10-09, by the first `dkg start`,
+  with the agent key), valid for every graph on the node; there are no tokens scoped per
   graph, so whoever holds it can write every environment's graph ([ADR 0005](adr/0005-staging-and-production-are-isolated.md)).
 - **Every context graph must be listed** under `contextGraphs` in the node's
   `~/.dkg/config.json`, or the node stops serving it after a restart.
-- **A new graph reports `authority-resolution-failed` for up to about 20 minutes.** That is
-  a slow chain read, not a bad registration: wait before re-registering.
+- **A new graph reports `authority-resolution-failed` for up to about 20 minutes** (10.0.16).
+  That is a slow chain read, not a bad registration: wait before re-registering. On
+  10.0.22 (2026-10-09), `verisci-staging` reached `finalized-chain` right after
+  registering, and about a minute after a restart.
+- **Registering a context graph takes a 100 TRAC deposit** from the agent's wallet, plus
+  gas (10.0.22, 2026-10-09). The CLI approves the deposit after decoding the contract's
+  revert data, so an RPC path that drops a JSON-RPC error's `data` breaks registering.
+- **The node's agent address is its first publisher wallet** (`wallets` in
+  `~/.dkg/wallets.json`), not its admin wallet (10.0.22, 2026-10-09).
+- **`dkg init` funds the node from OriginTrail's testnet faucet** (10.0.22): on
+  2026-10-09 each wallet got 1,000 TRAC but no ETH, because the faucet had run out of ETH.
 - **A KA keeps its UAL across updates** (OriginTrail/dkg
   `packages/evm-module/docs/greenfield-ka-ual.md`): the KA is minted to its author as an
   ERC-721 token, and each update adds a new immutable version under the same token. Only
@@ -70,6 +87,9 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
   its number, so each environment sees gaps in its numbering. Expected, not a bug.
 - **Authority resolution needs the node's local JSON-RPC proxy:** public Base Sepolia
   endpoints are not reliable enough for it.
+- **Public Base Sepolia endpoints' log limits** (2026-10-09): `sepolia.base.org` answers
+  `eth_getLogs` over at most 200 blocks; `base-sepolia-rpc.publicnode.com` over 2,000, but
+  keeps history from block 46,500,000 only ("pruned history unavailable").
 - **The daemon reads the chain constantly** (previous host, DKG 10.0.16, two graphs,
   2026-09 to 2026-10): it re-resolves each graph's authority from chain history again and
   again. With every call except log reads sent to Alchemy first and no limit, Alchemy's free
