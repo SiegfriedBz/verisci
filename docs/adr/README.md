@@ -39,7 +39,7 @@ How every store, mint and on-chain write behaves; both flows below rely on it.
 | ADR | Decision |
 | --- | --- |
 | [0007. Every write converges: store, mint, fulfil and cancel](0007-all-writes-converge.md) | Each write reads state first and treats "already done" as success |
-| [0008. Mints are async, polled in short steps](0008-mints-are-async-polled-in-short-steps.md) | Mints run async and are polled; an earlier mint gets time to finish before a new one |
+| [0008. Mints are async, polled in short steps](0008-mints-are-async-polled-in-short-steps.md) | A mint is started without waiting and its asset's state is polled; a KA cannot be minted twice, so no run waits for an earlier mint |
 | [0009. Retries are spaced with step.sleep](0009-retries-are-spaced-with-step-sleep.md) | Retries wait with `step.sleep`: from 2 minutes, 5 attempts, 45 minutes in all |
 
 ## Publish flow
@@ -104,6 +104,7 @@ Not decided yet. Each becomes an ADR in the plan that first needs the answer; th
 | Where does mutable app state live? | Nowhere authoritative: the chain and the DKG hold the truth. Rate-limit counters go in one small key-value store (Upstash Redis); losing it only resets the limits. | first web plan with a wallet |
 | Who may request phases 2 and 3? | Anyone, not only the phase-1 requester. Whoever requests, our node writes the R-KA update, since it owns the R-KA ([0012](0012-three-phases-settled-by-the-oracle.md)). Also open: whether a later phase's request gets its own id or reuses the rating's. | phase-2 plan |
 | How does a local test run target a developer's own contract? | One local-only address variable for that contract, read by the agents when `APP_ENV=local`; staging's and production's addresses stay in the committed file ([0028](0028-deployed-addresses-are-committed.md), [0019](0019-oracle-transactions-are-serialized.md)). | agents plan |
+| How does a rating run find the context graph of a target verisci did not publish? | The rating request names it next to the target's UAL, since a UAL alone does not name its graph ([0011](0011-a-rating-is-a-separate-r-ka.md)); check first whether a later DKG release resolves a UAL to its graph. | agents plan |
 | Who holds the DKG node's credential? | Caddy keeps the daemon's admin token on the host and checks one credential per environment, so each can be revoked alone. The `-prod` guard stays ([0005](0005-staging-and-production-are-isolated.md)). | dkg plan |
 
 ## Adding an ADR

@@ -3,9 +3,10 @@
 Hard-won facts about the systems verisci runs on, each written once so plans cite them
 instead of rediscovering them. Decisions built on them are in [`docs/adr/`](adr/README.md).
 
-Most facts were observed in the previous verisci repo and cannot be re-checked from this
-one. Each section names the versions they were seen on: when a version moves, re-check the
-facts before relying on them. Add a fact when you learn one the hard way.
+Many facts were observed in the previous verisci repo; the DKG facts marked 10.0.22 were
+re-checked on this repo's own node. Each section names the versions they were seen on:
+when a version moves, re-check the facts before relying on them. Add a fact when you learn
+one the hard way.
 
 ## DKG
 
@@ -40,7 +41,7 @@ edge`, testnet), Base Sepolia.
   starting with `did:dkg:` or matching `0x<40 hex>:<number>` is read as a KA id
   (`packages/cli/src/daemon/routes/knowledge-assets.ts`). Ours start with `verisci-`
   (`packages/core/README.md` → Asset names).
-- **Publishing a KA is four calls on 10.0.22** (spike, 2026-10-09; all under
+- **Publishing a KA is three calls on 10.0.22** (spike, 2026-10-09; all under
   `/api/knowledge-assets`, with `contextGraphId` in the body):
   1. `POST /api/knowledge-assets` with `name` and `quads` writes and seals a working-memory
      draft (`status: wm-sealed`) and reserves its UAL (`kaUal`); it shares only with
@@ -66,33 +67,46 @@ edge`, testnet), Base Sepolia.
     the first quads;
   - storing a minted name answers 409 `KA_WM_LIFECYCLE_REQUIRED`;
   - minting a name that is not shared, or is already minted, answers 409
-    `PUBLISH_NOT_FULL_SHARE` for both, so only the state tells them apart
-    ([ADR 0007](adr/0007-all-writes-converge.md)).
+    `PUBLISH_NOT_FULL_SHARE` for both, so only the state tells them apart.
+
+  Each 409 is final: retrying it changes nothing, so the caller reads the state and goes
+  on from there ([ADR 0007](adr/0007-all-writes-converge.md)).
 - **A KA's id is fixed when it is sealed, so it is minted at most once** (spike,
   2026-10-09, run twice):
   - a second `vm/publish` sent 2 s into a running mint failed at gas estimation with
     `KaIdAlreadyMinted`, and the daemon answered 500 after 17 s;
-  - three `vm/publish` calls sent at once were spread over the three publisher wallets.
-    One mint succeeded. A second reached the chain and reverted, still paying its gas.
-    The third sent only a TRAC approval.
+  - three `vm/publish` calls sent at once were spread over the three publisher wallets
+    in `~/.dkg/wallets.json`. One mint succeeded. A second reached the chain and
+    reverted, still paying its gas. The third sent only a TRAC approval.
 
-  During a mint the state still reads `promoted`, so a poll cannot tell a mint in flight
-  from none ([ADR 0008](adr/0008-mints-are-async-polled-in-short-steps.md)).
+  So a 500 from `vm/publish` does not mean the asset is unminted: the caller reads the
+  state before any retry. During a mint the state still reads `promoted`, so a poll
+  cannot tell a mint in flight from none
+  ([ADR 0008](adr/0008-mints-are-async-polled-in-short-steps.md)).
 - **Mints outlive the client:** a `vm/publish` whose client disconnected after 2 s was
   minted anyway, its state reading `published` 13 to 16 s later (10.0.22, 2026-10-09,
   run twice; also seen on 10.0.16).
-- **`vm/publish-async` needs the async publisher** (10.0.22, 2026-10-09). It is off by
-  default, and the route answers 503 `async_publisher_unavailable`
-  (`publisher_disabled`). It is turned on with `dkg publisher enable`, which needs at
-  least one publisher wallet of its own, added with `dkg publisher wallet add
-  <private-key>` (`~/.dkg/publisher-wallets.json`), then a daemon restart. Jobs are then
-  read at `GET /api/publisher/job?id=…` ([ADR 0008](adr/0008-mints-are-async-polled-in-short-steps.md)).
-- **Our node reads KAs from other nodes' context graphs** (spike, 2026-10-09). It first
-  subscribes to the graph (`POST /api/context-graph/subscribe`, `syncMode: "on-demand"`),
-  then calls `POST /api/context-graph/fetch-assets` with the graph id and 1 to 10 UALs.
-  The old verisci node's KAs 0 to 3 came back in 22 to 24 s per call with that node off, since other
-  peers hold copies, and `/api/query` then read them. The graph id must be known: a UAL
-  alone does not name its graph ([ADR 0011](adr/0011-a-rating-is-a-separate-r-ka.md)).
+- **`vm/publish-async` needs the async publisher** (10.0.22, 2026-10-09). On our node,
+  set up by `dkg init`, the route answers 503 `async_publisher_unavailable`
+  (`publisher_disabled`, `retryable: false`). Read in the daemon source (10.0.22), not
+  run: `dkg publisher enable` turns it on, and it starts only with at least one
+  async-publisher wallet, added with `dkg publisher wallet add <private-key>` to
+  `~/.dkg/publisher-wallets.json`, a file apart from `wallets.json`; jobs are read at
+  `GET /api/publisher/job?id=…`. Whether one of the node's three publisher wallets can
+  serve as that wallet is not checked
+  ([ADR 0008](adr/0008-mints-are-async-polled-in-short-steps.md)).
+- **Our node reads KAs from other nodes' context graphs** (spike, 2026-10-09):
+  - `POST /api/context-graph/fetch-assets` on a graph the node is not subscribed to
+    answers 404 ("does not exist or is not subscribed locally");
+  - after `POST /api/context-graph/subscribe` with `syncMode: "on-demand"`, the same call
+    with the graph id and the UALs (1 to 10 per call, per the daemon source) fetched the
+    old verisci node's KAs 0 to 3, in 22 to 24 s per call, with that node off (so other
+    peers presumably hold copies);
+  - `/api/query` then read their triples.
+
+  The graph id must be known: a UAL alone does not name its graph. Not checked: whether
+  an on-demand subscription survives a restart, or must be listed in `config.json` like
+  the node's own graphs ([ADR 0011](adr/0011-a-rating-is-a-separate-r-ka.md)).
 - **Mint time varies from about 5 s to over 300 s** (13 to 17 s in the spike, 2026-10-09).
   A mint can also fail fast on quorum (`storage_ack_insufficient`,
   `CORE_TEMPORARILY_UNAVAILABLE`); retrying after a couple of minutes usually works
@@ -120,7 +134,8 @@ edge`, testnet), Base Sepolia.
   the owner (the token holder) can update it. On 10.0.22 (spike, 2026-10-09):
   - an update is `POST …/{name}/wm/pull-from` with `layer: "vm"`, which reopens a draft
     seeded with the minted quads;
-  - `wm/write` then adds quads (it only appends; there is no call to remove one);
+  - `wm/write` then adds quads (it only appends; the spike found no call that removes
+    one, so a later version still carries the earlier version's triples);
   - then `wm/finalize`, `swm/share` and `vm/publish`.
 
   The UAL and the KA id stayed the same and `assertionVersion` went to 2. A query then
