@@ -24,9 +24,9 @@ changed=$(
 # workspace that depends on it ("...<name>"), since packages ship source.
 filters=()
 if printf '%s\n' "$changed" | grep -qE '^[^/]+\.json$'; then
-  filters+=("--filter=./apps/*" "--filter=./packages/*")
+  filters+=("--filter=./apps/*" "--filter=./packages/*" "--filter=./infra/*")
 else
-  for dir in $(printf '%s\n' "$changed" | grep -oE '^(apps|packages)/[^/]+' | sort -u); do
+  for dir in $(printf '%s\n' "$changed" | grep -oE '^(apps|packages|infra)/[^/]+' | sort -u); do
     name=$(jq -r '.name // empty' "$dir/package.json" 2>/dev/null)
     [ -n "$name" ] && filters+=("--filter=...$name")
   done

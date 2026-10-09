@@ -58,6 +58,11 @@ graph, so a redeployed contract keeps the graph of the one it replaces; the old
 contract is paused and drained ([ADR 0023](docs/adr/0023-a-fix-is-a-redeploy-owner-powers-fixed.md)).
 Each contract's R-KA names are its own, because the request id hashes the chain
 id and contract address ([ADR 0016](docs/adr/0016-asset-names-derive-from-request-id.md)).
+
+The DKG node runs on its own server, with GROBID and an RPC proxy
+([ADR 0006](docs/adr/0006-dkg-node-runs-on-a-dedicated-host.md)). The node reads
+Base Sepolia only through that proxy, [`infra/rpc-proxy`](infra/rpc-proxy/README.md),
+which asks free public endpoints first and keeps Alchemy within a daily budget.
 Each environment also has its own oracle wallet, Alchemy webhook and Inngest
 environment. Only `develop` holds staging's oracle key and runs its ratings;
 previews and local development share staging's contract and graph, and a
@@ -170,9 +175,10 @@ contract's calls and events are documented in the
 
 ## The repo
 
-A pnpm and Turborepo monorepo: a Next.js app and five internal packages.
-Packages ship TypeScript source, with no build step; Next.js compiles them
-through `transpilePackages`.
+A pnpm and Turborepo monorepo: a Next.js app, five internal packages, and the
+RPC proxy that runs on the DKG node server (`infra/rpc-proxy`). Packages ship
+TypeScript source, with no build step; Next.js compiles them through
+`transpilePackages`, and the server runs the proxy's source with plain Node.
 
 ## Requirements
 
@@ -239,6 +245,7 @@ chain, Inngest, Vercel and tooling are in [`docs/domain.md`](docs/domain.md).
 | [`packages/dkg`](packages/dkg/README.md) | DKG adapter | core, env |
 | [`packages/contracts`](packages/contracts/README.md) | Solidity contracts and their TypeScript side | core, env |
 | [`packages/agents`](packages/agents/README.md) | Inngest workflows | core, env, dkg, contracts |
+| [`infra/rpc-proxy`](infra/rpc-proxy/README.md) | JSON-RPC proxy run on the DKG node server | none |
 
 Each workspace may only import the workspaces it declares. pnpm does not
 hoist undeclared workspace packages, so breaking this rule fails `pnpm

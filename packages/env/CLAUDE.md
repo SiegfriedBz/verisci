@@ -7,6 +7,7 @@ Typed, validated environment variables for every other workspace. See `README.md
   through `defineEnv`, in the PR that first reads them, and in the root `.env.example`.
   Forge's deploy settings are listed in `.env.example`'s Foundry section; per-deploy
   choices such as `DEPLOY_ENV` go on the deploy command (ADR 0004).
+  Programs on the DKG node server (`infra/*`) read their own settings (ADR 0004).
 - `EnvError` must never carry a value: the secret test in `define-env.test.ts` guards it.
 - Tests pass `runtimeEnv` explicitly; never set `process.env` in a test.
 - Never read real env files: variable names and examples live in `.env.example`.

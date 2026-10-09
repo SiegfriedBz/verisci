@@ -70,6 +70,12 @@ importers:
         specifier: 30.1.1
         version: 30.1.1
 
+  infra/rpc-proxy:
+    devDependencies:
+      '@types/node':
+        specifier: 24.19.1
+        version: 24.19.1
+
   packages/agents:
     dependencies:
       '@verisci/contracts':

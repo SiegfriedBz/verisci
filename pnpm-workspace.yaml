@@ -1,6 +1,7 @@
 packages:
   - apps/*
   - packages/*
+  - infra/*
 
 # solhint lists prettier as optional; we only use its use-natspec rule, and
 # Biome replaces Prettier.

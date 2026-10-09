@@ -70,6 +70,13 @@ Observed on an OriginTrail V10 node (`10.0.16`, `nodeRole: edge`, testnet), Base
   its number, so each environment sees gaps in its numbering. Expected, not a bug.
 - **Authority resolution needs the node's local JSON-RPC proxy:** public Base Sepolia
   endpoints are not reliable enough for it.
+- **The daemon reads the chain constantly** (previous host, DKG 10.0.16, two graphs,
+  2026-09 to 2026-10): it re-resolves each graph's authority from chain history again and
+  again. With every call except log reads sent to Alchemy first and no limit, Alchemy's free
+  tier was used up after a few weeks; from about 2026-10-05 the chain head froze and every
+  write failed, while `/api/status` still answered. The proxy now keeps Alchemy last,
+  within a daily budget (`infra/rpc-proxy`). Unverified: whether a later release reads
+  less.
 
 ## IPFS
 

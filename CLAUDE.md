@@ -1,8 +1,10 @@
 # verisci
 
-pnpm + Turborepo monorepo: a Next.js 16 app (`apps/web`) and five internal packages
-(`packages/{env,core,dkg,contracts,agents}`). TypeScript 6, strict. Packages ship source
-(`exports` → `./src/index.ts`), no build step; Next compiles them via `transpilePackages`.
+pnpm + Turborepo monorepo: a Next.js 16 app (`apps/web`), five internal packages
+(`packages/{env,core,dkg,contracts,agents}`) and the DKG node server's RPC proxy
+(`infra/rpc-proxy`, run with plain Node, imported by nothing). TypeScript 6, strict.
+Packages ship source (`exports` → `./src/index.ts`), no build step; Next compiles them via
+`transpilePackages`.
 
 Read `README.md` for setup and commands, and `CONTRIBUTING.md` for branches, commits, docs
 rules, PRs and releases. Each workspace has its own `CLAUDE.md` and `README.md`.
@@ -26,13 +28,16 @@ Toolchain: Node 24.21.0 (`.nvmrc`), pnpm 10.34.6 via Corepack, Foundry 1.8.4. If
 ## Architecture rules
 
 - Dependency direction: env, core → nothing; dkg, contracts → core, env; agents → core,
-  env, dkg, contracts; web → all five. Import only workspaces declared in `package.json`.
+  env, dkg, contracts; web → all five; `infra/rpc-proxy` → nothing. Import only
+  workspaces declared in `package.json`.
 - **core does no IO**: no `fetch`, no `node:*`, no `@verisci/*`. IO lives in adapter
   packages. Biome enforces this in `packages/core/biome.json`.
 - Relative imports keep the `.ts` extension (`./shared.ts`); `allowImportingTsExtensions`
   is on in `tsconfig.base.json` because nothing emits.
 - Environment variables: each workspace declares what it reads in `src/env.ts` with
-  `defineEnv` from `@verisci/env`, and adds it to `.env.example` in the same PR. Forge's
+  `defineEnv` from `@verisci/env`, and adds it to `.env.example` in the same PR. Programs
+  that run on the DKG node server (`infra/*`) read their own settings instead, listed in
+  their README (ADR 0004). Forge's
   deploy settings go in `.env.example`'s Foundry section instead; per-deploy choices such
   as `DEPLOY_ENV` go on the deploy command (ADR 0004).
 - Pin every dependency exactly (`pnpm add -E`). No ESLint or Prettier: Biome does both.

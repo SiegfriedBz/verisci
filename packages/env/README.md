@@ -65,6 +65,10 @@ env file, so they are listed in the Foundry section of `.env.example` without a
 as `DEPLOY_ENV` are passed on the command line
 ([ADR 0004](../../docs/adr/0004-env-variables-per-workspace-one-root-file.md)).
 
+Programs that run on the DKG node server (`infra/*`, such as the RPC proxy) read their
+own settings from an env file on that server, since it runs them with plain Node and no
+install. Each lists its variables in its README (ADR 0004).
+
 ## API
 
 | Export | What it does |
