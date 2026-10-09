@@ -48,7 +48,7 @@ A PDF becomes a Target KA.
 
 | ADR | Decision |
 | --- | --- |
-| [0010. PDFs become Target KAs in a stepped pipeline](0010-pdf-to-target-ka-pipeline.md) | Signed upload, signed CID, then parse, extract, store and mint as steps; named from the CID |
+| [0010. PDFs become Target KAs in a stepped pipeline](0010-pdf-to-target-ka-pipeline.md) | Signed upload, signed CID, then parse, store and mint as steps, metadata read by code; named from the CID, first submitter kept |
 
 ## What a rating is
 
