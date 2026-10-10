@@ -3,7 +3,7 @@ import type { DeleteFileResult, FindFileResult } from "../pinata.ts";
 import { PAPER_SUBMITTED } from "./publish-paper.ts";
 import type { SubmissionRefusal, VerifiedSubmission, VerifyResult } from "./verify-submission.ts";
 
-/** How many papers each submitter may publish; the web app keeps the counts (ADR 0010). */
+/** How many papers each submitter may publish; the web app keeps the counts (ADR 0035). */
 export interface SubmitLimiter {
   /** Whether `address` may submit another paper now, without counting one. */
   check(address: string): Promise<"allowed" | "limited" | "unavailable">;

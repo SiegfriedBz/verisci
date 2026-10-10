@@ -24,7 +24,7 @@ server (`APP_ENV` other than `local`) checks them when it starts, through
 | Variable | Value |
 | --- | --- |
 | `GROBID_URL` | GROBID's base URL: `http://127.0.0.1:8070` locally ([`docs/node-host.md`](../../docs/node-host.md) → GROBID) |
-| `PINATA_GATEWAY_URL` | The Pinata account's dedicated gateway, `https://<name>.mypinata.cloud` |
+| `PINATA_GATEWAY_URL` | The Pinata account's dedicated gateway, `https://<name>.mypinata.cloud`; one account serves every environment ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)) |
 | `CHAIN_RPC_URL` | A Base Sepolia RPC URL, to check smart-contract wallets' signatures |
 | `PINATA_JWT` | A Pinata API key (JWT) allowed to upload, list and delete files; the `publish-pdf` dev script reads it too. Secret |
 | `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY` | Inngest's keys, required unless `APP_ENV` is `local`: the SDK reads them itself, and the signing key also reads runs for the upload page. Secret |
@@ -113,7 +113,8 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
   the run does, without the deadline rule, and names the publisher (the UAL's author). A
   failed run's status carries `failure`, the reason its error names; a minted paper whose
   record cannot be shown carries `recordProblem` (`unavailable` when the node did not
-  answer the query, `unreadable` when no record parses; ADR 0021). Locally, a run's output
+  answer the query, asked to retry or answered a server error; `unreadable` when it refused
+  the query or no record parses; ADR 0021). Locally, a run's output
   comes from the dev server's GraphQL API, since its REST read answers it empty.
 
 ## Running a publish locally

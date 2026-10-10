@@ -81,6 +81,14 @@ describe("paperProgress", () => {
     });
   });
 
+  it("reads a run still listed as running past a run's budget, with nothing stored, as not-found", () => {
+    // Inngest cancels a run at its finish timeout, so one listed past it is not running.
+    const listed = (sentAt: number) => paperProgress({ asset: missing, run: running }, NOW, sentAt);
+
+    expect(listed(NOW - 61_000)).toEqual({ stage: "reading" });
+    expect(listed(NOW - FOLLOW_MS - 1)).toEqual({ stage: "not-found" });
+  });
+
   it("follows for as long as a run may last", () => {
     expect(FOLLOW_MS).toBe(45 * 60_000);
     expect(PUBLISH_SETTINGS.finishTimeout).toBe("45m");

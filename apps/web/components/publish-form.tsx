@@ -153,7 +153,7 @@ function PublishFlow({ contextGraph, maxBytes, signatureLifetimeS }: PublishSett
         <input
           id={inputId}
           type="file"
-          accept="application/pdf"
+          accept="application/pdf,.pdf"
           className="sr-only"
           disabled={busy}
           onChange={(event) => {

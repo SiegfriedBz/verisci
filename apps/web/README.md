@@ -52,6 +52,7 @@ stateDiagram-v2
   reading --> following: no run a minute after the event
   following --> saving: the other run stores it
   following --> not_found: nothing stored after 45 minutes
+  reading --> not_found: still listed as running, nothing stored, after 45 minutes
   reading --> not_published: run ended, output unreadable, nothing stored
   published --> [*]
   refused --> [*]
@@ -71,7 +72,9 @@ stateDiagram-v2
   its ULID, `eventTime`). The publish function is a singleton per CID, so another run holds
   this PDF; the page follows the paper on the node and gives up (`not-found`) after
   `FOLLOW_MS`, a run's whole 45-minute budget.
-- `not-found` also covers a page with no event to ask about and nothing on the node.
+- `not-found` also covers a page with no event to ask about and nothing on the node, and a
+  run still listed as running after `FOLLOW_MS` with nothing on the node: Inngest cancels a
+  run at its finish timeout.
 - `unavailable` (the node or Inngest not answering) is shown and asked again.
 - A published paper whose record the node did not answer for, or does not show yet after
   its run minted it (`recordProblem: "unavailable"`), is asked about again until the record loads; one whose record cannot be

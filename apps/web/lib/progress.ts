@@ -57,7 +57,9 @@ export function eventTime(eventId: string): number | undefined {
  * means submitting the same PDF again. With no run to ask about, a missing asset is
  * `not-found`. An event sent (`sentAt`) over a minute ago that started no run means another
  * run holds the PDF (the function is a singleton per CID): the page shows `following` and
- * follows the paper on the node, until {@link FOLLOW_MS} have passed with nothing stored.
+ * follows the paper on the node, until {@link FOLLOW_MS} have passed with nothing stored. A
+ * run still listed as running past that, with nothing stored, is `not-found` too: Inngest
+ * cancels a run at its finish timeout.
  */
 export function paperProgress(
   { asset, run, failure }: PaperStatus,
@@ -82,9 +84,10 @@ export function paperProgress(
   if (asset.state === "stored") return { stage: "minting" };
   if (asset.state === "draft") return { stage: "saving" };
   if (run === undefined) return { stage: "not-found" };
-  const waited = state === undefined && sentAt !== undefined ? now - sentAt : 0;
+  const open = state === undefined || state.state === "running";
+  const waited = open && sentAt !== undefined ? now - sentAt : 0;
   if (waited > FOLLOW_MS) return { stage: "not-found" };
-  return waited > SETTLE_MS ? { stage: "following" } : { stage: "reading" };
+  return state === undefined && waited > SETTLE_MS ? { stage: "following" } : { stage: "reading" };
 }
 
 /**

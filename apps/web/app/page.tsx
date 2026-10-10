@@ -95,7 +95,7 @@ export default function Home() {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/publish"
-              className="signal-gradient inline-flex w-fit items-center gap-2 rounded-xl px-5 py-3 font-semibold text-accent-ink shadow-[0_8px_30px_rgb(61_220_151/0.25)] transition hover:brightness-110 active:scale-[0.98]"
+              className="signal-gradient inline-flex w-fit items-center gap-2 rounded-xl px-5 py-3 font-semibold text-accent-ink shadow-glow transition hover:brightness-110 active:scale-[0.98]"
             >
               Publish a paper
               <ArrowRight size={18} weight="bold" />

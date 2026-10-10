@@ -70,6 +70,12 @@ describe("publishFile", () => {
     expect(phases).toEqual([]);
   });
 
+  it("uploads a file whose type the picker left empty, for Pinata to check", async () => {
+    const { flowDeps } = deps();
+
+    expect((await publishFile(pdf(10, ""), flowDeps)).ok).toBe(true);
+  });
+
   it("stops when no upload URL is given", async () => {
     const { flowDeps } = deps({
       requestUpload: async () => ({ ok: false, reason: "rate-limited" }),

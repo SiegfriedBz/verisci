@@ -221,6 +221,25 @@ describe("readPaper on a minted paper", () => {
     expect(status.recordProblem).toBe("unavailable");
   });
 
+  it("says the record is unreadable when the node refuses the query or answers no rows", async () => {
+    for (const answer of [
+      () => new Response("no", { status: 401 }),
+      () => Response.json({ result: {} }),
+    ]) {
+      const refused = (async (input: string | URL | Request) =>
+        String(input).includes("/api/query")
+          ? answer()
+          : Response.json({
+              state: "published",
+              publishedUal: MINTED,
+              reservedUal: MINTED,
+            })) as typeof globalThis.fetch;
+      const service = createUploadService(env(), { ...io().uploadIo, fetch: refused });
+
+      expect((await service.readPaper(CID)).recordProblem).toBe("unreadable");
+    }
+  });
+
   it("says the record is unreadable when the node answers no usable record", async () => {
     const empty = (async (input: string | URL | Request) =>
       String(input).includes("/api/query")

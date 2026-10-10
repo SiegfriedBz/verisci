@@ -20,6 +20,10 @@
   --accent-2: #2dd4e6;
   --accent-ink: #03140c;
   --accent-soft: rgb(61 220 151 / 0.1);
+  --accent-glow: rgb(61 220 151 / 0.25);
+  /* A darker emerald for surfaces with white text, such as the wallet window's accent:
+     white on --accent would fail contrast. */
+  --accent-deep: #0d7a55;
   /* On-chain things (tokens, mints, contracts) take the cyan; off-chain records the emerald. */
   --accent-2-soft: rgb(45 212 230 / 0.1);
   --danger: #ff8a93;
@@ -38,6 +42,8 @@
   --color-accent-2: var(--accent-2);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-deep: var(--accent-deep);
+  --shadow-glow: 0 8px 30px var(--accent-glow);
   --color-accent-2-soft: var(--accent-2-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);

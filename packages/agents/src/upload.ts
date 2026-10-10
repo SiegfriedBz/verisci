@@ -6,7 +6,7 @@ import {
   parseUal,
   targetKaName,
 } from "@verisci/core";
-import { type AssetResult, createDkgClient } from "@verisci/dkg";
+import { type AssetResult, createDkgClient, type DkgFailure } from "@verisci/dkg";
 import { createPublicClient, http } from "viem";
 import { baseSepolia } from "viem/chains";
 import { type AgentsEnv, createAgentsEnv } from "./agents-env.ts";
@@ -46,7 +46,7 @@ export interface PublishedRecord extends Omit<PaperRecord, "deadline"> {
   readonly deadline: string;
   /** Whether the signature is the submitter's, checked when read: `unknown` if the chain did not answer. */
   readonly signatureCheck: "valid" | "invalid" | "unknown";
-  /** The address that minted it, the UAL's author: our DKG node's publishing wallet. */
+  /** The UAL's author, which the asset's token is minted to: our DKG node's agent address. */
   readonly publisher: string | undefined;
 }
 
@@ -58,8 +58,9 @@ export interface PaperStatus {
   /** The record, once minted and readable. */
   readonly record?: PublishedRecord;
   /**
-   * Why a minted paper has no record: the node did not answer the query (`unavailable`,
-   * worth asking again) or answered none that parses (`unreadable`) (ADR 0021).
+   * Why a minted paper has no record: the node did not answer the query, asked to retry or
+   * answered a server error (`unavailable`, worth asking again), or refused it or answered
+   * none that parses (`unreadable`) (ADR 0021).
    */
   readonly recordProblem?: "unavailable" | "unreadable";
   /** Why the run stopped, when it failed with a reason it names. */
@@ -118,7 +119,7 @@ export function createUploadService(env: AgentsEnv, io: UploadIo): UploadService
     const sparql = paperRecordQuery(cid);
     if (!sparql) return { ok: false, reason: "unreadable" };
     const answer = await dkg.query(sparql);
-    if (!answer.ok) return { ok: false, reason: "unavailable" };
+    if (!answer.ok) return { ok: false, reason: passing(answer) ? "unavailable" : "unreadable" };
     const record = parsePaperRecord(cid, answer.bindings);
     if (!record) return { ok: false, reason: "unreadable" };
     const matches = await signatureMatches(
@@ -184,6 +185,15 @@ export function createUploadService(env: AgentsEnv, io: UploadIo): UploadService
         : { asset, run, recordProblem: read.reason };
     },
   };
+}
+
+/** Whether a failed query may pass: no answer, a retry asked for, or a server error. */
+function passing(failure: DkgFailure): boolean {
+  return (
+    failure.reason === "unreachable" ||
+    failure.reason === "retry-later" ||
+    (failure.status !== undefined && failure.status >= 500)
+  );
 }
 
 let service: UploadService | undefined;
