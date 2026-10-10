@@ -13,8 +13,8 @@ Programs that run on the DKG node server, such as its RPC proxy, run alone there
 
 ## Decision
 
-- Each workspace of the app and its packages declares only the variables it reads, in its own env module, with `defineEnv` from `@verisci/env` over the shared `NODE_ENV`/`APP_ENV` base.
-- Validation fails fast on import, with one `EnvError` naming every bad variable and never carrying a value.
+- Each workspace of the app and its packages declares only the variables it reads, in its own env module, with `defineEnv` from `@verisci/env` over the shared `NODE_ENV`/`APP_ENV` base. A dev script declares the variables only it reads in the script itself, so the workspace's env module never requires a value only that script uses.
+- Validation fails fast on import, with one `EnvError` naming every bad variable and never carrying a value. Workflows are the exception: `web` serves them and `next build` imports them with only `APP_ENV` set, so a workflow checks its settings on its first run and stops at once, without retries, when one is bad.
 - `NODE_ENV` belongs to the tools. `APP_ENV` defaults to `local`, but is required in production builds, so a host that forgets it fails instead of running as `local`.
 - The app's env files live at the repo root, loaded by `apps/web/next.config.ts`. CI builds with `APP_ENV=local`.
 - Forge reads the same root env file as the app. Settings it needs for every deploy, such as the RPC URL and the block-explorer key, are listed in `.env.example` in their own section, with no env module; forge checks them when it uses them. Choices made per deploy, such as the environment, are passed on the deploy command, so each deploy names them.
@@ -23,7 +23,7 @@ Programs that run on the DKG node server, such as its RPC proxy, run alone there
 
 ## Consequences
 
-- A workspace's env object exposes only what it declares, and a bad config fails at startup with a clear message. This is hygiene, not isolation: every module in a deployment shares one `process.env`, so a secret set on a host is readable by all the code it runs. Forge sees every value in the root file, secrets included, as every module of a deployment does.
+- A workspace's env object exposes only what it declares, and a bad config fails at startup with a clear message, or, for a workflow, on its first run. This is hygiene, not isolation: every module in a deployment shares one `process.env`, so a secret set on a host is readable by all the code it runs. Forge sees every value in the root file, secrets included, as every module of a deployment does.
 - One place to fill in values, for the app and for deploys. A forge setting is checked only when a deploy uses it.
 - Each plan that reads a new variable adds it to its workspace's env module and to `.env.example`; a program on the DKG node server lists it in its README instead.
 - Usage is documented in the [`@verisci/env` README](../../packages/env/README.md).
@@ -37,3 +37,5 @@ Programs that run on the DKG node server, such as its RPC proxy, run alone there
 - 2026-10-09: changed the rule's scope so it reads as one decision: `src/env.ts`, the root env file and `.env.example` cover the app and its packages; programs on the DKG node server keep their settings in an env file there, listed in their README.
 - 2026-10-09: corrected: variables are declared in a workspace's env module rather than a named file, since the dkg package keeps its schema in a function tests can call with their own values; the Foundry sentences say "env module" too (DKG client).
 - 2026-10-09: corrected: dropped "Envs passed to `extends` keep the values they were built with", a mechanic of `defineEnv` already in the `@verisci/env` README, not a decision.
+- 2026-10-10: a workflow checks its settings on its first run, not on import, and stops at once without retries when one is bad, since `next build` imports workflows with only `APP_ENV` set (publish run).
+- 2026-10-10: a dev script declares the variables only it reads in the script, so its workspace's env module never requires them (`publish-pdf` and `PINATA_JWT`).

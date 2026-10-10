@@ -28,3 +28,4 @@ Papers enter verisci as PDFs and must become Target KAs. Parsing and the DKG wri
 
 - 2026-10-09: metadata is read from GROBID's structured output by code, not extracted by an LLM, so the same PDF always gives the same KA at no cost per paper (publish plan).
 - 2026-10-09: a later submitter of a PDF already stored or minted is not recorded; the KA keeps its first submitter (publish plan).
+- 2026-10-10: corrected: the second pin of each PDF is no longer tied to the publish plan, which did not add it; a later plan does.
