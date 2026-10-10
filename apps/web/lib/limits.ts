@@ -5,7 +5,7 @@ import type { SubmitLimiter } from "@verisci/agents";
 /** How much one visitor may ask for, per rolling day (ADR 0035). */
 export const UPLOAD_LIMITS = {
   /** Upload URLs per connection (IP): no address is proven before the signature. */
-  urlsPerIpPerDay: 20,
+  urlsPerIpPerDay: 10,
   /** Submissions accepted per signing address. */
   submissionsPerAddressPerDay: 5,
 } as const;

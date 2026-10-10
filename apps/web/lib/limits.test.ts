@@ -56,7 +56,7 @@ describe("counter", () => {
 });
 
 describe("createLimits", () => {
-  it("counts in memory without Upstash: 20 upload URLs and 5 submissions a day", async () => {
+  it("counts in memory without Upstash: 10 upload URLs and 5 submissions a day", async () => {
     const { urls, submissions } = createLimits({});
 
     for (let i = 0; i < UPLOAD_LIMITS.urlsPerIpPerDay; i++)

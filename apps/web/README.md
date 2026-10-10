@@ -26,7 +26,7 @@ PDF straight to Pinata, canonicalizes the CID it answers, and has the wallet sig
 `{ cid, contextGraph, deadline }` with a deadline 10 minutes ahead. The work itself is
 `@verisci/agents`' `getUploadService()` ([`packages/agents`](../../packages/agents/README.md#the-upload-pages-calls)).
 
-Limits (`lib/limits.ts`): 20 upload URLs per connection (IP) and 5 submissions per signing
+Limits (`lib/limits.ts`): 10 upload URLs per connection (IP) and 5 submissions per signing
 address, each per rolling day, in Upstash; in memory with `APP_ENV=local` and no Upstash
 settings, reset when the server restarts. A limit store that does not answer refuses
 rather than letting requests through.
