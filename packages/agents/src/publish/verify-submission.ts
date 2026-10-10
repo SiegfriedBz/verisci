@@ -1,4 +1,4 @@
-import { submissionTypedData, targetKaName } from "@verisci/core";
+import { canonicalContextGraph, submissionTypedData, targetKaName } from "@verisci/core";
 import {
   type Address,
   type Hex,
@@ -73,12 +73,14 @@ export async function verifySubmission(
 
   const name = targetKaName(cid);
   if (!name.ok || name.name !== `verisci-tka-${cid}`) return { ok: false, reason: "bad-cid" };
-  if (contextGraph !== options.contextGraph) return { ok: false, reason: "wrong-graph" };
+  const graph = canonicalContextGraph(contextGraph);
+  if (graph !== canonicalContextGraph(options.contextGraph))
+    return { ok: false, reason: "wrong-graph" };
   const nowS = BigInt(options.now()) / 1000n;
   if (BigInt(deadline) <= nowS) return { ok: false, reason: "expired" };
   if (BigInt(deadline) > nowS + MAX_SIGNATURE_LIFETIME_S) return { ok: false, reason: "malformed" };
 
-  const typedData = submissionTypedData({ cid, contextGraph, deadline: BigInt(deadline) });
+  const typedData = submissionTypedData({ cid, contextGraph: graph, deadline: BigInt(deadline) });
   // Lowercase has no checksum to fail, so viem accepts any casing of a valid address.
   const address = submitter.toLowerCase() as Address;
   const verified =
@@ -91,7 +93,7 @@ export async function verifySubmission(
     ok: true,
     submission: {
       cid,
-      contextGraph,
+      contextGraph: graph,
       deadline,
       submitter: address,
       signature: signature.toLowerCase(),

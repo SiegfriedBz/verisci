@@ -7,7 +7,7 @@
 // A relative path is read from the directory the command was typed in.
 import { readFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";
-import { submissionTypedData, targetKaName } from "@verisci/core";
+import { canonicalContextGraph, submissionTypedData, targetKaName } from "@verisci/core";
 import { contextGraphSchema } from "@verisci/dkg";
 import { createSharedEnv, defineEnv } from "@verisci/env";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
@@ -71,7 +71,7 @@ await inngest.send({
   name: PAPER_SUBMITTED,
   data: {
     cid,
-    contextGraph: env.DKG_CONTEXT_GRAPH,
+    contextGraph: canonicalContextGraph(env.DKG_CONTEXT_GRAPH),
     deadline: deadline.toString(),
     submitter: submitter.address,
     signature,

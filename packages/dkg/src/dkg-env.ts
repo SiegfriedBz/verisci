@@ -17,13 +17,21 @@ export function createDkgEnv(runtimeEnv: RuntimeEnv = process.env) {
 
   return defineEnv({
     extends: [shared],
-    server: {
-      DKG_URL: z.url(),
-      DKG_TOKEN: z.string().min(1),
-      DKG_CONTEXT_GRAPH: contextGraphSchema(shared.APP_ENV === "production"),
-    },
+    server: dkgSchema(shared.APP_ENV === "production"),
     runtimeEnv,
   });
+}
+
+/**
+ * The DKG node's variables and their rules, for a workspace that validates them with its own
+ * in one `defineEnv`, so one `EnvError` names every bad variable.
+ */
+export function dkgSchema(isProduction: boolean) {
+  return {
+    DKG_URL: z.url(),
+    DKG_TOKEN: z.string().min(1),
+    DKG_CONTEXT_GRAPH: contextGraphSchema(isProduction),
+  };
 }
 
 /**

@@ -38,6 +38,20 @@ describe("createAgentsEnv", () => {
     ]);
   });
 
+  it("names bad DKG and agents variables in one error", () => {
+    let caught: unknown;
+    try {
+      createAgentsEnv({ ...runtimeEnv, DKG_TOKEN: undefined, GROBID_URL: undefined });
+    } catch (error) {
+      caught = error;
+    }
+
+    expect((caught as EnvError).issues.map((issue) => issue.variable).sort()).toEqual([
+      "DKG_TOKEN",
+      "GROBID_URL",
+    ]);
+  });
+
   it("keeps the DKG node's -prod guard", () => {
     expect(() =>
       createAgentsEnv({ ...runtimeEnv, DKG_CONTEXT_GRAPH: `${runtimeEnv.DKG_CONTEXT_GRAPH}-prod` }),

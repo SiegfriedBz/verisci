@@ -44,6 +44,7 @@ Declared in `src/dkg-env.ts` (`createDkgEnv`) and validated on first import of
 | `DkgClient`, `DkgClientConfig` | The client's calls and its settings |
 | `Quad`, `AssetState`, `AssetResult`, `MintResult`, `DkgFailure` | The client's input and result types |
 | `env` (from `@verisci/dkg/env`) | The settings, validated from `process.env` on import |
+| `dkgSchema(isProduction)` | The three variables' rules, for a workspace that validates them with its own in one pass |
 | `contextGraphSchema(isProduction)` | The rule for `DKG_CONTEXT_GRAPH` (full id, `-prod` guard), for a script that reads only that variable |
 | `createDkgEnv(runtimeEnv)`, `DkgEnv` (from either entry) | The function that validates the settings from a given object, when called, and their type; another workspace's env extends it |
 

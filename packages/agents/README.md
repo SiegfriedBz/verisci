@@ -60,8 +60,9 @@ starts nothing. Its steps:
    mint; a draft (sealed, not shared) goes to the store, which only shares it. A KA already stored or minted keeps its first submitter.
 3. **read-paper**: fetches the PDF through the gateway and has GROBID parse its header, in
    one step, so the PDF's bytes are never a step output. A file that is not a PDF, is over
-   30 MB, that GROBID cannot parse (204, another 4xx, or an answer that is not TEI) or that
-   has no readable title ends the run, refused. A DOI is kept only if it looks like one.
+   30 MB, that GROBID cannot parse (204, a 4xx other than 401, 403, 408 and 429, or an
+   answer that is not well-formed TEI) or that has no readable title ends the run, refused.
+   GROBID's 401 and 403 fail the run; 408 and 429 are retried. A DOI is kept only if it looks like one.
 4. **store**, then **mint**: `startMint` listens 10 s, then the run polls the state every
    30 s with `step.sleep`. A mint not seen after 10 minutes is started again
    ([ADR 0008](../../docs/adr/0008-mints-are-async-polled-in-short-steps.md)).

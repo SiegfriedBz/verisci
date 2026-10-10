@@ -85,6 +85,28 @@ describe("verifySubmission", () => {
     expect(await verify(data)).toEqual({ ok: false, reason: "expired" });
   });
 
+  it("accepts a graph id whose address casing differs from the setting's", async () => {
+    const data = await signed();
+    const mixedEnv = "0xD701ed157232ad5E14BC4134a8D10D64D86f13B3/verisci-staging";
+
+    expect(
+      await verifySubmission(data, {
+        contextGraph: mixedEnv,
+        client: client().publicClient,
+        now: () => NOW_MS,
+      }),
+    ).toMatchObject({ ok: true, submission: { contextGraph: GRAPH } });
+  });
+
+  it("accepts a signature over the graph id with its address in another casing", async () => {
+    const data = {
+      ...(await signed()),
+      contextGraph: "0xD701ed157232ad5E14BC4134a8D10D64D86f13B3/verisci-staging",
+    };
+
+    expect(await verify(data)).toMatchObject({ ok: true, submission: { contextGraph: GRAPH } });
+  });
+
   it("refuses a signature for another context graph", async () => {
     const data = await signed({
       contextGraph: "0xd701ed157232ad5e14bc4134a8d10d64d86f13b3/verisci-prod",
