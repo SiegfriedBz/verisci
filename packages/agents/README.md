@@ -3,7 +3,8 @@
 Inngest workflows that combine `core` logic with the `dkg` and `contracts` adapters;
 `apps/web` only serves them ([ADR 0003](../../docs/adr/0003-inngest-workflows-live-in-agents.md)).
 
-Status: the publish run, which turns a pinned PDF into a minted Target KA.
+Status: the publish run, which turns a pinned PDF into a minted Target KA, and the calls
+the upload page makes to start and follow it.
 
 ## Depends on
 
@@ -25,10 +26,12 @@ server (`APP_ENV` other than `local`) checks them when it starts, through
 | `GROBID_URL` | GROBID's base URL: `http://127.0.0.1:8070` locally ([`docs/node-host.md`](../../docs/node-host.md) → GROBID) |
 | `PINATA_GATEWAY_URL` | The Pinata account's dedicated gateway, `https://<name>.mypinata.cloud` |
 | `CHAIN_RPC_URL` | A Base Sepolia RPC URL, to check smart-contract wallets' signatures |
+| `PINATA_JWT` | A Pinata API key (JWT) allowed to upload, list and delete files; the `publish-pdf` dev script reads it too. Secret |
+| `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY` | Inngest's keys, required unless `APP_ENV` is `local`: the SDK reads them itself, and the signing key also reads runs for the upload page. Secret |
+| `VERCEL_GIT_COMMIT_REF` | Set by Vercel: on staging, the branch, which names the Inngest branch environment runs are read from |
 
-The `publish-pdf` dev script also reads `PINATA_JWT`, a Pinata API key allowed to upload
-files. Inngest's own settings are read by its SDK: with `APP_ENV=local` the client talks to
-the local dev server; deployed, it needs Inngest's event and signing keys.
+With `APP_ENV=local` the Inngest client sends events to the local dev server and the
+upload page reads runs there, with no keys.
 
 ## API
 
@@ -41,6 +44,10 @@ the local dev server; deployed, it needs Inngest's event and signing keys.
 | `PAPER_SUBMITTED` | The event's name, `verisci/paper.submitted` |
 | `PUBLISH_SETTINGS` | The publish run's limits (below) |
 | `PublishOutcome`, `PaperRefusal`, `SubmissionRefusal` | How a run ends: `minted` with its UAL, or `refused` with why |
+| `getUploadService()` | The upload page's calls, built on first use from the settings: `contextGraph`, `createUploadUrl()`, `submitPaper(input, limiter)`, `readPaper(cid, eventId?)` (below) |
+| `UploadService`, `PaperStatus`, `UPLOAD_SETTINGS` | Their type, what `readPaper` returns (the Target KA's state and the run), and the upload URL's and signature's lifetimes |
+| `SubmitResult`, `SubmitRefusal`, `SubmitLimiter` | What `submitPaper` returns, why it refuses, and the per-submitter limit the web app passes it |
+| `UploadUrlResult`, `ReadRunResult`, `RunState` | What `createUploadUrl` and the run read return |
 | `env` (from `@verisci/agents/env`); `createAgentsEnv(runtimeEnv)`, `AgentsEnv` (from either entry) | The validated settings, the function that builds them from a given object, and their type |
 
 ## Publishing a paper
@@ -79,6 +86,22 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
 - It fails at once when its settings are missing or invalid, when the node or GROBID refuses
   our credential, or when the node does not serve the graph. A run that fails is recovered by publishing the same
   PDF again.
+
+## The upload page's calls
+
+`getUploadService()` serves `apps/web`'s upload page ([ADR 0010](../../docs/adr/0010-pdf-to-target-ka-pipeline.md)):
+
+- **`createUploadUrl()`** signs a Pinata upload URL, valid 5 minutes, for one file of at most
+  30 MB detected as `application/pdf`, pinned with `cid_version` `v1` like `publish-pdf`, so
+  one PDF keeps one CID (`docs/domain.md` → IPFS).
+- **`submitPaper(input, limiter)`** checks a signed `{ cid, contextGraph, deadline,
+  submitter, signature }` as the run does, then the submitter's limit, then the file pinned
+  under that CID on Pinata's public network. A file over 30 MB or not a PDF is unpinned and
+  refused. It then sends `verisci/paper.submitted` with no time of its own, so Inngest
+  stamps it, and returns Inngest's event id. Only a sent submission is counted. A chain,
+  Pinata, limit store or Inngest that does not answer gives `unavailable`.
+- **`readPaper(cid, eventId?)`** reads the Target KA's state on the node and, given the
+  event id, the run Inngest started for it (REST, from the dev server locally).
 
 ## Running a publish locally
 

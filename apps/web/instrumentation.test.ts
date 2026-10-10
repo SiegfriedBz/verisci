@@ -13,6 +13,9 @@ const settings = {
   GROBID_URL: "http://127.0.0.1:8070",
   PINATA_GATEWAY_URL: "https://example.mypinata.cloud",
   CHAIN_RPC_URL: "https://sepolia.base.org",
+  PINATA_JWT: "secret-pinata-jwt",
+  INNGEST_EVENT_KEY: "secret-event-key",
+  INNGEST_SIGNING_KEY: "signkey-test-0123",
 };
 
 describe("checkWorkflowSettings", () => {

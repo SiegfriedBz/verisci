@@ -10,6 +10,9 @@ const runtimeEnv = {
   GROBID_URL: "http://127.0.0.1:8070",
   PINATA_GATEWAY_URL: "https://example.mypinata.cloud",
   CHAIN_RPC_URL: "https://sepolia.base.org",
+  PINATA_JWT: "secret-pinata-jwt",
+  INNGEST_EVENT_KEY: "secret-event-key",
+  INNGEST_SIGNING_KEY: "signkey-test-0123",
 };
 
 describe("createAgentsEnv", () => {
@@ -50,6 +53,34 @@ describe("createAgentsEnv", () => {
       "DKG_TOKEN",
       "GROBID_URL",
     ]);
+  });
+
+  it("returns the Pinata key and Inngest's keys", () => {
+    const env = createAgentsEnv(runtimeEnv);
+
+    expect(env.PINATA_JWT).toBe("secret-pinata-jwt");
+    expect(env.INNGEST_EVENT_KEY).toBe("secret-event-key");
+    expect(env.INNGEST_SIGNING_KEY).toBe("signkey-test-0123");
+  });
+
+  it("requires Inngest's keys outside local, where the dev server needs none", () => {
+    const keyless = { ...runtimeEnv, INNGEST_EVENT_KEY: undefined, INNGEST_SIGNING_KEY: undefined };
+    let caught: unknown;
+    try {
+      createAgentsEnv(keyless);
+    } catch (error) {
+      caught = error;
+    }
+
+    expect((caught as EnvError).issues.map((issue) => issue.variable).sort()).toEqual([
+      "INNGEST_EVENT_KEY",
+      "INNGEST_SIGNING_KEY",
+    ]);
+    expect(createAgentsEnv({ ...keyless, APP_ENV: "local" }).INNGEST_SIGNING_KEY).toBeUndefined();
+  });
+
+  it("requires the Pinata key", () => {
+    expect(() => createAgentsEnv({ ...runtimeEnv, PINATA_JWT: "" })).toThrow(EnvError);
   });
 
   it("keeps the DKG node's -prod guard", () => {
