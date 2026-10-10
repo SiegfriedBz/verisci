@@ -3,12 +3,12 @@
 //
 //   pnpm --filter @verisci/agents publish-pdf <file.pdf>
 //
-// Reads PINATA_JWT and the DKG settings from the root .env.local (packages/agents README).
+// Reads PINATA_JWT and DKG_CONTEXT_GRAPH from the root .env.local (packages/agents README).
+// A relative path is read from the directory the command was typed in.
 import { readFile } from "node:fs/promises";
-import { basename } from "node:path";
+import { basename, resolve } from "node:path";
 import { submissionTypedData, targetKaName } from "@verisci/core";
-import { createDkgEnv } from "@verisci/dkg";
-import { defineEnv } from "@verisci/env";
+import { createSharedEnv, defineEnv } from "@verisci/env";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { z } from "zod";
 import { inngest } from "../src/inngest.ts";
@@ -18,15 +18,16 @@ import { PAPER_SUBMITTED } from "../src/publish/publish-paper.ts";
 const PINATA_UPLOAD = "https://uploads.pinata.cloud/v3/files";
 const SIGNATURE_LIFETIME_S = 3600n;
 
-const file = process.argv[2];
+// pnpm runs the script in packages/agents: resolve the path from where it was typed.
+const file = process.argv[2] && resolve(process.env.INIT_CWD ?? process.cwd(), process.argv[2]);
 if (!file) {
   console.error("usage: pnpm --filter @verisci/agents publish-pdf <file.pdf>");
   process.exit(1);
 }
 
 const env = defineEnv({
-  extends: [createDkgEnv()],
-  server: { PINATA_JWT: z.string().min(1) },
+  extends: [createSharedEnv()],
+  server: { PINATA_JWT: z.string().min(1), DKG_CONTEXT_GRAPH: z.string().min(1) },
   runtimeEnv: process.env,
 });
 

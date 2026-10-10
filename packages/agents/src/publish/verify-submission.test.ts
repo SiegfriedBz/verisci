@@ -111,6 +111,32 @@ describe("verifySubmission", () => {
     });
   });
 
+  it("refuses a smart-contract wallet that rejects the signature", async () => {
+    const data = { ...(await signed()), submitter: SMART_WALLET };
+
+    expect(await verify(data, client(false).publicClient)).toEqual({
+      ok: false,
+      reason: "bad-signature",
+    });
+  });
+
+  it("refuses a mixed-case address with a bad checksum that did not sign", async () => {
+    const other = privateKeyToAccount(generatePrivateKey()).address;
+    const badChecksum = `0x${other.slice(2, 4).toLowerCase()}${other.slice(4, 6).toUpperCase()}${other.slice(6)}`;
+    const data = { ...(await signed()), submitter: badChecksum };
+
+    expect(await verify(data, client(false).publicClient)).toEqual({
+      ok: false,
+      reason: "bad-signature",
+    });
+  });
+
+  it("refuses a deadline more than a day ahead", async () => {
+    const data = await signed({ deadline: BigInt(NOW_MS / 1000) + 86_401n });
+
+    expect(await verify(data)).toEqual({ ok: false, reason: "malformed" });
+  });
+
   it("reports unreachable when the chain cannot be asked about a non-EOA signature", async () => {
     const data = { ...(await signed()), submitter: SMART_WALLET };
 

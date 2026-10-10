@@ -19,8 +19,8 @@ Status: a client to read an asset's state, store it and start its mint.
 
 ## Environment
 
-Declared in `src/env.ts` and validated on first import of `@verisci/dkg/env`, not of the
-main entry, so a workspace that only imports the client's types never needs them.
+Declared in `src/dkg-env.ts` (`createDkgEnv`) and validated on first import of
+`@verisci/dkg/env` (`src/env.ts`), not of the main entry, so a workspace that only imports the client's types never needs them.
 
 | Variable | Value |
 | --- | --- |

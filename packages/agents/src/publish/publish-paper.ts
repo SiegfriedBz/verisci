@@ -1,4 +1,4 @@
-import { type PaperMetadata, targetKaName, targetKaQuads } from "@verisci/core";
+import { type PaperMetadata, type Triple, targetKaName, targetKaQuads } from "@verisci/core";
 import type { DkgClient, DkgFailure } from "@verisci/dkg";
 import { type Inngest, NonRetriableError } from "inngest";
 import type { SubmissionRefusal, VerifiedSubmission, VerifyResult } from "./verify-submission.ts";
@@ -24,10 +24,13 @@ export const PUBLISH_SETTINGS = {
 /** Why a paper cannot be published; a retry would not change it. */
 export type PaperRefusal = "not-a-pdf" | "too-large" | "unparseable" | "no-title";
 
-/** The result of reading a paper: its metadata, or why not (`unreachable` is worth a retry). */
+/**
+ * The result of reading a paper: its metadata, or why not (`unreachable` is worth a retry;
+ * `unauthorized`, GROBID refusing our credential, is a setup error).
+ */
 export type ReadPaperResult =
   | { readonly ok: true; readonly metadata: PaperMetadata }
-  | { readonly ok: false; readonly reason: PaperRefusal | "unreachable" };
+  | { readonly ok: false; readonly reason: PaperRefusal | "unreachable" | "unauthorized" };
 
 /** How a publish run ends, unless it fails. */
 export type PublishOutcome =
@@ -42,7 +45,8 @@ export interface PublishSteps {
 
 /** The adapters a publish run calls. */
 export interface PublishDeps {
-  verifySubmission(data: unknown): Promise<VerifyResult>;
+  /** Checks the event data, its deadline against `receivedAt` (ms), when Inngest received it. */
+  verifySubmission(data: unknown, receivedAt: number): Promise<VerifyResult>;
   /** Fetches the PDF and parses its header, in one step so its bytes are never a step output. */
   readPaper(cid: string): Promise<ReadPaperResult>;
   readonly dkg: Pick<DkgClient, "readAsset" | "storeAsset" | "startMint">;
@@ -61,15 +65,19 @@ type Attempt =
  *
  * A failure worth a retry waits `retryWait` with `step.sleep` and starts again from the
  * read, for `attempts` attempts (ADR 0009); a mint not seen after `pollsPerMint` polls is
- * started again (ADR 0008). Throws `NonRetriableError` when the node refuses the token or
- * does not serve the graph, and when the attempts run out.
+ * started again (ADR 0008). Throws `NonRetriableError` when the node or GROBID refuses our
+ * credential, the node does not serve the graph, or the attempts run out.
+ *
+ * The deadline is checked against `receivedAt`, so retries during an outage never expire a
+ * signature that was valid when it arrived.
  */
 export async function runPublish(
   data: unknown,
   step: PublishSteps,
   deps: PublishDeps,
+  receivedAt: number,
 ): Promise<PublishOutcome> {
-  const verified = await verify(data, step, deps);
+  const verified = await verify(data, step, deps, receivedAt);
   if (!verified.ok) return { state: "refused", reason: verified.reason };
   const { submission } = verified;
   const name = targetKaName(submission.cid);
@@ -95,12 +103,13 @@ async function verify(
   data: unknown,
   step: PublishSteps,
   deps: PublishDeps,
+  receivedAt: number,
 ): Promise<
   { ok: true; submission: VerifiedSubmission } | { ok: false; reason: SubmissionRefusal }
 > {
   for (let attempt = 1; ; attempt++) {
     const result = await step.run(attempt === 1 ? "verify" : `verify-${attempt}`, () =>
-      deps.verifySubmission(data),
+      deps.verifySubmission(data, receivedAt),
     );
     if (result.ok || result.reason !== "unreachable") return result as never;
     if (attempt === PUBLISH_SETTINGS.attempts) {
@@ -124,16 +133,21 @@ async function publishOnce(
   if (read.state === "minted") return minted(read.ual);
 
   if (read.state === "missing" || read.state === "draft") {
-    const paper = await step.run(`read-paper-${attempt}`, () => deps.readPaper(submission.cid));
-    if (!paper.ok) {
-      return paper.reason === "unreachable"
-        ? { kind: "retry", reason: "paper unreachable" }
-        : { kind: "done", outcome: { state: "refused", reason: paper.reason } };
+    // A draft is sealed with its content: storing it only shares it, so its paper is not read again.
+    let quads: Triple[] = [];
+    if (read.state === "missing") {
+      const paper = await step.run(`read-paper-${attempt}`, () => deps.readPaper(submission.cid));
+      if (!paper.ok) {
+        if (paper.reason === "unreachable") return { kind: "retry", reason: "paper unreachable" };
+        if (paper.reason === "unauthorized")
+          return { kind: "fatal", reason: "GROBID unauthorized" };
+        return { kind: "done", outcome: { state: "refused", reason: paper.reason } };
+      }
+      quads = targetKaQuads(paper.metadata, {
+        ...submission,
+        deadline: BigInt(submission.deadline),
+      });
     }
-    const quads = targetKaQuads(paper.metadata, {
-      ...submission,
-      deadline: BigInt(submission.deadline),
-    });
     const stored = await step.run(`store-${attempt}`, () => deps.dkg.storeAsset(name, quads));
     if (!stored.ok) return failed(stored);
     if (stored.state === "minted") return minted(stored.ual);
@@ -188,6 +202,7 @@ export function createPublishPaper(inngest: Inngest.Any, getDeps: () => PublishD
           sleep: (id, duration) => step.sleep(id, duration),
         },
         loadDeps(getDeps),
+        event.ts ?? Date.now(),
       ),
   );
 }

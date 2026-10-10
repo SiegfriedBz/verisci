@@ -25,8 +25,12 @@ function getPublishDeps(): PublishDeps {
     timeoutMs: IO_TIMEOUT_MS,
   };
   publishDeps = {
-    verifySubmission: (data) =>
-      verifySubmission(data, { contextGraph: env.DKG_CONTEXT_GRAPH, client, now: Date.now }),
+    verifySubmission: (data, receivedAt) =>
+      verifySubmission(data, {
+        contextGraph: env.DKG_CONTEXT_GRAPH,
+        client,
+        now: () => receivedAt,
+      }),
     readPaper: (cid) => readPaper(cid, paperOptions),
     dkg: createDkgClient({
       url: env.DKG_URL,

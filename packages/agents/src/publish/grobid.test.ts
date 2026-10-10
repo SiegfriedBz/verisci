@@ -32,13 +32,19 @@ describe("parseHeader", () => {
     expect(new Uint8Array(await (input as Blob).arrayBuffer())).toEqual(PDF);
   });
 
-  it.each([204, 400, 406])("reports unparseable on %i", async (status) => {
+  it.each([204, 400, 406, 415])("reports unparseable on %i", async (status) => {
     const { fetch } = fakeFetch(() => new Response(status === 204 ? null : "no", { status }));
 
     expect(await parse(fetch)).toEqual({ ok: false, reason: "unparseable" });
   });
 
-  it.each([500, 503])("reports unreachable on %i", async (status) => {
+  it.each([401, 403])("reports unauthorized on %i", async (status) => {
+    const { fetch } = fakeFetch(() => new Response("no", { status }));
+
+    expect(await parse(fetch)).toEqual({ ok: false, reason: "unauthorized" });
+  });
+
+  it.each([408, 429, 500, 503])("reports unreachable on %i", async (status) => {
     const { fetch } = fakeFetch(() => new Response("busy", { status }));
 
     expect(await parse(fetch)).toEqual({ ok: false, reason: "unreachable" });

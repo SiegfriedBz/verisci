@@ -22,6 +22,8 @@ const SUBMISSION = {
   submitter: "0xabc0000000000000000000000000000000000001",
   signature: "0x1234",
 };
+/** When Inngest received the event, in milliseconds. */
+const RECEIVED_AT = 1_800_000_000_000;
 const METADATA: PaperMetadata = { title: "A Title", authors: ["Ada Lovelace"] };
 
 const missing: AssetResult = { ok: true, state: "missing" };
@@ -79,7 +81,7 @@ function fakeDeps(script: Script) {
 async function publish(script: Script) {
   const { step, log } = fakeSteps();
   const { deps, dkg } = fakeDeps(script);
-  const run = runPublish(SUBMISSION, step, deps);
+  const run = runPublish(SUBMISSION, step, deps, RECEIVED_AT);
   return { run, log, deps, dkg };
 }
 
@@ -152,7 +154,35 @@ describe("runPublish", () => {
     expect(log).not.toContain(`poll-1-${PUBLISH_SETTINGS.pollsPerMint + 1}`);
     expect(log).toContain("read-2");
     expect(log).toContain("mint-2");
+    expect(log).not.toContain("sleep retry-1 2m");
     expect(dkg.startMint).toHaveBeenCalledTimes(2);
+  });
+
+  it("fails when the mint is still not seen after 5 attempts", async () => {
+    const { run, log } = await publish({ reads: [stored], mints: [minting] });
+
+    await expect(run).rejects.toThrow(NonRetriableError);
+    expect(log.filter((entry) => entry.startsWith("mint-"))).toHaveLength(
+      PUBLISH_SETTINGS.attempts,
+    );
+    expect(log.some((entry) => entry.startsWith("sleep retry-"))).toBe(false);
+  });
+
+  it("shares a draft without reading the paper again", async () => {
+    const { run, log, deps, dkg } = await publish({ reads: [{ ok: true, state: "draft" }] });
+
+    expect(await run).toEqual({ state: "minted", ual: UAL });
+    expect(log).toEqual(["verify", "read-1", "store-1", "mint-1"]);
+    expect(deps.readPaper).not.toHaveBeenCalled();
+    expect(dkg.storeAsset).toHaveBeenCalledWith(NAME, []);
+  });
+
+  it("returns the UAL when the store finds the KA already minted", async () => {
+    const { run, log, dkg } = await publish({ stores: [minted] });
+
+    expect(await run).toEqual({ state: "minted", ual: UAL });
+    expect(log).toEqual(["verify", "read-1", "read-paper-1", "store-1"]);
+    expect(dkg.startMint).not.toHaveBeenCalled();
   });
 
   it.each<[string, Script]>([
@@ -161,6 +191,10 @@ describe("runPublish", () => {
       { reads: [stored], mints: [{ ok: false, reason: "retry-later" }, mintedNow] },
     ],
     ["an unreachable node on the read", { reads: [{ ok: false, reason: "unreachable" }, stored] }],
+    [
+      "an unreachable node while polling the mint",
+      { reads: [stored, { ok: false, reason: "unreachable" }, minted], mints: [minting] },
+    ],
     [
       "an unreachable gateway or GROBID",
       {
@@ -178,7 +212,10 @@ describe("runPublish", () => {
     const { step, log } = fakeSteps();
     const { deps } = fakeDeps(script);
 
-    expect(await runPublish(SUBMISSION, step, deps)).toEqual({ state: "minted", ual: UAL });
+    expect(await runPublish(SUBMISSION, step, deps, RECEIVED_AT)).toEqual({
+      state: "minted",
+      ual: UAL,
+    });
     expect(log).toContain("sleep retry-1 2m");
     expect(log).toContain("read-2");
   });
@@ -214,8 +251,38 @@ describe("runPublish", () => {
     const { deps } = fakeDeps({});
     deps.verifySubmission.mockResolvedValueOnce({ ok: false, reason: "unreachable" });
 
-    expect(await runPublish(SUBMISSION, step, deps)).toEqual({ state: "minted", ual: UAL });
+    expect(await runPublish(SUBMISSION, step, deps, RECEIVED_AT)).toEqual({
+      state: "minted",
+      ual: UAL,
+    });
     expect(log.slice(0, 3)).toEqual(["verify", "sleep verify-retry-1 2m", "verify-2"]);
+  });
+
+  it("checks every verify attempt against the time the event was received", async () => {
+    const { step } = fakeSteps();
+    const { deps } = fakeDeps({});
+    deps.verifySubmission.mockResolvedValueOnce({ ok: false, reason: "unreachable" });
+
+    await runPublish(SUBMISSION, step, deps, RECEIVED_AT);
+
+    expect(deps.verifySubmission.mock.calls).toEqual([
+      [SUBMISSION, RECEIVED_AT],
+      [SUBMISSION, RECEIVED_AT],
+    ]);
+  });
+
+  it("fails when the signature still cannot be checked after 5 attempts", async () => {
+    const { run, log } = await publish({ verify: { ok: false, reason: "unreachable" } });
+
+    await expect(run).rejects.toThrow(NonRetriableError);
+    expect(log.filter((entry) => entry.startsWith("sleep verify-retry-"))).toHaveLength(4);
+  });
+
+  it("fails at once when GROBID refuses our credential", async () => {
+    const { run, log } = await publish({ papers: [{ ok: false, reason: "unauthorized" }] });
+
+    await expect(run).rejects.toThrow(NonRetriableError);
+    expect(log).toEqual(["verify", "read-1", "read-paper-1"]);
   });
 
   it.each(["not-a-pdf", "too-large", "unparseable", "no-title"] as const)(

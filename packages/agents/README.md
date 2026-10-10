@@ -50,15 +50,15 @@ decimal string, and the submitter's EIP-712 signature over the first three
 The run is a singleton per CID in mode `skip`: a second event for a PDF being published
 starts nothing. Its steps:
 
-1. **verify**: the CID is canonical, the graph is this environment's, the deadline is ahead,
-   and the submitter signed it. An EOA signature is checked locally; any other is asked of
+1. **verify**: the CID is canonical, the graph is this environment's, the deadline is ahead
+   of the time Inngest received the event (by at most a day), and the submitter signed it. An EOA signature is checked locally; any other is asked of
    the chain, so smart-contract wallets verify too. A refused submission ends the run.
 2. **read**: the Target KA's state. Minted ends the run with its UAL; stored goes to the
-   mint. A KA already stored or minted keeps its first submitter.
+   mint; a draft (sealed, not shared) goes to the store, which only shares it. A KA already stored or minted keeps its first submitter.
 3. **read-paper**: fetches the PDF through the gateway and has GROBID parse its header, in
    one step, so the PDF's bytes are never a step output. A file that is not a PDF, is over
-   30 MB, that GROBID cannot parse (204, 4xx, or an answer that is not TEI) or that has no
-   readable title ends the run, refused.
+   30 MB, that GROBID cannot parse (204, another 4xx, or an answer that is not TEI) or that
+   has no readable title ends the run, refused. A DOI is kept only if it looks like one.
 4. **store**, then **mint**: `startMint` listens 10 s, then the run polls the state every
    30 s with `step.sleep`. A mint not seen after 10 minutes is started again
    ([ADR 0008](../../docs/adr/0008-mints-are-async-polled-in-short-steps.md)).
@@ -71,8 +71,8 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
   does not answer, waits 2 minutes and starts a new attempt from the read; a mint not seen
   after 10 minutes starts a new attempt at once. Up to 5 attempts.
 - The run has 45 minutes in all, which can end it before its 5 attempts.
-- It fails at once when its settings are missing or invalid, or when the node refuses the
-  token or does not serve the graph. A run that fails is recovered by publishing the same
+- It fails at once when its settings are missing or invalid, when the node or GROBID refuses
+  our credential, or when the node does not serve the graph. A run that fails is recovered by publishing the same
   PDF again.
 
 ## Running a publish locally
@@ -82,7 +82,8 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
 3. `pnpm dev`, then, in another terminal, `pnpm --filter @verisci/web inngest` (the
    Inngest dev server, at http://localhost:8288).
 4. `pnpm --filter @verisci/agents publish-pdf <file.pdf>` pins the PDF on Pinata's public
-   network with CIDv1 import settings, signs it with a throwaway key and sends the event.
+   network with CIDv1 import settings, signs it with a throwaway key and sends the event. A
+   relative path is read from the directory you type the command in.
    The run's steps and result show in the dev server.
 
 ## Scripts

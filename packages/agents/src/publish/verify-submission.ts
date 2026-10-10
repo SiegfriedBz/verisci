@@ -43,6 +43,9 @@ export interface VerifyOptions {
   readonly now: () => number;
 }
 
+/** The longest a signature may stay valid, in seconds: an upload page asks for minutes. */
+const MAX_SIGNATURE_LIFETIME_S = 86_400n;
+
 const eventData = z.object({
   cid: z.string(),
   contextGraph: z.string(),
@@ -53,7 +56,8 @@ const eventData = z.object({
 
 /**
  * Checks a `verisci/paper.submitted` event's data: the CID is canonical CIDv1 base32, the
- * context graph is this environment's, the deadline is still ahead, and the submitter
+ * context graph is this environment's, the deadline is ahead of `now` by at most a day
+ * (further ahead is `malformed`), and the submitter
  * signed `{ cid, contextGraph, deadline }` under verisci's EIP-712 domain (ADR 0010).
  *
  * An EOA signature is checked locally; any other is asked of the chain, so smart-contract
@@ -70,10 +74,13 @@ export async function verifySubmission(
   const name = targetKaName(cid);
   if (!name.ok || name.name !== `verisci-tka-${cid}`) return { ok: false, reason: "bad-cid" };
   if (contextGraph !== options.contextGraph) return { ok: false, reason: "wrong-graph" };
-  if (BigInt(deadline) * 1000n <= BigInt(options.now())) return { ok: false, reason: "expired" };
+  const nowS = BigInt(options.now()) / 1000n;
+  if (BigInt(deadline) <= nowS) return { ok: false, reason: "expired" };
+  if (BigInt(deadline) > nowS + MAX_SIGNATURE_LIFETIME_S) return { ok: false, reason: "malformed" };
 
   const typedData = submissionTypedData({ cid, contextGraph, deadline: BigInt(deadline) });
-  const address = submitter as Address;
+  // Lowercase has no checksum to fail, so viem accepts any casing of a valid address.
+  const address = submitter.toLowerCase() as Address;
   const verified =
     (await signedBy(address, typedData, signature as Hex)) ||
     (await askChain(options.client, address, typedData, signature as Hex));
@@ -86,7 +93,7 @@ export async function verifySubmission(
       cid,
       contextGraph,
       deadline,
-      submitter: submitter.toLowerCase(),
+      submitter: address,
       signature: signature.toLowerCase(),
     },
   };
@@ -110,7 +117,11 @@ async function askChain(
 ): Promise<boolean | "unreachable"> {
   try {
     if (await client.verifyTypedData({ ...typedData, address, signature })) return true;
-    // viem reads a failed call as an invalid signature: tell an outage from a refusal.
+  } catch {
+    // An error thrown before or during the call: the chain's answer below tells which.
+  }
+  // viem reads a failed call as an invalid signature: tell an outage from a refusal.
+  try {
     await client.getBlockNumber({ cacheTime: 0 });
     return false;
   } catch {
