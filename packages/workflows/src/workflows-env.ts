@@ -11,10 +11,9 @@ export const pinataSchema = { PINATA_JWT: z.string().min(1) };
  * outside `local` (the dev server needs none), plus the DKG node's (`dkgSchema`, in the
  * same pass) and the shared ones. The Inngest SDK reads its keys itself; they are checked
  * here so a deployed server stops at start without them, and the signing key also reads
- * runs. Throws one `EnvError` naming every bad variable, never its
- * value.
- * `@verisci/workflows/env` builds it once from `process.env`; the functions build it on their
- * first run, and tests call this with their own object.
+ * runs. Throws one `EnvError` naming every bad variable, never its value.
+ * `@verisci/workflows/env` builds it once from `process.env`; the functions build it on
+ * their first run, and tests call this with their own object.
  */
 export function createWorkflowsEnv(runtimeEnv: RuntimeEnv = process.env) {
   const shared = createSharedEnv(runtimeEnv);

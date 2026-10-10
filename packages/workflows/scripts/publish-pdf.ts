@@ -3,8 +3,8 @@
 //
 //   pnpm --filter @verisci/workflows publish-pdf <file.pdf>
 //
-// Reads PINATA_JWT (declared by the workflows' env module) and DKG_CONTEXT_GRAPH from the root
-// .env.local (packages/workflows README).
+// Reads PINATA_JWT (declared by the workflows' env module) and DKG_CONTEXT_GRAPH from the
+// root .env.local (packages/workflows README).
 // A relative path is read from the directory the command was typed in.
 import { readFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";

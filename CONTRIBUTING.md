@@ -49,8 +49,8 @@ keeps branches in build order.
 [Conventional Commits](https://www.conventionalcommits.org): `type(scope): summary`.
 
 - **Scope** = the workspace touched: `env`, `core`, `dkg`, `contracts`,
-  `workflows`, `web`, `rpc-proxy`; or `repo`, `ci`, `claude`, `docs` for cross-cutting work.
-  Several workspaces → the main one, or omit the scope.
+  `workflows`, `web`, `rpc-proxy`; or `repo`, `ci`, `claude`, `docs` for
+  cross-cutting work. Several workspaces → the main one, or omit the scope.
 - **Summary**: imperative, lowercase, no full stop, ≤ 72 characters.
   "add the UAL parser", not "Added UAL parser." or "UAL parser".
 - **Body** (optional, wrapped at 72 on branch commits; squash commits take

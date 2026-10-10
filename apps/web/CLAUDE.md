@@ -26,9 +26,8 @@ Next.js 16 App Router app. See `README.md` here for scripts and status.
   360, 768 and 1280 px with no horizontal scroll. Page copy follows the
   `design-taste-frontend` and humanizer skills: plain words, no em dashes.
 - Wallet hooks (wagmi, AppKit) run only under `Providers` with a project id: render them
-  behind `useWalletReady()`. Never pass server-only values to a client component except
-  as plain props; client components never import `@verisci/workflows` at runtime (types
-  only).
+  behind `useWalletReady()`. Never pass server-only values to a client component except as
+  plain props; client components never import `@verisci/workflows` at runtime (types only).
 - Reads the page polls are route handlers, not server actions: Next runs server actions
   one at a time per client.
 

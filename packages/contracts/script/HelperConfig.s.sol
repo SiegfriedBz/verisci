@@ -38,13 +38,14 @@ contract HelperConfig is Script {
     address public constant ANVIL_ORACLE = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
 
     /// @notice Public address of staging's oracle wallet. Its private key stays off the repo; the
-    ///         workflows on `develop` sign with it (ADR 0019). It differs from the deployer,
-    ///         who becomes the owner (ADR 0030).
+    ///         oracle function on `develop` signs with it (ADR 0019). It differs from the
+    ///         deployer, who becomes the owner (ADR 0030).
     address public constant STAGING_ORACLE = 0xE7899a249C8C21F334BDA14D1d861116Aa048F68;
 
     /// @notice Public address of production's oracle wallet. Its private key stays off the repo;
-    ///         the workflows on `main` sign with it (ADR 0019). It differs from the deployer,
-    ///         who becomes the owner (ADR 0030), and from staging's oracle (ADR 0005).
+    ///         the oracle function on `main` signs with it (ADR 0019). It differs from the
+    ///         deployer, who becomes the owner (ADR 0030), and from staging's oracle
+    ///         (ADR 0005).
     address public constant PRODUCTION_ORACLE = 0xff1400d130a9dA1B6b3929F43FA58417d64b54C2;
 
     /// @notice The config for the current chain, and on Base Sepolia for `DEPLOY_ENV`.

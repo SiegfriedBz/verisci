@@ -10,7 +10,7 @@ Mints can fail fast on quorum (`storage_ack_insufficient`, `CORE_TEMPORARILY_UNA
 ## Decision
 
 - Retry delays are an explicit `step.sleep` in the function body, never a `RetryAfterError` thrown inside `step.run`.
-- Starting values, from the previous repo's production runs: wait 2 minutes after a quorum failure, 5 attempts, and a 45-minute budget for a run that writes to the DKG. The rating plan may tune them, and records why.
+- Starting values, from the previous repo's production runs: wait 2 minutes after a quorum failure, 5 attempts, and a 45-minute budget for a run that writes to the DKG. Each workflow that retries sets its own values, starting from these, and records why it changes one.
 
 ## Consequences
 
@@ -19,4 +19,4 @@ Mints can fail fast on quorum (`storage_ack_insufficient`, `CORE_TEMPORARILY_UNA
 
 ## History
 
-- 2026-10-10: corrected: "the agents plan" is now "the rating plan", since the agents package was renamed `workflows`.
+- 2026-10-10: each workflow that retries sets its own values, starting from these, so tuning one workflow's leaves the others' alone; the publish run uses them unchanged (branch review, user's choice).
