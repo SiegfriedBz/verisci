@@ -179,8 +179,9 @@ docs, current at 2026-10-07; Pinata's from its v3 API docs, current at 2026-10-0
   `cid_version`:** `v1` (the default) gives a CIDv1 with raw leaves, 256 KiB chunks and up
   to 174 links per node; `v0` a CIDv0 with dag-pb leaves; `unixfs-v1-2025` a CIDv1 with
   1 MiB chunks and 1,024 links. `network` is `private` unless set to `public`. The
-  `publish-pdf` dev script sets `v1` and `public`; whether a signed-URL upload can pin the
-  same setting is still to check
+  `publish-pdf` dev script sets `v1` and `public`: a 2.2 MB PDF got a `bafybei…` CID, the
+  same on a second upload (2026-10-10). Whether a signed-URL upload can pin the same
+  setting is still to check
   ([ADR 0010](adr/0010-pdf-to-target-ka-pipeline.md)).
 
 ## GROBID
