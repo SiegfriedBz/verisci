@@ -1,4 +1,4 @@
-import type { SubmitLimiter, SubmitResult, UploadService } from "@verisci/agents";
+import type { PublishedRecord, SubmitLimiter, SubmitResult, UploadService } from "@verisci/agents";
 import { canonicalCid } from "@verisci/core";
 import type { Counter } from "./limits.ts";
 import { type PaperStage, paperProgress } from "./progress.ts";
@@ -7,6 +7,9 @@ import { type PaperStage, paperProgress } from "./progress.ts";
 export type UploadUrlAnswer =
   | { readonly ok: true; readonly url: string }
   | { readonly ok: false; readonly reason: "rate-limited" | "unavailable" };
+
+/** What a paper's page shows: its stage, and its record once published and readable. */
+export type PaperView = PaperStage & { readonly record?: PublishedRecord };
 
 /** Inngest's event ids are ULIDs. */
 const EVENT_ID = /^[0-9A-Z]{26}$/;
@@ -32,18 +35,20 @@ export function sendSubmission(
 }
 
 /**
- * Where a paper stands, for its page: a CID that is not one an upload gives is
- * `not-found`, and an event id that is not Inngest's is ignored.
+ * Where a paper stands, for its page, with its record once published: a CID that is not one
+ * an upload gives is `not-found`, and an event id that is not Inngest's is ignored.
  */
 export async function readProgress(
   cid: string,
   eventId: string | undefined,
   service: UploadService,
-): Promise<PaperStage> {
+): Promise<PaperView> {
   const canonical = canonicalCid(cid);
   if (canonical === undefined) return { stage: "not-found" };
   const event = eventId !== undefined && EVENT_ID.test(eventId) ? eventId : undefined;
-  return paperProgress(await service.readPaper(canonical, event));
+  const status = await service.readPaper(canonical, event);
+  const stage = paperProgress(status);
+  return stage.stage === "published" && status.record ? { ...stage, record: status.record } : stage;
 }
 
 /** The visitor's address as the host forwards it (Vercel sets both headers). */

@@ -45,7 +45,7 @@ upload page reads runs there, with no keys.
 | `PUBLISH_SETTINGS` | The publish run's limits (below) |
 | `PublishOutcome`, `PaperRefusal`, `SubmissionRefusal` | How a run ends: `minted` with its UAL, or `refused` with why |
 | `getUploadService()` | The upload page's calls, built on first use from the settings: `contextGraph`, `createUploadUrl()`, `submitPaper(input, limiter)`, `readPaper(cid, eventId?)` (below) |
-| `UploadService`, `PaperStatus`, `UPLOAD_SETTINGS` | Their type, what `readPaper` returns (the Target KA's state and the run), and the upload URL's and signature's lifetimes |
+| `UploadService`, `PaperStatus`, `PublishedRecord`, `UPLOAD_SETTINGS` | Their type, what `readPaper` returns (the Target KA's state and the run), and the upload URL's and signature's lifetimes |
 | `SubmitResult`, `SubmitRefusal`, `SubmitLimiter` | What `submitPaper` returns, why it refuses, and the per-submitter limit the web app passes it |
 | `UploadUrlResult`, `ReadRunResult`, `RunState` | What `createUploadUrl` and the run read return |
 | `env` (from `@verisci/agents/env`); `createAgentsEnv(runtimeEnv)`, `AgentsEnv` (from either entry) | The validated settings, the function that builds them from a given object, and their type |
@@ -95,13 +95,18 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
   30 MB detected as `application/pdf`, pinned with `cid_version` `v1` like `publish-pdf`, so
   one PDF keeps one CID (`docs/domain.md` → IPFS).
 - **`submitPaper(input, limiter)`** checks a signed `{ cid, contextGraph, deadline,
-  submitter, signature }` as the run does, then the submitter's limit, then the file pinned
+  submitter, signature }` as the run does. A PDF whose Target KA is already minted starts
+  nothing and counts nothing: the result gives its UAL instead of an event id. Otherwise it
+  checks the submitter's limit, then the file pinned
   under that CID on Pinata's public network. A file over 30 MB or not a PDF is unpinned and
   refused. It then sends `verisci/paper.submitted` with no time of its own, so Inngest
   stamps it, and returns Inngest's event id. Only a sent submission is counted. A chain,
   Pinata, limit store or Inngest that does not answer gives `unavailable`.
 - **`readPaper(cid, eventId?)`** reads the Target KA's state on the node and, given the
-  event id, the run Inngest started for it (REST, from the dev server locally).
+  event id, the run Inngest started for it (REST, from the dev server locally). Once the KA
+  is minted, it also reads the record back (SPARQL through the node: title, authors, DOI,
+  PDF link, submitter, signature, deadline), checks the signature against the submitter as
+  the run does, without the deadline rule, and names the publisher (the UAL's author).
 
 ## Running a publish locally
 

@@ -14,8 +14,8 @@ build validates the shared variables: `build` needs `APP_ENV` (see the
 | --- | --- |
 | `/` | Home: what verisci does, and the way to publish |
 | `/publish` | Connect a wallet, drop a PDF, sign once ([ADR 0010](../../docs/adr/0010-pdf-to-target-ka-pipeline.md), [ADR 0034](../../docs/adr/0034-users-connect-a-wallet-anyone-may-publish.md)) |
-| `/papers/<cid>?event=<id>` | Where a paper stands, polled every 5 s until published, refused or stopped |
-| `/api/papers/<cid>?event=<id>` | The same as JSON (`PaperStage`), never cached: a read, so a route rather than a server action |
+| `/papers/<cid>?event=<id>` | Where a paper stands, polled every 5 s until published, refused or stopped. Once published: the record's title, authors and DOI, and a "Verify it yourself" panel (submitter and publisher linked on Basescan, the signature checked when read, the UAL and the CID, and how to check them). `?already=1` says a re-submitted PDF was already published |
+| `/api/papers/<cid>?event=<id>` | The same as JSON (`PaperView`: the stage, and the record once published), never cached: a read, so a route rather than a server action |
 | `/api/inngest` | Serves the Inngest functions |
 
 The publish form calls two server actions (`app/actions.ts`): `requestUpload()` signs a

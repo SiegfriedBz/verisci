@@ -1,3 +1,4 @@
+import { Eye, PenNib, Repeat } from "@phosphor-icons/react/dist/ssr";
 import { getUploadService, PUBLISH_SETTINGS, UPLOAD_SETTINGS } from "@verisci/agents";
 import type { Metadata } from "next";
 import { connection } from "next/server";
@@ -5,24 +6,56 @@ import { PublishForm } from "../../components/publish-form.tsx";
 
 export const metadata: Metadata = { title: "Publish a paper · verisci" };
 
+const BEFORE = [
+  {
+    icon: Eye,
+    title: "Your PDF becomes public",
+    body: "It's stored on IPFS, where anyone can download it. Publish only papers you're allowed to share, such as open-access ones.",
+  },
+  {
+    icon: PenNib,
+    title: "You sign, you don't pay",
+    body: "Your wallet signs the PDF's fingerprint (its CID), verisci's graph and a 10-minute deadline. No transaction, no gas.",
+  },
+  {
+    icon: Repeat,
+    title: "One PDF, one record",
+    body: "The same file always gives the same record. Publishing it again changes nothing, and the first submitter stays.",
+  },
+] as const;
+
 /** The publish page: the graph to sign for comes from the server's settings (ADR 0005). */
 export default async function PublishPage() {
   await connection();
   const { contextGraph } = getUploadService();
   return (
-    <div className="grid items-start gap-10 md:grid-cols-[1fr_1.4fr] md:gap-16">
-      <div className="grid content-start gap-4">
+    <div className="grid items-start gap-8 md:grid-cols-[1fr_1.4fr] md:gap-x-16 md:gap-y-8">
+      <div className="grid gap-3 md:col-start-1 md:row-start-1">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Publish a paper</h1>
-        <p className="max-w-[48ch] text-muted">
-          You'll sign one message with your wallet. It costs nothing and sends no transaction. The
-          signature shows on the record, so anyone can check you submitted it.
+        <p className="max-w-[48ch] leading-relaxed text-muted">
+          Your paper becomes a public record on the DKG, with your wallet as its submitter.
         </p>
       </div>
-      <PublishForm
-        contextGraph={contextGraph}
-        maxBytes={PUBLISH_SETTINGS.maxPdfBytes}
-        signatureLifetimeS={UPLOAD_SETTINGS.signatureLifetimeS}
-      />
+      <div className="md:col-start-2 md:row-span-2 md:row-start-1">
+        <PublishForm
+          contextGraph={contextGraph}
+          maxBytes={PUBLISH_SETTINGS.maxPdfBytes}
+          signatureLifetimeS={UPLOAD_SETTINGS.signatureLifetimeS}
+        />
+      </div>
+      <ul className="grid gap-4 md:col-start-1 md:row-start-2">
+        {BEFORE.map(({ icon: Icon, title, body }) => (
+          <li key={title} className="grid grid-cols-[2.25rem_1fr] gap-3">
+            <span className="grid size-9 place-items-center rounded-lg bg-accent-soft text-accent">
+              <Icon size={18} />
+            </span>
+            <div>
+              <p className="text-sm font-medium">{title}</p>
+              <p className="mt-0.5 text-sm leading-relaxed text-muted">{body}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

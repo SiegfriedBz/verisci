@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy } from "@phosphor-icons/react";
+import { ArrowSquareOut, Check, Copy } from "@phosphor-icons/react";
 import { useState } from "react";
 
 /** The first and last characters of a long on-chain value, joined by an ellipsis. */
@@ -13,11 +13,14 @@ export function CopyValue({
   label,
   value,
   head,
+  href,
 }: {
   label: string;
   value: string;
   /** How many leading characters the short form keeps. */
   head?: number;
+  /** A page that shows the value, opened in a new tab. */
+  href?: string;
 }) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
@@ -44,6 +47,17 @@ export function CopyValue({
         >
           {copied ? <Check size={14} /> : <Copy size={14} />}
         </button>
+        {href && (
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            className="grid size-7 shrink-0 place-items-center rounded-lg border border-line text-muted transition hover:text-ink"
+            aria-label={`Open ${label} in a new tab`}
+          >
+            <ArrowSquareOut size={14} />
+          </a>
+        )}
       </dd>
     </div>
   );

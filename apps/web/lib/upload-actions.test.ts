@@ -101,6 +101,32 @@ describe("readProgress", () => {
     expect(calls.read).toEqual([[CID, EVENT_ID]]);
   });
 
+  it("passes on the record of a minted paper", async () => {
+    const record = {
+      title: "T",
+      authors: [],
+      pdf: `ipfs://${CID}`,
+      submitter: "0xabc",
+      signature: "0x12",
+      deadline: "1",
+      signatureCheck: "valid",
+      publisher: "0xd701",
+    } as const;
+    const { service } = fakeService({
+      readPaper: async () => ({
+        asset: { ok: true, state: "minted", ual: "did:dkg:base:84532/0xd701/6" },
+        run: undefined,
+        record,
+      }),
+    });
+
+    expect(await readProgress(CID, undefined, service)).toEqual({
+      stage: "published",
+      ual: "did:dkg:base:84532/0xd701/6",
+      record,
+    });
+  });
+
   it("reads a CID it cannot canonicalize as not-found, without asking", async () => {
     const { service, calls } = fakeService();
 

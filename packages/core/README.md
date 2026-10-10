@@ -31,6 +31,8 @@ Status: shared constants, UAL parsing, asset names, and a Target KA's content an
 | `SUBMISSION_DOMAIN`, `SubmissionMessage` | verisci's EIP-712 domain, and the signed `{ cid, contextGraph, deadline }` |
 | `parseTeiHeader(xml)` | A paper's `PaperMetadata` (title, authors, abstract, DOI) from GROBID's TEI header, or `not-tei` or `no-title`; returns a result for every input |
 | `PaperMetadata`, `TeiResult` | The metadata read from a TEI header, and the result of `parseTeiHeader` |
+| `paperRecordQuery(cid)`, `parsePaperRecord(cid, bindings)` | The SPARQL that reads a paper's Target KA back, and the `PaperRecord` (title, authors in order, abstract, DOI, PDF link, submitter, signature, deadline) from its rows, or `undefined` when a required field is missing |
+| `PaperRecord`, `QueryBinding` | A record read back, and one row of a SPARQL answer |
 | `targetKaQuads(metadata, submission)` | The `Triple`s of a paper's Target KA: its description and who submitted it |
 | `Triple`, `PaperSubmission`, `VERISCI_NS` | One triple as the DKG node takes it, the submitter's address, signature and deadline, and the `urn:verisci:` prefix |
 
