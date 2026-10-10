@@ -106,13 +106,15 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
   Pinata's public network (`not-pinned` when there is none). A file over 30 MB or not a PDF
   is refused (`too-large`, `not-a-pdf`). A file that is not a PDF is also unpinned when its
   Target KA is known missing; a PDF stays pinned, since every environment shares Pinata's
-  one file per CID and their size limits may differ (ADR 0005). It then sends `verisci/paper.submitted` with no
-  time of its own, so Inngest stamps it, under the id `paper:<cid>:<submitter>:<deadline>`:
-  Inngest drops a repeat of one signed submission for 24 hours. A new signature starts a run
-  unless one for that CID is active (the singleton), and the paper's page then follows the
-  paper on the node. It returns Inngest's event id. Only a sent submission is counted. A
-  chain, Pinata, limit store or Inngest that does not answer gives `unavailable`; a node that
-  does not answer leaves the already-minted check to the run.
+  one file per CID and their size limits may differ
+  ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)). It then sends
+  `verisci/paper.submitted` with no time of its own, so Inngest stamps it, under the id
+  `paper:<cid>:<submitter>:<deadline>`: Inngest drops a repeat of one signed submission for
+  24 hours. A new signature starts a run unless one for that CID is active (the singleton),
+  and the paper's page then follows the paper on the node. It returns Inngest's event id.
+  Only a sent submission is counted. A chain, Pinata, limit store or Inngest that does not
+  answer gives `unavailable`; a node that does not answer leaves the already-minted check to
+  the run.
 - **`readPaper(cid, eventId?)`** reads the Target KA's state on the node and, given the
   event id, the run Inngest started for it (REST, from the dev server locally). Once the KA
   is minted, it also reads the record back (SPARQL through the node: title, authors, DOI,

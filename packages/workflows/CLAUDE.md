@@ -10,7 +10,8 @@ Inngest workflows that combine `core` logic with the `dkg` and `contracts` adapt
   (0003), every write converges (0007), mints are polled with `step.sleep` (0008), retries
   are spaced with `step.sleep` (0009), oracle transactions go only through the oracle
   function (0019), one singleton run per request (0020), a publish run is a singleton per
-  CID and keeps a KA's first submitter (0010).
+  CID and keeps a KA's first submitter (0010), a refused file is unpinned only if it is not
+  a PDF (0010, 0005).
   See [`docs/adr/`](../../docs/adr/README.md).
 - Workflow logic takes its step tools and adapters as arguments (`PublishSteps`,
   `PublishDeps`), so tests run it with fakes; `src/functions.ts` builds the real adapters

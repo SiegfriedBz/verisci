@@ -103,7 +103,7 @@ Deployments run from a maintainer's machine; all commands below run from
 | Account | Role on the contract | Key custody |
 | --- | --- | --- |
 | Deployer (`verisci-deployer` keystore), shared by both environments | Owner: pauses and unpauses new requests, updates the oracle and the cap, transfers ownership | Encrypted Foundry keystore on the maintainer's machine only |
-| Oracle, one per environment | Fulfils and cancels requests | Stored securely until the environment's workflows deployment (`develop` or `main`) holds it |
+| Oracle, one per environment | Fulfils and cancels requests | Stored securely until the environment's deployment (`develop` or `main`) holds it |
 
 The two roles always use distinct addresses: the oracle key runs on a server,
 while the owner key stays offline

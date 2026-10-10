@@ -87,16 +87,13 @@ export async function submitPaper(input: unknown, deps: SubmitDeps): Promise<Sub
   const found = await deps.findFile(submission.cid);
   if (!found.ok)
     return { ok: false, reason: found.reason === "missing" ? "not-pinned" : "unavailable" };
-  const refusal =
-    found.file.size > deps.maxBytes
-      ? "too-large"
-      : found.file.mimeType !== "application/pdf"
-        ? "not-a-pdf"
-        : undefined;
+  // One test for both the refusal and the unpin, so a file this refuses as not a PDF is the
+  // only kind it ever unpins.
+  const pdf = found.file.mimeType === "application/pdf";
+  const refusal = found.file.size > deps.maxBytes ? "too-large" : pdf ? undefined : "not-a-pdf";
   if (refusal) {
     // Every environment shares Pinata's one file per CID, and a size limit may differ between
     // them: unpin only a file no environment publishes, one that is not a PDF.
-    const pdf = found.file.mimeType === "application/pdf";
     if (!pdf && asset.ok && asset.state === "missing") await deps.deleteFile(found.file.id);
     return { ok: false, reason: refusal };
   }
