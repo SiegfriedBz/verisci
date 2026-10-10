@@ -187,7 +187,24 @@ export function createPublishPaper(inngest: Inngest.Any, getDeps: () => PublishD
           run: (id, fn) => step.run(id, fn) as never,
           sleep: (id, duration) => step.sleep(id, duration),
         },
-        getDeps(),
+        loadDeps(getDeps),
       ),
   );
+}
+
+/**
+ * The run's adapters from `getDeps`. Settings that are missing or invalid (an `EnvError`)
+ * stop the run with a `NonRetriableError` naming them: a retry cannot fix a setting.
+ */
+export function loadDeps(getDeps: () => PublishDeps): PublishDeps {
+  try {
+    return getDeps();
+  } catch (error) {
+    throw new NonRetriableError(
+      `publish settings: ${error instanceof Error ? error.message : String(error)}`,
+      {
+        cause: error,
+      },
+    );
+  }
 }

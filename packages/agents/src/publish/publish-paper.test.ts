@@ -4,6 +4,7 @@ import { Inngest, NonRetriableError } from "inngest";
 import { describe, expect, it, vi } from "vitest";
 import {
   createPublishPaper,
+  loadDeps,
   PUBLISH_SETTINGS,
   type PublishDeps,
   type PublishSteps,
@@ -248,5 +249,23 @@ describe("createPublishPaper", () => {
 
   it("gives a run 45 minutes to finish (ADR 0009)", () => {
     expect(fn.opts.timeouts).toEqual({ finish: "45m" });
+  });
+});
+
+describe("loadDeps", () => {
+  it("returns the adapters", () => {
+    const { deps } = fakeDeps({});
+
+    expect(loadDeps(() => deps)).toBe(deps);
+  });
+
+  it("stops the run without retries when the settings are missing or invalid", () => {
+    const load = () =>
+      loadDeps(() => {
+        throw new Error("Invalid environment variables:\n  GROBID_URL: Required");
+      });
+
+    expect(load).toThrow(NonRetriableError);
+    expect(load).toThrow(/GROBID_URL/);
   });
 });
