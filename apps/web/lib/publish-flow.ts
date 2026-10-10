@@ -27,6 +27,7 @@ export interface FlowDeps {
 /** The result of {@link publishFile}: the paper's CID and run, or why it stopped. */
 export type FlowResult =
   | { readonly ok: true; readonly cid: string; readonly eventId: string }
+  | { readonly ok: true; readonly cid: string; readonly alreadyPublished: true }
   | { readonly ok: false; readonly problem: PublishProblem };
 
 /**
@@ -60,9 +61,10 @@ export async function publishFile(file: File, deps: FlowDeps): Promise<FlowResul
       submitter: signed.address,
       signature: signed.signature,
     });
-    return submitted.ok
-      ? { ok: true, cid: submitted.cid, eventId: submitted.eventId }
-      : { ok: false, problem: submitted.reason };
+    if (!submitted.ok) return { ok: false, problem: submitted.reason };
+    return submitted.eventId === undefined
+      ? { ok: true, cid: submitted.cid, alreadyPublished: true }
+      : { ok: true, cid: submitted.cid, eventId: submitted.eventId };
   } catch {
     return { ok: false, problem: "unavailable" };
   }

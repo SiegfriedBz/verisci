@@ -9,9 +9,15 @@ export default async function PaperPage({
   searchParams,
 }: {
   params: Promise<{ cid: string }>;
-  searchParams: Promise<{ event?: string | string[] }>;
+  searchParams: Promise<{ event?: string | string[]; already?: string | string[] }>;
 }) {
   const { cid } = await params;
-  const { event } = await searchParams;
-  return <PaperProgress cid={cid} eventId={typeof event === "string" ? event : undefined} />;
+  const { event, already } = await searchParams;
+  return (
+    <PaperProgress
+      cid={cid}
+      eventId={typeof event === "string" ? event : undefined}
+      resubmitted={already === "1"}
+    />
+  );
 }

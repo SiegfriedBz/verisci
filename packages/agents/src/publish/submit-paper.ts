@@ -1,3 +1,4 @@
+import type { AssetResult } from "@verisci/dkg";
 import type { DeleteFileResult, FindFileResult } from "../pinata.ts";
 import { PAPER_SUBMITTED } from "./publish-paper.ts";
 import type { SubmissionRefusal, VerifiedSubmission, VerifyResult } from "./verify-submission.ts";
@@ -22,6 +23,8 @@ export interface SubmitDeps {
   /** `verifySubmission` with this environment's graph and the current time. */
   verify(data: unknown): Promise<VerifyResult>;
   readonly limiter: SubmitLimiter;
+  /** The Target KA's state for a canonical CID, from the DKG node. */
+  readAsset(cid: string): Promise<AssetResult>;
   /** `findPublicFile` with our Pinata key. */
   findFile(cid: string): Promise<FindFileResult>;
   /** `deleteFile` with our Pinata key. */
@@ -40,18 +43,23 @@ export type SubmitRefusal =
   | "not-a-pdf";
 
 /**
- * The result of {@link submitPaper}: the canonical CID and Inngest's event id, which the
- * paper's page reads the run by; or why not (`unavailable` is worth trying again).
+ * The result of {@link submitPaper}: the canonical CID with Inngest's event id, which the
+ * paper's page reads the run by, or with the UAL of the Target KA already published; or why
+ * not (`unavailable` is worth trying again).
  */
 export type SubmitResult =
-  | { readonly ok: true; readonly cid: string; readonly eventId: string }
+  | { readonly ok: true; readonly cid: string; readonly eventId: string; readonly ual?: never }
+  | { readonly ok: true; readonly cid: string; readonly ual: string; readonly eventId?: never }
   | { readonly ok: false; readonly reason: SubmitRefusal | "unavailable" };
 
 /**
  * Checks a submission from the upload page, then starts its publish run (ADR 0010): the
- * signature (the same checks as the run), the submitter's limit, then the pinned file. A
- * file over `maxBytes` or not detected as a PDF is unpinned and refused. Only a submission
- * whose event was sent is counted. Never throws for an expected failure.
+ * signature (the same checks as the run), then whether its Target KA is already minted, in
+ * which case nothing starts or counts and the result gives its UAL (the KA keeps its first
+ * submitter); otherwise the submitter's limit, then the pinned file. A state that cannot be
+ * read leaves the check to the run. A file over `maxBytes` or not detected as a PDF is
+ * unpinned and refused. Only a submission whose event was sent is counted. Never throws for
+ * an expected failure.
  */
 export async function submitPaper(input: unknown, deps: SubmitDeps): Promise<SubmitResult> {
   const verified = await deps.verify(input);
@@ -62,6 +70,10 @@ export async function submitPaper(input: unknown, deps: SubmitDeps): Promise<Sub
     };
   }
   const { submission } = verified;
+
+  const asset = await deps.readAsset(submission.cid);
+  if (asset.ok && asset.state === "minted")
+    return { ok: true, cid: submission.cid, ual: asset.ual };
 
   const allowed = await deps.limiter.check(submission.submitter);
   if (allowed === "unavailable") return { ok: false, reason: "unavailable" };

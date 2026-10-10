@@ -94,6 +94,12 @@ export function createUploadService(env: AgentsEnv, io: UploadIo): UploadService
             now: io.now,
           }),
         limiter,
+        readAsset: (cid) => {
+          const name = targetKaName(cid);
+          return name.ok
+            ? dkg.readAsset(name.name)
+            : Promise.resolve<AssetResult>({ ok: true, state: "missing" });
+        },
         findFile: (cid) => findPublicFile(cid, pinata),
         deleteFile: (id) => deleteFile(id, pinata),
         send: io.send,

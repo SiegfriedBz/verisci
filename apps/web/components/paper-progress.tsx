@@ -26,7 +26,16 @@ const HEADLINE: Record<PaperStage["stage"], string> = {
  * Follows a paper from its page: asks `/api/papers/<cid>` every 5 s until a final stage,
  * and keeps asking through a stage that could not be read.
  */
-export function PaperProgress({ cid, eventId }: { cid: string; eventId: string | undefined }) {
+export function PaperProgress({
+  cid,
+  eventId,
+  resubmitted = false,
+}: {
+  cid: string;
+  eventId: string | undefined;
+  /** The visitor just submitted a paper that was already published. */
+  resubmitted?: boolean;
+}) {
   const [stage, setStage] = useState<PaperStage | undefined>();
 
   useEffect(() => {
@@ -67,7 +76,7 @@ export function PaperProgress({ cid, eventId }: { cid: string; eventId: string |
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           {HEADLINE[stage.stage]}
         </h1>
-        <StageNote stage={stage} />
+        <StageNote stage={stage} resubmitted={resubmitted} />
         <ProgressChain stage={stage.stage} />
       </div>
       <dl className="grid content-start gap-5 rounded-xl border border-line bg-surface p-5 sm:p-6">
@@ -90,9 +99,17 @@ export function PaperProgress({ cid, eventId }: { cid: string; eventId: string |
   );
 }
 
-function StageNote({ stage }: { stage: PaperStage }) {
+function StageNote({ stage, resubmitted }: { stage: PaperStage; resubmitted: boolean }) {
   switch (stage.stage) {
     case "published":
+      if (resubmitted) {
+        return (
+          <p className="max-w-[60ch] text-muted">
+            This PDF was already published, so nothing new was recorded. The record keeps its first
+            submitter.
+          </p>
+        );
+      }
       return (
         <p className="max-w-[60ch] text-muted">
           This paper is a public record. Anyone can look it up by its UAL and check who submitted

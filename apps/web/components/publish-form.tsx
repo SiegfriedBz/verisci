@@ -80,7 +80,11 @@ function PublishFlow({ contextGraph, maxBytes, signatureLifetimeS }: PublishSett
     });
     if (result.ok) {
       // A full load: a client-side push here fetched the page but never showed it (Next 16.3.8).
-      window.location.assign(`/papers/${result.cid}?event=${result.eventId}`);
+      window.location.assign(
+        "eventId" in result
+          ? `/papers/${result.cid}?event=${result.eventId}`
+          : `/papers/${result.cid}?already=1`,
+      );
       return;
     }
     setPhase(undefined);

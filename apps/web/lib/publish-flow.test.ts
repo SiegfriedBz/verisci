@@ -99,6 +99,18 @@ describe("publishFile", () => {
     expect(submitted).toEqual([]);
   });
 
+  it("reports a paper already published, with no run to follow", async () => {
+    const { flowDeps } = deps({
+      submit: async () => ({ ok: true, cid: CID, ual: "did:dkg:base:84532/0xabc/6" }),
+    });
+
+    expect(await publishFile(pdf(), flowDeps)).toEqual({
+      ok: true,
+      cid: CID,
+      alreadyPublished: true,
+    });
+  });
+
   it("passes on the server's refusal", async () => {
     const { flowDeps } = deps({ submit: async () => ({ ok: false, reason: "not-pinned" }) });
 

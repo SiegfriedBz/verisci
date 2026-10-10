@@ -1,3 +1,4 @@
+import type { AssetResult } from "@verisci/dkg";
 import { describe, expect, it } from "vitest";
 import type { DeleteFileResult, FindFileResult } from "../pinata.ts";
 import { PAPER_SUBMITTED } from "./publish-paper.ts";
@@ -22,8 +23,11 @@ interface Fakes {
   verify?: VerifyResult;
   check?: Awaited<ReturnType<SubmitLimiter["check"]>>;
   file?: FindFileResult;
+  asset?: AssetResult;
   send?: () => Promise<string>;
 }
+
+const UAL = "did:dkg:base:84532/0xd701ed157232ad5e14bc4134a8d10d64d86f13b3/6";
 
 function deps(fakes: Fakes = {}) {
   const calls = {
@@ -33,6 +37,7 @@ function deps(fakes: Fakes = {}) {
     found: [] as string[],
     deleted: [] as string[],
     sent: [] as unknown[],
+    read: [] as string[],
   };
   const submitDeps: SubmitDeps = {
     verify: async (data) => {
@@ -47,6 +52,10 @@ function deps(fakes: Fakes = {}) {
       count: async (address) => {
         calls.counted.push(address);
       },
+    },
+    readAsset: async (cid) => {
+      calls.read.push(cid);
+      return fakes.asset ?? { ok: true, state: "missing" };
     },
     findFile: async (cid) => {
       calls.found.push(cid);
@@ -85,6 +94,31 @@ describe("submitPaper", () => {
     ]);
     expect(calls.checked).toEqual([SUBMISSION.submitter]);
     expect(calls.counted).toEqual([SUBMISSION.submitter]);
+  });
+
+  it("starts nothing for a paper already published, counting nothing, and gives its UAL", async () => {
+    const { submitDeps, calls } = deps({ asset: { ok: true, state: "minted", ual: UAL } });
+
+    expect(await submitPaper(INPUT, submitDeps)).toEqual({ ok: true, cid: CID, ual: UAL });
+    expect(calls.read).toEqual([CID]);
+    expect(calls.checked).toEqual([]);
+    expect(calls.found).toEqual([]);
+    expect(calls.sent).toEqual([]);
+    expect(calls.counted).toEqual([]);
+  });
+
+  it.each<[string, AssetResult]>([
+    ["stored but not minted", { ok: true, state: "stored", reservedUal: UAL }],
+    ["unreadable", { ok: false, reason: "unreachable" }],
+  ])("starts the run as usual when the paper is %s", async (_, asset) => {
+    const { submitDeps, calls } = deps({ asset });
+
+    expect(await submitPaper(INPUT, submitDeps)).toEqual({
+      ok: true,
+      cid: CID,
+      eventId: "event-1",
+    });
+    expect(calls.sent).toHaveLength(1);
   });
 
   it("sends no time with the event, so Inngest sets it", async () => {
