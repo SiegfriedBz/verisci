@@ -9,7 +9,16 @@ export function shorten(value: string, head = 14, tail = 8): string {
 }
 
 /** A labelled on-chain value in short form, with a button that copies it in full. */
-export function CopyValue({ label, value }: { label: string; value: string }) {
+export function CopyValue({
+  label,
+  value,
+  head,
+}: {
+  label: string;
+  value: string;
+  /** How many leading characters the short form keeps. */
+  head?: number;
+}) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
@@ -25,7 +34,7 @@ export function CopyValue({ label, value }: { label: string; value: string }) {
       <dt className="text-sm text-muted">{label}</dt>
       <dd className="flex min-w-0 items-center gap-2">
         <code className="min-w-0 truncate font-mono text-sm" title={value}>
-          {shorten(value)}
+          {shorten(value, head)}
         </code>
         <button
           type="button"

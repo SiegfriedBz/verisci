@@ -10,7 +10,7 @@ export default async function PublishPage() {
   await connection();
   const { contextGraph } = getUploadService();
   return (
-    <div className="grid gap-10 md:grid-cols-[1fr_1.4fr] md:gap-16">
+    <div className="grid items-start gap-10 md:grid-cols-[1fr_1.4fr] md:gap-16">
       <div className="grid content-start gap-4">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Publish a paper</h1>
         <p className="max-w-[48ch] text-muted">

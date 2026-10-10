@@ -6,14 +6,15 @@ export type RefusalReason = Extract<PublishOutcome, { state: "refused" }>["reaso
 
 /**
  * Where a paper stands, as its page shows it: on the way (`reading`, `saving`, `minting`),
- * done (`published`, `refused`, `failed`, `not-found`), or not readable now (`unavailable`,
- * asked again on the next poll).
+ * done (`published`, `refused`, `failed`, `not-found`, `not-published`), or not readable now
+ * (`unavailable`, asked again on the next poll). `not-published` is a run that ended with
+ * nothing stored and an output that cannot be read, as the local dev server answers.
  */
 export type PaperStage =
   | { readonly stage: "reading" | "saving" | "minting" }
   | { readonly stage: "published"; readonly ual: string }
   | { readonly stage: "refused"; readonly reason: RefusalReason }
-  | { readonly stage: "failed" | "not-found" | "unavailable" };
+  | { readonly stage: "failed" | "not-found" | "not-published" | "unavailable" };
 
 const outcome = z.union([
   z.object({ state: z.literal("minted"), ual: z.string() }),
@@ -33,10 +34,12 @@ export function paperProgress({ asset, run }: PaperStatus): PaperStage {
   if (state?.state === "failed") return { stage: "failed" };
   if (state?.state === "completed") {
     const parsed = outcome.safeParse(state.output);
-    if (!parsed.success) return { stage: "unavailable" };
-    return parsed.data.state === "minted"
-      ? { stage: "published", ual: parsed.data.ual }
-      : { stage: "refused", reason: parsed.data.reason as RefusalReason };
+    if (parsed.success) {
+      return parsed.data.state === "minted"
+        ? { stage: "published", ual: parsed.data.ual }
+        : { stage: "refused", reason: parsed.data.reason as RefusalReason };
+    }
+    if (asset.state === "missing") return { stage: "not-published" };
   }
   if (asset.state === "stored") return { stage: "minting" };
   if (asset.state === "draft") return { stage: "saving" };
@@ -45,5 +48,7 @@ export function paperProgress({ asset, run }: PaperStatus): PaperStage {
 
 /** Whether the page stops polling at this stage. */
 export function isFinal(paperStage: PaperStage): boolean {
-  return ["published", "refused", "failed", "not-found"].includes(paperStage.stage);
+  return ["published", "refused", "failed", "not-found", "not-published"].includes(
+    paperStage.stage,
+  );
 }

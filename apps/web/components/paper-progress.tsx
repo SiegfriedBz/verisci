@@ -18,6 +18,7 @@ const HEADLINE: Record<PaperStage["stage"], string> = {
   refused: "Not published",
   failed: "Publishing stopped",
   "not-found": "No paper here yet",
+  "not-published": "Not published",
   unavailable: "Checking on your paper",
 };
 
@@ -61,7 +62,7 @@ export function PaperProgress({ cid, eventId }: { cid: string; eventId: string |
   }
 
   return (
-    <div className="enter grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-12">
+    <div className="enter grid items-start gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-12">
       <div className="grid content-start gap-6">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           {HEADLINE[stage.stage]}
@@ -70,7 +71,9 @@ export function PaperProgress({ cid, eventId }: { cid: string; eventId: string |
         <ProgressChain stage={stage.stage} />
       </div>
       <dl className="grid content-start gap-5 rounded-xl border border-line bg-surface p-5 sm:p-6">
-        {stage.stage === "published" && <CopyValue label="Record (UAL)" value={stage.ual} />}
+        {stage.stage === "published" && (
+          <CopyValue label="Record (UAL)" value={stage.ual} head={22} />
+        )}
         <CopyValue label="PDF (CID)" value={cid} />
         <CopyValue label="IPFS link" value={`ipfs://${cid}`} />
         <a
@@ -92,8 +95,8 @@ function StageNote({ stage }: { stage: PaperStage }) {
     case "published":
       return (
         <p className="max-w-[60ch] text-muted">
-          Your paper is a public record now. Anyone can look it up by its UAL and check that you
-          submitted it.
+          This paper is a public record. Anyone can look it up by its UAL and check who submitted
+          it.
         </p>
       );
     case "refused":
@@ -111,8 +114,14 @@ function StageNote({ stage }: { stage: PaperStage }) {
           </Link>
         </p>
       );
+    case "not-published":
+      return (
+        <Problem text="This paper didn't pass our checks. Make sure it's a readable PDF with a title on its first page, then publish it again." />
+      );
     case "unavailable":
-      return <p className="text-muted">We can't reach the network right now. Still trying.</p>;
+      return (
+        <p className="text-muted">We can't reach the network right now and will keep trying.</p>
+      );
     default:
       return (
         <p className="max-w-[60ch] text-muted">

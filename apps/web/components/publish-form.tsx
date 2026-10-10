@@ -101,9 +101,7 @@ function PublishFlow({ contextGraph, maxBytes, signatureLifetimeS }: PublishSett
   if (!isConnected) {
     return (
       <div className="grid gap-4 rounded-xl border border-line bg-surface p-6 sm:p-8">
-        <p className="text-muted">
-          Connect a wallet first. Signing is free and sends no transaction.
-        </p>
+        <p className="text-muted">Connect a wallet to publish.</p>
         <button
           type="button"
           onClick={() => void open()}

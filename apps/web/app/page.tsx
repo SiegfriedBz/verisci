@@ -16,7 +16,7 @@ const HOW = [
   {
     icon: PenNib,
     title: "Sign once",
-    body: "A free signature, no transaction. We mint the record and pay the fees.",
+    body: "Signing is free and sends no transaction. We mint the record and pay its fees.",
   },
 ] as const;
 
@@ -26,7 +26,7 @@ export default function Home() {
     <div className="grid gap-20 sm:gap-28">
       <section className="grid items-center gap-12 md:grid-cols-[1.15fr_1fr] md:gap-16">
         <div className="grid gap-6">
-          <h1 className="text-4xl font-semibold leading-[1.05] tracking-tight md:text-5xl lg:text-6xl">
+          <h1 className="text-4xl font-semibold leading-[1.08] tracking-tight md:text-5xl">
             Publish your paper as a record anyone can verify
           </h1>
           <p className="max-w-[48ch] text-lg text-muted">

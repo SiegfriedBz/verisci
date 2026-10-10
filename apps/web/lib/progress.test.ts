@@ -65,8 +65,14 @@ describe("paperProgress", () => {
     expect(stage(missing, inngestDown)).toEqual({ stage: "unavailable" });
   });
 
-  it("reads a completed run with an output it does not know as unavailable", () => {
-    expect(stage(missing, completed({ state: "odd" }))).toEqual({ stage: "unavailable" });
+  it("reads a completed run whose output it cannot read, with nothing stored, as not-published", () => {
+    // The local dev server answers an empty output (inngest-cli 1.46.0).
+    expect(stage(missing, completed(""))).toEqual({ stage: "not-published" });
+    expect(stage(missing, completed({ state: "odd" }))).toEqual({ stage: "not-published" });
+  });
+
+  it("follows the asset when a completed run's output cannot be read but something is stored", () => {
+    expect(stage(stored, completed(""))).toEqual({ stage: "minting" });
   });
 });
 
@@ -76,6 +82,7 @@ describe("isFinal", () => {
     [{ stage: "refused", reason: "no-title" }, true],
     [{ stage: "failed" }, true],
     [{ stage: "not-found" }, true],
+    [{ stage: "not-published" }, true],
     [{ stage: "reading" }, false],
     [{ stage: "saving" }, false],
     [{ stage: "minting" }, false],
