@@ -54,7 +54,7 @@ export default async function PublishPage() {
       </div>
       <section aria-labelledby="before-title" className="grid gap-5">
         <h2 id="before-title" className="text-xl font-semibold tracking-tight">
-          Before you publish
+          What publishing means
         </h2>
         <ul className="grid gap-4 sm:grid-cols-2">
           {BEFORE.map(({ icon: Icon, title, body }) => (
