@@ -9,7 +9,11 @@ export type RunState =
       /** When the run ended, in milliseconds, if Inngest says. */
       readonly endedAt: number | undefined;
     }
-  | { readonly state: "failed" };
+  | {
+      readonly state: "failed";
+      /** The run's error as Inngest gives it, which carries why the run stopped. */
+      readonly output: unknown;
+    };
 
 /**
  * The result of {@link readRun}: `run` is undefined while Inngest has not started one for
@@ -27,6 +31,11 @@ export interface ReadRunOptions {
   readonly signingKey?: string;
   /** The branch environment's name; none for production (`docs/domain.md` → Inngest). */
   readonly branch?: string;
+  /**
+   * The local dev server, whose REST read answers an empty output: the output is then read
+   * from its GraphQL API instead (`docs/domain.md` → Inngest).
+   */
+  readonly devServer?: boolean;
   readonly fetch: typeof fetch;
   readonly timeoutMs: number;
 }
@@ -37,6 +46,7 @@ const EVENT_ID = /^[0-9A-Za-z]{1,64}$/;
 const runs = z.object({
   data: z.array(
     z.object({
+      run_id: z.string().optional(),
       status: z.string(),
       output: z.unknown().optional(),
       ended_at: z.string().nullish(),
@@ -68,21 +78,70 @@ export async function readRun(eventId: string, options: ReadRunOptions): Promise
     if (!parsed.success) return { ok: false, reason: "unavailable" };
     const [first] = parsed.data.data;
     if (!first) return { ok: true, run: undefined };
+    const ended = ["Completed", "Failed", "Cancelled"].includes(first.status);
+    const output =
+      ended && options.devServer && !first.output && first.run_id
+        ? await devServerOutput(first.run_id, options)
+        : first.output;
     if (first.status === "Completed") {
       const endedAt = first.ended_at ? Date.parse(first.ended_at) : Number.NaN;
       return {
         ok: true,
         run: {
           state: "completed",
-          output: first.output,
+          output,
           endedAt: Number.isNaN(endedAt) ? undefined : endedAt,
         },
       };
     }
     if (first.status === "Failed" || first.status === "Cancelled")
-      return { ok: true, run: { state: "failed" } };
+      return { ok: true, run: { state: "failed", output } };
     return { ok: true, run: { state: "running" } };
   } catch {
     return { ok: false, reason: "unavailable" };
+  }
+}
+
+const devRun = z.object({ data: z.object({ run: z.object({ output: z.string().nullish() }) }) });
+const runComplete = z
+  .array(z.unknown())
+  .transform((ops) =>
+    ops.find(
+      (op): op is { op: string; data: unknown } =>
+        typeof op === "object" && op !== null && (op as { op?: unknown }).op === "RunComplete",
+    ),
+  );
+
+/**
+ * A run's output from the dev server's GraphQL API: the `RunComplete` op's data for a run
+ * that returned, the raw text otherwise (a failed run's error), or `""` when it cannot be
+ * read.
+ */
+async function devServerOutput(runId: string, options: ReadRunOptions): Promise<unknown> {
+  try {
+    const response = await options.fetch(`${options.apiUrl.replace(/\/+$/, "")}/v0/gql`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        query: "query ($id: String!) { run(runID: $id) { output } }",
+        variables: { id: runId },
+      }),
+      signal: AbortSignal.timeout(options.timeoutMs),
+    });
+    if (!response.ok) {
+      await response.body?.cancel();
+      return "";
+    }
+    const parsed = devRun.safeParse(await response.json());
+    const text = parsed.success ? (parsed.data.data.run.output ?? "") : "";
+    try {
+      const complete = runComplete.safeParse(JSON.parse(text));
+      if (complete.success && complete.data) return complete.data.data;
+    } catch {
+      // Not JSON: a failed run's text, kept as it is.
+    }
+    return text;
+  } catch {
+    return "";
   }
 }

@@ -32,6 +32,42 @@ export type ReadPaperResult =
   | { readonly ok: true; readonly metadata: PaperMetadata }
   | { readonly ok: false; readonly reason: PaperRefusal | "unreachable" | "unauthorized" };
 
+/**
+ * Why a publish run stopped without an outcome, carried in its error as
+ * `publish-failed:<reason>: <detail>` so the paper's page can say it
+ * ({@link publishFailureReason}). All but `setup` are worth publishing the same PDF again
+ * later; `setup` is ours to fix.
+ */
+export type PublishFailure =
+  | "chain-unreachable"
+  | "paper-unreachable"
+  | "node-unreachable"
+  | "mint-not-confirmed"
+  | "setup";
+
+const PUBLISH_FAILURES: readonly PublishFailure[] = [
+  "chain-unreachable",
+  "paper-unreachable",
+  "node-unreachable",
+  "mint-not-confirmed",
+  "setup",
+];
+
+/** The error that stops a run, with its reason first in the message. */
+function stop(reason: PublishFailure, detail: string, cause?: unknown): NonRetriableError {
+  return new NonRetriableError(`publish-failed:${reason}: ${detail}`, { cause });
+}
+
+/**
+ * The reason a failed run's error carries, wherever Inngest nests the error in the run's
+ * output (an object, or the JSON text the dev server gives), or `undefined`.
+ */
+export function publishFailureReason(output: unknown): PublishFailure | undefined {
+  const text = typeof output === "string" ? output : JSON.stringify(output ?? null);
+  const found = /publish-failed:([a-z-]+): /.exec(text)?.[1];
+  return PUBLISH_FAILURES.find((reason) => reason === found);
+}
+
 /** How a publish run ends, unless it fails. */
 export type PublishOutcome =
   | { readonly state: "minted"; readonly ual: string }
@@ -54,7 +90,7 @@ export interface PublishDeps {
 
 type Attempt =
   | { readonly kind: "done"; readonly outcome: PublishOutcome }
-  | { readonly kind: "retry"; readonly reason: string }
+  | { readonly kind: "retry"; readonly reason: string; readonly failure: PublishFailure }
   | { readonly kind: "mint-again" }
   | { readonly kind: "fatal"; readonly reason: string };
 
@@ -86,17 +122,19 @@ export async function runPublish(
   if (!name.ok) return { state: "refused", reason: "bad-cid" };
 
   let last = "";
+  let lastFailure: PublishFailure = "node-unreachable";
   for (let attempt = 1; attempt <= PUBLISH_SETTINGS.attempts; attempt++) {
     const result = await publishOnce(attempt, name.name, submission, step, deps);
     if (result.kind === "done") return result.outcome;
-    if (result.kind === "fatal")
-      throw new NonRetriableError(`publish of ${name.name}: ${result.reason}`);
+    if (result.kind === "fatal") throw stop("setup", `publish of ${name.name}: ${result.reason}`);
     last = result.kind === "retry" ? result.reason : "mint not seen";
+    lastFailure = result.kind === "retry" ? result.failure : "mint-not-confirmed";
     if (result.kind === "retry" && attempt < PUBLISH_SETTINGS.attempts) {
       await step.sleep(`retry-${attempt}`, PUBLISH_SETTINGS.retryWait);
     }
   }
-  throw new NonRetriableError(
+  throw stop(
+    lastFailure,
     `publish of ${name.name} gave up after ${PUBLISH_SETTINGS.attempts} attempts: ${last}`,
   );
 }
@@ -115,7 +153,8 @@ async function verify(
     );
     if (result.ok || result.reason !== "unreachable") return result as never;
     if (attempt === PUBLISH_SETTINGS.attempts) {
-      throw new NonRetriableError(
+      throw stop(
+        "chain-unreachable",
         `submission of ${String((data as { cid?: unknown })?.cid)}: chain unreachable`,
       );
     }
@@ -140,7 +179,8 @@ async function publishOnce(
     if (read.state === "missing") {
       const paper = await step.run(`read-paper-${attempt}`, () => deps.readPaper(submission.cid));
       if (!paper.ok) {
-        if (paper.reason === "unreachable") return { kind: "retry", reason: "paper unreachable" };
+        if (paper.reason === "unreachable")
+          return { kind: "retry", reason: "paper unreachable", failure: "paper-unreachable" };
         if (paper.reason === "unauthorized")
           return { kind: "fatal", reason: "GROBID unauthorized" };
         return { kind: "done", outcome: { state: "refused", reason: paper.reason } };
@@ -179,7 +219,7 @@ function failed(failure: DkgFailure): Attempt {
     failure.status === undefined ? failure.reason : `${failure.reason} (${failure.status})`;
   return failure.reason === "unauthorized" || failure.reason === "graph-not-served"
     ? { kind: "fatal", reason }
-    : { kind: "retry", reason };
+    : { kind: "retry", reason, failure: "node-unreachable" };
 }
 
 /**
@@ -217,11 +257,10 @@ export function loadDeps(getDeps: () => PublishDeps): PublishDeps {
   try {
     return getDeps();
   } catch (error) {
-    throw new NonRetriableError(
+    throw stop(
+      "setup",
       `publish settings: ${error instanceof Error ? error.message : String(error)}`,
-      {
-        cause: error,
-      },
+      error,
     );
   }
 }

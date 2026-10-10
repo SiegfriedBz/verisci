@@ -8,6 +8,7 @@ import {
   PUBLISH_SETTINGS,
   type PublishDeps,
   type PublishSteps,
+  publishFailureReason,
   runPublish,
 } from "./publish-paper.ts";
 import type { VerifyResult } from "./verify-submission.ts";
@@ -162,6 +163,7 @@ describe("runPublish", () => {
     const { run, log } = await publish({ reads: [stored], mints: [minting] });
 
     await expect(run).rejects.toThrow(NonRetriableError);
+    await expect(run).rejects.toThrow(/^publish-failed:mint-not-confirmed: /);
     expect(log.filter((entry) => entry.startsWith("mint-"))).toHaveLength(
       PUBLISH_SETTINGS.attempts,
     );
@@ -235,6 +237,7 @@ describe("runPublish", () => {
     const { run, log } = await publish({ reads: [{ ok: false, reason: "unreachable" }] });
 
     await expect(run).rejects.toThrow(NonRetriableError);
+    await expect(run).rejects.toThrow(/^publish-failed:node-unreachable: /);
     expect(log.filter((entry) => entry.startsWith("read-"))).toEqual([
       "read-1",
       "read-2",
@@ -286,13 +289,21 @@ describe("runPublish", () => {
     const { run, log } = await publish({ verify: { ok: false, reason: "unreachable" } });
 
     await expect(run).rejects.toThrow(NonRetriableError);
+    await expect(run).rejects.toThrow(/^publish-failed:chain-unreachable: /);
     expect(log.filter((entry) => entry.startsWith("sleep verify-retry-"))).toHaveLength(4);
+  });
+
+  it("fails when the paper still cannot be read after 5 attempts", async () => {
+    const { run } = await publish({ papers: [{ ok: false, reason: "unreachable" }] });
+
+    await expect(run).rejects.toThrow(/^publish-failed:paper-unreachable: /);
   });
 
   it("fails at once when GROBID refuses our credential", async () => {
     const { run, log } = await publish({ papers: [{ ok: false, reason: "unauthorized" }] });
 
     await expect(run).rejects.toThrow(NonRetriableError);
+    await expect(run).rejects.toThrow(/^publish-failed:setup: /);
     expect(log).toEqual(["verify", "read-1", "read-paper-1"]);
   });
 
@@ -312,6 +323,7 @@ describe("runPublish", () => {
       const { run, log } = await publish({ reads: [{ ok: false, reason }] });
 
       await expect(run).rejects.toThrow(NonRetriableError);
+      await expect(run).rejects.toThrow(/^publish-failed:setup: /);
       expect(log).toEqual(["verify", "read-1"]);
     },
   );
@@ -345,5 +357,24 @@ describe("loadDeps", () => {
 
     expect(load).toThrow(NonRetriableError);
     expect(load).toThrow(/GROBID_URL/);
+    expect(load).toThrow(/^publish-failed:setup: /);
+  });
+});
+
+describe("publishFailureReason", () => {
+  it("finds the reason a failed run's error carries, wherever Inngest nests it", () => {
+    const error = { name: "NonRetriableError", message: "publish-failed:node-unreachable: x" };
+
+    expect(publishFailureReason(error)).toBe("node-unreachable");
+    expect(publishFailureReason({ error })).toBe("node-unreachable");
+    expect(publishFailureReason(JSON.stringify([{ op: "StepFailed", error }]))).toBe(
+      "node-unreachable",
+    );
+  });
+
+  it("finds none in an error that carries no known reason", () => {
+    expect(publishFailureReason({ message: "boom" })).toBeUndefined();
+    expect(publishFailureReason({ message: "publish-failed:odd: x" })).toBeUndefined();
+    expect(publishFailureReason(undefined)).toBeUndefined();
   });
 });

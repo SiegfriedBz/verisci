@@ -266,7 +266,10 @@ Observed on Vercel Hobby with Inngest Cloud, except where a fact cites the vendo
 - **The local dev server's REST run read gives an empty `output`** (inngest-cli 1.46.0,
   2026-10-10): `/v1/events/{id}/runs` answered `status: "Completed"` with `output: ""` for a
   run that returned a refusal, and caches each answer for 15 s. Only its internal GraphQL
-  API carried the output.
+  API carried the output: `POST /v0/gql` with
+  `query ($id: String!) { run(runID: $id) { output } }` (the type is `String!`, not
+  `ULID!`) answers the ops as JSON text, the return value under the `RunComplete` op's
+  `data`. `readRun` reads it there locally (`devServer`).
 - **Preview deployments need Vercel's deployment-protection bypass** configured, or Inngest
   cannot reach `/api/inngest`. The stable `develop` deployment is a preview too, so the
   staging webhook needs the same bypass; a caller that cannot set headers passes it as the

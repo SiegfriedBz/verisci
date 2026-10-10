@@ -29,7 +29,7 @@ function env(overrides: Record<string, string | undefined> = {}): AgentsEnv {
 }
 
 /** Answers like Pinata, the DKG node and Inngest, by URL. */
-function io() {
+function io(runs: unknown[] = [{ status: "Running" }]) {
   const requests: { url: string; init: RequestInit | undefined }[] = [];
   const sent: unknown[] = [];
   const fetch = async (input: string | URL | Request, init?: RequestInit) => {
@@ -41,7 +41,7 @@ function io() {
       return Response.json({
         data: { files: [{ id: "file-1", cid: CID, size: 1000, mime_type: "application/pdf" }] },
       });
-    if (url.includes("/runs")) return Response.json({ data: [{ status: "Running" }] });
+    if (url.includes("/runs")) return Response.json({ data: runs });
     if (url.startsWith("http://dkg.test"))
       return Response.json({ state: "promoted", reservedUal: UAL });
     return new Response("unexpected", { status: 500 });
@@ -116,6 +116,15 @@ describe("createUploadService", () => {
     const runRequest = requests.find((request) => request.url.includes("/runs"));
     expect(runRequest?.url).toBe(`https://api.inngest.com/v1/events/${EVENT_ID}/runs`);
     expect(new Headers(runRequest?.init?.headers).get("x-inngest-env")).toBe("develop");
+  });
+
+  it("names why a failed run stopped, from the error it carries", async () => {
+    const error = { name: "NonRetriableError", message: "publish-failed:node-unreachable: x" };
+    const { uploadIo } = io([{ status: "Failed", output: { error } }]);
+
+    const status = await createUploadService(env(), uploadIo).readPaper(CID, EVENT_ID);
+
+    expect(status.failure).toBe("node-unreachable");
   });
 
   it("asks the dev server locally, and no run without an event id", async () => {

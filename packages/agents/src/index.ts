@@ -9,7 +9,9 @@ export {
   PAPER_SUBMITTED,
   type PaperRefusal,
   PUBLISH_SETTINGS,
+  type PublishFailure,
   type PublishOutcome,
+  publishFailureReason,
 } from "./publish/publish-paper.ts";
 export type {
   SubmitLimiter,

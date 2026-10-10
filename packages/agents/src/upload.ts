@@ -12,7 +12,11 @@ import { baseSepolia } from "viem/chains";
 import { type AgentsEnv, createAgentsEnv } from "./agents-env.ts";
 import { inngest } from "./inngest.ts";
 import { createUploadUrl, deleteFile, findPublicFile, type UploadUrlResult } from "./pinata.ts";
-import { PUBLISH_SETTINGS } from "./publish/publish-paper.ts";
+import {
+  PUBLISH_SETTINGS,
+  type PublishFailure,
+  publishFailureReason,
+} from "./publish/publish-paper.ts";
 import {
   type PaperSubmittedEvent,
   type SubmitLimiter,
@@ -53,6 +57,8 @@ export interface PaperStatus {
   readonly run: ReadRunResult | undefined;
   /** The record, once minted and readable. */
   readonly record?: PublishedRecord;
+  /** Why the run stopped, when it failed with a reason it names. */
+  readonly failure?: PublishFailure;
 }
 
 /** What the upload page calls, built from the agents' settings (ADR 0003, ADR 0010). */
@@ -89,6 +95,7 @@ export function createUploadService(env: AgentsEnv, io: UploadIo): UploadService
   const local = env.APP_ENV === "local";
   const runs = {
     apiUrl: local ? INNGEST_DEV_URL : INNGEST_API_URL,
+    devServer: local,
     signingKey: env.INNGEST_SIGNING_KEY,
     branch: env.APP_ENV === "staging" ? env.VERCEL_GIT_COMMIT_REF : undefined,
     fetch: io.fetch,
@@ -152,7 +159,10 @@ export function createUploadService(env: AgentsEnv, io: UploadIo): UploadService
           : Promise.resolve<AssetResult>({ ok: true, state: "missing" }),
         eventId === undefined ? undefined : readRun(eventId, runs),
       ]);
-      if (!asset.ok || asset.state !== "minted") return { asset, run };
+      const failed = run?.ok && run.run?.state === "failed" ? run.run.output : undefined;
+      const failure = failed === undefined ? undefined : publishFailureReason(failed);
+      if (!asset.ok || asset.state !== "minted")
+        return failure ? { asset, run, failure } : { asset, run };
       const record = await readRecord(cid, asset.ual);
       return record ? { asset, run, record } : { asset, run };
     },

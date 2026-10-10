@@ -63,12 +63,64 @@ describe("readRun", () => {
       "Completed",
       { state: "completed", output: OUTPUT, endedAt: Date.parse("2026-10-10T13:19:23.300Z") },
     ],
-    ["Failed", { state: "failed" }],
-    ["Cancelled", { state: "failed" }],
+    ["Failed", { state: "failed", output: OUTPUT }],
+    ["Cancelled", { state: "failed", output: OUTPUT }],
   ])("reads a %s run", async (status, expected) => {
     const { fetch } = fakeFetch(() => Response.json({ data: [run(status, OUTPUT)] }));
 
     expect(await readRun(EVENT_ID, { ...cloud, fetch })).toEqual({ ok: true, run: expected });
+  });
+
+  it("reads a run's output from the dev server's GraphQL when its REST read is empty", async () => {
+    const ops = JSON.stringify([
+      { op: "RunComplete", id: "x", data: { state: "refused", reason: "no-title" } },
+    ]);
+    const { fetch, requests } = fakeFetch(() => {
+      const graphql = requests.at(-1)?.url.endsWith("/v0/gql");
+      return graphql
+        ? Response.json({ data: { run: { output: ops } } })
+        : Response.json({ data: [run("Completed", "")] });
+    });
+    const dev = { apiUrl: "http://127.0.0.1:8288", devServer: true, timeoutMs: 1000, fetch };
+
+    expect(await readRun(EVENT_ID, dev)).toEqual({
+      ok: true,
+      run: {
+        state: "completed",
+        output: { state: "refused", reason: "no-title" },
+        endedAt: Date.parse("2026-10-10T13:19:23.300Z"),
+      },
+    });
+    expect(requests[1]?.init?.body).toContain("run-1");
+  });
+
+  it("keeps a failed run's error text from the dev server's GraphQL", async () => {
+    const error = '[{"op":"StepFailed","error":{"message":"publish-failed:setup: x"}}]';
+    const { fetch, requests } = fakeFetch(() =>
+      requests.at(-1)?.url.endsWith("/v0/gql")
+        ? Response.json({ data: { run: { output: error } } })
+        : Response.json({ data: [run("Failed", "")] }),
+    );
+    const dev = { apiUrl: "http://127.0.0.1:8288", devServer: true, timeoutMs: 1000, fetch };
+
+    expect(await readRun(EVENT_ID, dev)).toEqual({
+      ok: true,
+      run: { state: "failed", output: error },
+    });
+  });
+
+  it("keeps the empty output when the dev server's GraphQL does not answer", async () => {
+    const { fetch, requests } = fakeFetch(() =>
+      requests.at(-1)?.url.endsWith("/v0/gql")
+        ? new Response("down", { status: 500 })
+        : Response.json({ data: [run("Failed", "")] }),
+    );
+    const dev = { apiUrl: "http://127.0.0.1:8288", devServer: true, timeoutMs: 1000, fetch };
+
+    expect(await readRun(EVENT_ID, dev)).toEqual({
+      ok: true,
+      run: { state: "failed", output: "" },
+    });
   });
 
   it("reads a completed run with no end time", async () => {

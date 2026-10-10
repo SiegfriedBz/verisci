@@ -44,6 +44,7 @@ upload page reads runs there, with no keys.
 | `PAPER_SUBMITTED` | The event's name, `verisci/paper.submitted` |
 | `PUBLISH_SETTINGS` | The publish run's limits (below) |
 | `PublishOutcome`, `PaperRefusal`, `SubmissionRefusal` | How a run ends: `minted` with its UAL, or `refused` with why |
+| `PublishFailure`, `publishFailureReason(output)` | Why a run stopped instead (`chain-unreachable`, `paper-unreachable`, `node-unreachable`, `mint-not-confirmed`, `setup`): each error it throws starts `publish-failed:<reason>:`, and the reader finds it in a failed run's output however Inngest nests it |
 | `getUploadService()` | The upload page's calls, built on first use from the settings: `contextGraph`, `createUploadUrl()`, `submitPaper(input, limiter)`, `readPaper(cid, eventId?)` (below) |
 | `UploadService`, `PaperStatus`, `PublishedRecord`, `UPLOAD_SETTINGS` | Their type, what `readPaper` returns (the Target KA's state and the run), and the upload URL's and signature's lifetimes |
 | `SubmitResult`, `SubmitRefusal`, `SubmitLimiter` | What `submitPaper` returns, why it refuses, and the per-submitter limit the web app passes it |
@@ -108,7 +109,9 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
   event id, the run Inngest started for it (REST, from the dev server locally). Once the KA
   is minted, it also reads the record back (SPARQL through the node: title, authors, DOI,
   PDF link, submitter, signature, deadline), checks the signature against the submitter as
-  the run does, without the deadline rule, and names the publisher (the UAL's author).
+  the run does, without the deadline rule, and names the publisher (the UAL's author). A
+  failed run's status carries `failure`, the reason its error names. Locally, a run's output
+  comes from the dev server's GraphQL API, since its REST read answers it empty.
 
 ## Running a publish locally
 
