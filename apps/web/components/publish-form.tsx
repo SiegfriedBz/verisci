@@ -2,7 +2,6 @@
 
 import { FilePdf, UploadSimple, Warning } from "@phosphor-icons/react";
 import { useAppKit } from "@reown/appkit/react";
-import { useRouter } from "next/navigation";
 import { type DragEvent, useId, useState } from "react";
 import { BaseError, UserRejectedRequestError } from "viem";
 import { useAccount, useSignTypedData, useSwitchChain } from "wagmi";
@@ -39,7 +38,6 @@ export function PublishForm(settings: PublishSettings) {
 }
 
 function PublishFlow({ contextGraph, maxBytes, signatureLifetimeS }: PublishSettings) {
-  const router = useRouter();
   const inputId = useId();
   const { address, chainId, isConnected } = useAccount();
   const { open } = useAppKit();
@@ -81,7 +79,8 @@ function PublishFlow({ contextGraph, maxBytes, signatureLifetimeS }: PublishSett
       onPhase: setPhase,
     });
     if (result.ok) {
-      router.push(`/papers/${result.cid}?event=${result.eventId}`);
+      // A full load: a client-side push here fetched the page but never showed it (Next 16.3.8).
+      window.location.assign(`/papers/${result.cid}?event=${result.eventId}`);
       return;
     }
     setPhase(undefined);
