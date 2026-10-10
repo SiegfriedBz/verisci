@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PaperProgress } from "../../../components/paper-progress.tsx";
 
-export const metadata: Metadata = { title: "Paper · verisci" };
+export const metadata: Metadata = { title: "Paper · VeriSci" };
 
 /** A paper's page: where its publish stands, from `?event=` (its run) and the DKG. */
 export default async function PaperPage({

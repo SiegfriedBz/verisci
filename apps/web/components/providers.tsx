@@ -30,7 +30,7 @@ function walletAdapter(projectId: string): WagmiAdapter {
     networks: [baseSepolia],
     defaultNetwork: baseSepolia,
     metadata: {
-      name: "verisci",
+      name: "VeriSci",
       description: "Publish a paper as a record anyone can verify.",
       url: typeof window === "undefined" ? "https://verisci.app" : window.location.origin,
       icons: [],

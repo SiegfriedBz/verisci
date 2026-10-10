@@ -22,7 +22,7 @@ const CHECK = {
 } as const;
 
 /**
- * Everything anyone needs to check a published paper without trusting verisci: who
+ * Everything anyone needs to check a published paper without trusting VeriSci: who
  * submitted it and their signature (checked when read), who minted it, the record's UAL
  * and the PDF's CID, with how to check them.
  */
@@ -61,7 +61,7 @@ export function VerifyPanel({
         <CopyValue label="Submitter's signature" value={record.signature} />
         {record.publisher && (
           <CopyValue
-            label="Asset owner: verisci's node"
+            label="Asset owner: VeriSci's node"
             value={record.publisher}
             href={addressUrl(record.publisher)}
           />
@@ -87,7 +87,7 @@ export function VerifyPanel({
             changed file can't pass.
           </li>
           <li>
-            The record is a Knowledge Asset on Base: its token is held by verisci's node, and the
+            The record is a Knowledge Asset on Base: its token is held by VeriSci's node, and the
             merkle root of its statements is anchored on chain, so any node can check that the
             content still matches. The node's Basescan page lists the mint transactions, so you can
             see when it was recorded.

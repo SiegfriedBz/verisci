@@ -29,7 +29,7 @@ const NOW: Partial<Record<PaperStage["stage"], string>> = {
   reading:
     "We fetch your PDF from IPFS and read its first page: title, authors, abstract and DOI. Nothing is written yet.",
   saving:
-    "The record is written to verisci's DKG node and shared with other nodes of the network, so they hold a copy.",
+    "The record is written to VeriSci's DKG node and shared with other nodes of the network, so they hold a copy.",
   minting:
     "The node mints the record on Base as a Knowledge Asset: a token, and the merkle root of its statements, so any change to the content would no longer match.",
 };

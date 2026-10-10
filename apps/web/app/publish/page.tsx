@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { PublishForm } from "../../components/publish-form.tsx";
 
-export const metadata: Metadata = { title: "Publish a paper · verisci" };
+export const metadata: Metadata = { title: "Publish a paper · VeriSci" };
 
 const BEFORE = [
   {
@@ -15,7 +15,7 @@ const BEFORE = [
   {
     icon: PenNib,
     title: "You sign, you don't pay",
-    body: "Your wallet signs the PDF's fingerprint (its CID), verisci's graph and a 10-minute deadline. No transaction, no gas.",
+    body: "Your wallet signs the PDF's fingerprint (its CID), VeriSci's graph and a 10-minute deadline. No transaction, no gas.",
   },
   {
     icon: Repeat,

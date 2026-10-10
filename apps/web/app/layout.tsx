@@ -3,6 +3,7 @@ import { Martian_Mono, Sora } from "next/font/google";
 import Link from "next/link";
 import { connection } from "next/server";
 import type { ReactNode } from "react";
+import { Logo } from "../components/logo.tsx";
 import { Providers } from "../components/providers.tsx";
 import { WalletButton } from "../components/wallet-button.tsx";
 import { createWebEnv } from "../lib/web-env.ts";
@@ -12,7 +13,7 @@ const sans = Sora({ subsets: ["latin"], variable: "--font-sora" });
 const mono = Martian_Mono({ subsets: ["latin"], variable: "--font-martian" });
 
 export const metadata: Metadata = {
-  title: "verisci",
+  title: "VeriSci",
   description: "Publish a paper as a record anyone can verify.",
 };
 
@@ -30,11 +31,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <Providers projectId={REOWN_PROJECT_ID}>
           <header className="sticky top-0 z-20 border-b border-line bg-page/70 backdrop-blur-xl">
             <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-              <Link href="/" className="flex items-center gap-2.5">
-                <span className="signal-gradient grid size-7 place-items-center rounded-lg font-mono text-xs font-bold text-accent-ink">
-                  v
-                </span>
-                <span className="text-lg font-semibold tracking-tight">verisci</span>
+              <Link href="/" aria-label="VeriSci home">
+                <Logo />
               </Link>
               <nav className="flex items-center gap-3 sm:gap-6">
                 <Link href="/publish" className="text-sm font-medium text-muted hover:text-ink">

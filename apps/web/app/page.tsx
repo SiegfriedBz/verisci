@@ -33,18 +33,18 @@ const HOW = [
 const RATE = [
   {
     icon: Robot,
-    title: "Machine score",
-    body: "An AI reads the paper and gives it a score from 0 to 100, with its reasons.",
+    title: "Phase 1 · Machine score",
+    body: "An AI reads the paper and scores it from 0 to 100, with its reasons. This score is recorded on chain.",
   },
   {
     icon: UsersThree,
-    title: "Human review",
-    body: "Reviewers read it and add their own score to the same rating.",
+    title: "Phase 2 · Human review",
+    body: "Reviewers read the paper and score it. Their score is recorded next to the machine score, which stays as it was.",
   },
   {
     icon: Flask,
-    title: "Wet-lab replication",
-    body: "A lab repeats the experiments, then reviewers check its results before they become the last score.",
+    title: "Phase 3 · Wet-lab replication",
+    body: "A lab repeats the experiments, then reviewers check its results. That verdict is recorded as a third score, next to the first two.",
   },
 ] as const;
 
@@ -57,7 +57,7 @@ const RECORD = [
   ["ual", "did:dkg:base:84532/0xd701…/5"],
 ] as const;
 
-/** Home: what verisci does, the way to publish, and the rating flow to come. */
+/** Home: what VeriSci does, the way to publish, and the rating flow to come. */
 export default function Home() {
   return (
     <div className="grid gap-24 sm:gap-32">
@@ -67,7 +67,7 @@ export default function Home() {
             Publish your paper as a record anyone can <span className="text-accent">verify</span>
           </h1>
           <p className="max-w-[46ch] text-lg leading-relaxed text-muted">
-            Drop a PDF and sign with your wallet. verisci records it on the knowledge graph, with
+            Drop a PDF and sign with your wallet. VeriSci records it on the knowledge graph, with
             you as its submitter.
           </p>
           <div className="flex flex-wrap items-center gap-3">
@@ -105,7 +105,7 @@ export default function Home() {
             Two layers, one record
           </h2>
           <p className="leading-relaxed text-muted">
-            verisci publishes each paper on the OriginTrail Decentralized Knowledge Graph (DKG) as a
+            VeriSci publishes each paper on the OriginTrail Decentralized Knowledge Graph (DKG) as a
             Knowledge Asset: a set of linked statements about the paper, with an owner and a proof
             on chain. Its content and its proof live in two places that check each other.
           </p>
@@ -147,13 +147,13 @@ export default function Home() {
             tamper-evident.
           </p>
           <p>
-            The token is held by verisci's node, which publishes and pays for it. Your claim to the
+            The token is held by VeriSci's node, which publishes and pays for it. Your claim to the
             paper is your signature inside the asset, covered by the merkle root. The PDF itself
             sits on IPFS, addressed by its CID, a hash of its bytes.
           </p>
           <p>
             Ratings will be assets too: each rating is its own Knowledge Asset pointing at the
-            paper, and its scores are recorded on verisci's rating contract.
+            paper, and its scores are recorded on VeriSci's rating contract.
           </p>
         </div>
       </section>
@@ -170,7 +170,7 @@ export default function Home() {
           <Track
             label="Rate"
             badge="coming soon"
-            intro="Anyone will be able to ask for a rating of a published paper. It grows in three phases, and each score is recorded on chain. A rating is its own Knowledge Asset pointing at the paper, which never changes."
+            intro="Anyone will be able to ask for a rating of a published paper. It grows in three phases, and each phase records its own score on chain: a later phase never overwrites an earlier one, so you see how the paper held up at each step. A rating is its own Knowledge Asset pointing at the paper, which never changes."
             steps={RATE}
             muted
           />
