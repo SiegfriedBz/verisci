@@ -15,6 +15,7 @@
     "instrumentation.ts",
     "instrumentation.test.ts",
     "app",
+    "lib",
     ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
