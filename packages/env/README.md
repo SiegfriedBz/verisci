@@ -37,6 +37,8 @@ declares its own variables and why `APP_ENV` is required in production builds is
 Each workspace declares its variables in its env module (`src/env.ts`, which may
 import the schema from a file next to it) and extends the shared env. A workspace
 declares only what it reads, so no workspace requires (or sees) a secret it does not use.
+A dev script (`scripts/*.ts`) declares the variables only it reads with `defineEnv`, in the
+script itself, such as the agents' `publish-pdf` and its `PINATA_JWT`.
 
 ```ts
 // packages/<workspace>/src/env.ts

@@ -31,6 +31,7 @@ the local dev server; deployed, it needs Inngest's event and signing keys.
 
 | Export | What it does |
 | --- | --- |
+| `agentsName` | The package name, listed on the web app's home page |
 | `inngest` | verisci's Inngest client, in dev mode when `APP_ENV` is `local` |
 | `functions` | Every Inngest function, for `web`'s `/api/inngest` route |
 | `publishPaper` | The `publish-paper` function, run by `verisci/paper.submitted` |
@@ -56,16 +57,23 @@ starts nothing. Its steps:
    mint. A KA already stored or minted keeps its first submitter.
 3. **read-paper**: fetches the PDF through the gateway and has GROBID parse its header, in
    one step, so the PDF's bytes are never a step output. A file that is not a PDF, is over
-   30 MB, or has no readable title ends the run, refused.
+   30 MB, that GROBID cannot parse (204, 4xx, or an answer that is not TEI) or that has no
+   readable title ends the run, refused.
 4. **store**, then **mint**: `startMint` listens 10 s, then the run polls the state every
    30 s with `step.sleep`. A mint not seen after 10 minutes is started again
    ([ADR 0008](../../docs/adr/0008-mints-are-async-polled-in-short-steps.md)).
 
-A failure worth a retry (a quorum failure, a node, gateway, GROBID or chain that does not
-answer) waits 2 minutes with `step.sleep` and starts again from the read, up to 5 attempts
-in a 45-minute budget ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)).
-A node that refuses the token or does not serve the graph fails the run at once. A run that
-fails is recovered by publishing the same PDF again.
+Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
+
+- **verify:** a chain that does not answer (for a smart-wallet signature) waits 2 minutes
+  and runs verify again, up to 5 times, then fails the run.
+- **read, read-paper, store, mint:** a quorum failure, or a node, gateway or GROBID that
+  does not answer, waits 2 minutes and starts a new attempt from the read; a mint not seen
+  after 10 minutes starts a new attempt at once. Up to 5 attempts.
+- The run has 45 minutes in all, which can end it before its 5 attempts.
+- It fails at once when its settings are missing or invalid, or when the node refuses the
+  token or does not serve the graph. A run that fails is recovered by publishing the same
+  PDF again.
 
 ## Running a publish locally
 

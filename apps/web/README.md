@@ -14,7 +14,8 @@ the shared variables: `build` needs `APP_ENV` (see the
 
 All five packages: `@verisci/env`, `@verisci/core`, `@verisci/dkg`,
 `@verisci/contracts`, `@verisci/agents`. Each one must be listed in
-`transpilePackages` in `next.config.ts`.
+`transpilePackages` in `next.config.ts`. Also `inngest`, for the `/api/inngest` route's
+`serve` handler.
 
 ## Environment
 
@@ -23,6 +24,10 @@ All five packages: `@verisci/env`, `@verisci/core`, `@verisci/dkg`,
 would mix the two unpredictably when it reloads. Next.js only watches `apps/web`,
 so restart `pnpm dev` after editing a root env file. Variables already set in the
 environment (CI, the host) take precedence.
+
+`/api/inngest` needs nothing locally: with `APP_ENV=local` it talks to the Inngest dev
+server. Deployed, it needs Inngest's event and signing keys, and the publish run reads its
+own settings on its first run ([`packages/agents`](../../packages/agents/README.md#environment)).
 
 ## Scripts
 

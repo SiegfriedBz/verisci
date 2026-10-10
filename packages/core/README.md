@@ -85,6 +85,10 @@ A Target KA describes a paper and who submitted it
   with `schema:name`, `schema:url` (`ipfs://<cid>`), `schema:abstract`, `schema:sameAs`
   (`https://doi.org/<doi>`), and one `schema:author` node per author,
   `urn:verisci:paper:<cid>/author/<n>`, with `schema:name` and `schema:position`.
+  `schema:abstract` and `schema:sameAs` are written only when an abstract or a DOI was
+  read; the DOI is lowercase, with any `doi:` or `https://doi.org/` prefix removed.
+  `schema:position` and `urn:verisci:deadline` are `xsd:integer` literals
+  (`"7"^^<http://www.w3.org/2001/XMLSchema#integer>`).
 - **Submission:** `urn:verisci:submitter` (the lowercase address), `urn:verisci:signature`
   and `urn:verisci:deadline` record the EIP-712 signature over
   `Submission { string cid; string contextGraph; uint256 deadline }`, under the domain

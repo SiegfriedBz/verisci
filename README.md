@@ -105,10 +105,11 @@ sequenceDiagram
   A-->>U: short-lived signed upload URL
   U->>P: upload the PDF
   P-->>U: CID
-  U->>A: CID + EIP-712 signature
+  U->>A: CID + EIP-712 signature (with graph and deadline)
   A->>A: verify the signature and the pinned file
   A->>R: event with the CID, submitter address and signature
-  R->>R: Target KA name from CID
+  R->>R: verify the signature, Target KA name from CID
+  R->>N: read the Target KA's state (stop if already minted)
   R->>P: fetch the PDF by its CID
   R->>G: parse the PDF
   R->>R: read metadata from the TEI
@@ -201,6 +202,9 @@ pnpm install
 (cd packages/contracts && forge soldeer install)   # Solidity dependencies
 pnpm dev         # starts apps/web on http://localhost:3000
 ```
+
+To publish a PDF locally (the DKG node, GROBID and the Inngest dev server), follow
+[`packages/agents` → Running a publish locally](packages/agents/README.md#running-a-publish-locally).
 
 Environment variables are listed in [`.env.example`](.env.example): copy it to
 `.env.local` at the repo root (gitignored), where `apps/web` loads it from.

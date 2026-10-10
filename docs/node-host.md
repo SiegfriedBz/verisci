@@ -29,7 +29,7 @@ DKG daemon ◀──peer-to-peer──▶ other DKG nodes and the testnet relays
 
 | Traffic | Path |
 | --- | --- |
-| The app → the node or GROBID | Through Caddy only, over HTTPS, with a credential |
+| The app → the node or GROBID | On a server: through Caddy only, over HTTPS, with a credential. On the developer's computer: directly on `127.0.0.1` |
 | The node → Base Sepolia (reads, transactions) | Through the RPC proxy only: `chain.rpcUrl` is `http://127.0.0.1:8545` and no backup RPC URL is set |
 | The node ↔ other DKG nodes | Directly, on its peer-to-peer port (sync, storage acknowledgements, relays) |
 | The RPC proxy → the chain | Directly, to the public endpoints first and Alchemy last |
@@ -293,7 +293,7 @@ Check:
 ```bash
 curl -s 127.0.0.1:8070/api/isalive
 # true
-curl -s -F input=@paper.pdf 127.0.0.1:8070/api/processHeaderDocument | grep -o '<title[^>]*>[^<]*</title>'
+curl -s -F input=@paper.pdf -H 'Accept: application/xml' 127.0.0.1:8070/api/processHeaderDocument | grep -o '<title[^>]*>[^<]*</title>'
 # the paper's title
 ```
 
