@@ -54,7 +54,6 @@ const RECORD = [
   ["pdf", "ipfs://bafybeicrwkcuh…ats642m"],
   ["submitter", "0x7a31…c9f2"],
   ["signature", "0x4be0…1c (EIP-712)"],
-  ["ual", "did:dkg:base:84532/0xd701…/5"],
 ] as const;
 
 /** Home: what VeriSci does, the way to publish, and the rating flow to come. */
@@ -180,8 +179,8 @@ export default function Home() {
       <section className="grid items-center gap-10 md:grid-cols-[1.6fr_1fr] md:gap-16">
         <div className="glass order-2 overflow-hidden rounded-2xl md:order-1">
           <div className="flex items-center justify-between border-b border-line px-5 py-3 text-xs text-muted">
-            <span className="font-mono">target-ka.json</span>
-            <span>Example record</span>
+            <span>Paper asset · stored off chain</span>
+            <span>Example</span>
           </div>
           <dl className="grid gap-3 p-5 font-mono text-xs sm:text-sm">
             {RECORD.map(([key, value]) => (
@@ -191,14 +190,23 @@ export default function Home() {
               </div>
             ))}
           </dl>
+          <div className="grid gap-1 border-t border-line px-5 py-3 font-mono text-xs">
+            <span className="text-muted">address (UAL)</span>
+            <span className="truncate text-accent">did:dkg:base:84532/0xd701…/5</span>
+          </div>
         </div>
         <div className="order-1 grid content-start gap-3 md:order-2">
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            What the record holds
+            What a paper asset holds
           </h2>
           <p className="max-w-[40ch] leading-relaxed text-muted">
-            The paper's details, a permanent link to the PDF, and your signature. Anyone can check
-            who submitted it without trusting us.
+            The statements DKG nodes store for each paper: its details, a permanent link to the PDF,
+            and your signature. The merkle root on Base covers all of them, so anyone can check who
+            submitted it without trusting us.
+          </p>
+          <p className="max-w-[40ch] text-sm leading-relaxed text-muted">
+            A rating will be a separate asset, with its own UAL, whose statements point to this one.
+            The paper asset itself never changes.
           </p>
         </div>
       </section>
