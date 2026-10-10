@@ -12,9 +12,9 @@ build validates the shared variables: `build` needs `APP_ENV` (see the
 
 | Path | What it is |
 | --- | --- |
-| `/` | Home: what VeriSci does, the DKG's two layers (content off chain, token and merkle root on chain), how publishing works and the rating flow to come, and what a paper asset holds |
-| `/publish` | Connect a wallet, drop a PDF, sign once ([ADR 0010](../../docs/adr/0010-pdf-to-target-ka-pipeline.md), [ADR 0034](../../docs/adr/0034-users-connect-a-wallet-anyone-may-publish.md)) |
-| `/papers/<cid>?event=<id>` | Where a paper stands, polled every 5 s until published, refused or stopped. Once published: the record's title, authors and DOI, and a "Verify it yourself" panel (submitter and publisher linked on Basescan, the asset's ERC-721 token linked on Basescan, the signed deadline and the context graph, the EIP-712 domain and type to check the signature with, the signature checked when read, the UAL and the CID, and how to check them). `?already=1` says a re-submitted PDF was already published |
+| `/` | Home: what VeriSci does, the DKG's two layers (the record off-chain, its ERC-721 token and merkle root on-chain, the UAL linking them), how publishing works and the rating flow to come, and an example paper asset |
+| `/publish` | Connect a wallet, drop a PDF, sign once; what publishing means and the limits ([ADR 0010](../../docs/adr/0010-pdf-to-target-ka-pipeline.md), [ADR 0034](../../docs/adr/0034-users-connect-a-wallet-anyone-may-publish.md)) |
+| `/papers/<cid>?event=<id>` | Where a paper stands, then its record and how to verify it (below). `?already=1` says a re-submitted PDF was already published |
 | `/api/papers/<cid>?event=<id>` | The same as JSON (`PaperView`: the stage, and the record once published), never cached: a read, so a route rather than a server action |
 | `/api/inngest` | Serves the Inngest functions |
 | any other path | `app/not-found.tsx`; a page that fails to render shows `app/error.tsx` with a retry |
@@ -32,22 +32,73 @@ address, each per rolling day, in Upstash; in memory with `APP_ENV=local` and no
 settings, reset when the server restarts. A limit store that does not answer refuses
 rather than letting requests through.
 
+### The paper page
+
+`components/paper-progress.tsx` asks `/api/papers/<cid>` every 5 s and stops on a final
+stage. `lib/progress.ts` (`paperProgress`, pure) maps the asset's state on the node, the
+run Inngest started for the event, and why that run stopped to one stage:
+
+```mermaid
+stateDiagram-v2
+  [*] --> reading: event sent
+  reading --> saving: draft on the node
+  saving --> minting: shared, mint started
+  minting --> published: asset minted
+  reading --> refused: the paper cannot be published (why)
+  reading --> failed: the run stopped (why)
+  saving --> failed
+  minting --> failed
+  reading --> not_found: no run a minute after the event
+  reading --> not_published: run ended, output unreadable, nothing stored
+  published --> [*]
+  refused --> [*]
+  failed --> [*]
+  not_found --> [*]
+  not_published --> [*]
+```
+
+- A minted asset is `published` whatever the run says, so a second submitter of the same
+  PDF sees it at once.
+- `refused` shows why (`lib/messages.ts` → `refusalMessage`): not a PDF, too large,
+  unreadable, no title (with a hint for PDFs whose pages are pictures), or a submission
+  that failed its checks.
+- `failed` shows why the run stopped (`failureMessage`): Base, the PDF, the DKG node or
+  the mint not answering after every retry, or a problem on our side.
+- `not-found` covers no event to ask about, and an event Inngest started no run for a
+  minute after it was sent (the event's time is read from its ULID, `eventTime`).
+- `unavailable` (the node or Inngest not answering) is shown and asked again.
+
+Once published, the page shows the record (title, authors, DOI) and a "Verify it
+yourself" panel (`components/verify-panel.tsx`): the signature checked when read, the
+submitter, the signature, its deadline and the context graph, the EIP-712 domain and type
+to check it with, the address the asset was minted to, the asset's ERC-721 token in
+OriginTrail's `DKGKnowledgeAssets` (`lib/explorer.ts` → `assetTokenUrl`), the UAL, and the
+PDF's CID, linked through Pinata's public gateway (`ipfsUrl`; ipfs.io no longer serves
+files). Addresses and the token link to Basescan.
+
 ## Design
 
-A dark lab instrument with a web3 edge, in Tailwind CSS v4 (`app/globals.css`): near-black,
-two signal colours with one meaning each (emerald for the off-chain record, cyan for the
-on-chain asset, blended on the main action, live lines and the line linking a save to its
-mint), glass
-panels, a faint grid, one glow behind the hero. Dark only. Sora for text, Martian Mono for
-on-chain values (`next/font`), Phosphor icons, one radius scale. Motion: the home page plays
-the publish chain on a loop, the step being worked on breathes, and all of it stops for
-visitors who ask for reduced motion. Every page works from 360 px wide, one column on
-phones, and the page clips any overflow. On-chain values show in short form with a copy
-button. The product name is VeriSci; its mark (`components/logo.tsx`, and `app/icon.svg` for
-the tab) is a check drawn as three linked graph nodes. Keyboard users get a skip link and one
-accent focus ring; the header marks the current page. A footer lists the contracts on Base Sepolia, linked on
-Basescan: OriginTrail's `DKGKnowledgeAssets` and `KnowledgeAssetsLifecycle`, and this
-environment's RatingController from `@verisci/contracts` (`local` shows staging's).
+A dark lab instrument with a web3 edge, in Tailwind CSS v4 (`app/globals.css`):
+
+- Near-black, glass panels with hairline borders, a faint grid, one glow behind the hero.
+  Dark only.
+- Two signal colours with one meaning each: emerald for the off-chain record, cyan for the
+  on-chain asset. They blend only on the main action, live lines, and the line linking a
+  save to its mint in the publish chain.
+- Sora for text, Martian Mono for on-chain values (`next/font`), Phosphor icons. One radius
+  scale: `rounded-2xl` panels, `rounded-xl` buttons and inputs, `rounded-md` flags.
+- Motion: the home page plays the publish chain on a loop and the step being worked on
+  breathes; all of it stops for visitors who ask for reduced motion.
+- Every page works from 360 px wide, one column on phones, and the page clips any overflow.
+  On-chain values show in short form with a copy button.
+- The product name is VeriSci; its mark (`components/logo.tsx`, and `app/icon.svg` for the
+  tab) is a check drawn as three linked graph nodes.
+- Keyboard users get a skip link and one accent focus ring; the header marks the current
+  page.
+- The footer (`components/site-footer.tsx`) lists the contracts on Base Sepolia, linked on
+  Basescan: OriginTrail's `DKGKnowledgeAssets` and `KnowledgeAssetsLifecycle`
+  (`ORIGINTRAIL_CONTRACTS` from `@verisci/core`), and this environment's RatingController
+  from `@verisci/contracts` (`local` shows staging's).
 
 ## Depends on
 

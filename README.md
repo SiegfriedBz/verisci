@@ -1,26 +1,27 @@
-# verisci
+# VeriSci
 
 [![CI](https://github.com/SiegfriedBz/verisci/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/SiegfriedBz/verisci/actions/workflows/ci.yml)
 
-verisci gives scientific papers an open quality rating that anyone can request,
+VeriSci gives scientific papers an open quality rating that anyone can request,
 read and verify.
 
 ## Why
 
 How much to trust a paper is usually inferred from where it was published, and
-the reviews behind that judgement are rarely public. verisci attaches the
+the reviews behind that judgement are rarely public. VeriSci attaches the
 rating to the paper itself, in the open: each rating is a public record on the
 OriginTrail Decentralized Knowledge Graph (DKG), and its score is written on
 chain, so neither can be quietly changed. A rating starts as a rough machine
 score and is meant to grow stronger through human review and, later, wet-lab
 replication ([ADR 0012](docs/adr/0012-three-phases-settled-by-the-oracle.md)).
 
-Status: early. verisci is a rebuild of an earlier prototype,
+Status: early. VeriSci is a rebuild of an earlier prototype,
 desci-rating-dapp, which ran both flows (publish a paper, rate it) end to end on
 Base Sepolia. This repo starts again from clean foundations (monorepo, tooling,
 CI), and its ADRs and domain facts record what the prototype taught us. The first
 user-facing feature is the upload page: connect a wallet, publish a PDF, follow it until it
-is minted. Rating comes next.
+is minted, then verify its record (signature, token, UAL, CID) from the paper's page. Rating
+comes next. The repo, its packages and the EIP-712 domain keep the lowercase name `verisci`.
 Everything runs on testnets.
 
 ## How it works
@@ -29,7 +30,7 @@ Everything runs on testnets.
   PDF is parsed, its metadata read, and it is published to the DKG as a
   Knowledge Asset that records who submitted it
   ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)).
-- **Anyone can request a rating on chain.** verisci scores the paper, our DKG
+- **Anyone can request a rating on chain.** VeriSci scores the paper, our DKG
   node publishes the rating as its own Rating KA (R-KA), and the oracle records
   the score on the contract ([ADR 0011](docs/adr/0011-a-rating-is-a-separate-r-ka.md),
   [ADR 0014](docs/adr/0014-contract-owns-scores-dkg-owns-content.md)).
@@ -42,9 +43,9 @@ Everything runs on testnets.
 - **Staging and production are kept apart**, with their own contracts, graphs
   and oracle wallets; only the DKG node is shared ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)).
 
-Terms: a **KA** (Knowledge Asset) is a record on the DKG; the ones verisci
+Terms: a **KA** (Knowledge Asset) is a record on the DKG; the ones VeriSci
 publishes (Target KAs and every R-KA) are minted and owned by its DKG node. The
-**oracle** is verisci's account that records rating
+**oracle** is VeriSci's account that records rating
 results on the contract.
 
 ## Architecture
@@ -107,17 +108,22 @@ sequenceDiagram
   U->>P: upload the PDF
   P-->>U: CID
   U->>A: CID + EIP-712 signature (with graph and deadline)
-  A->>A: verify the signature, the submitter's limit and the pinned file
-  A->>R: event with the CID, submitter address and signature
-  R->>R: verify the signature, Target KA name from CID
-  R->>N: read the Target KA's state (stop if already minted)
-  R->>P: fetch the PDF by its CID
-  R->>G: parse the PDF
-  R->>R: read metadata from the TEI
-  R->>N: store with the submitter address and signature, then mint and poll
-  N-->>R: Target KA UAL, ready to be rated
+  A->>A: verify the signature
+  alt already minted
+    A-->>U: its UAL at once, nothing new written
+  else
+    A->>A: the submitter's limit and the pinned file
+    A->>R: event with the CID, submitter, signature (one run per signature)
+    R->>R: verify the signature, Target KA name from CID
+    R->>N: read the Target KA's state (stop if already minted)
+    R->>P: fetch the PDF by its CID
+    R->>G: parse the PDF
+    R->>R: read metadata from the TEI (refuse with a reason if unreadable)
+    R->>N: store with the submitter address and signature, then mint and poll
+    N-->>R: Target KA UAL, ready to be rated
+  end
   U->>A: poll the paper's page
-  A-->>U: reading, saving, minting, then published with its UAL
+  A-->>U: reading, saving, minting, then published with its UAL, or refused or stopped with why
 ```
 
 Every PDF goes through one uploader with fixed IPFS import settings, so the same PDF always
@@ -296,7 +302,7 @@ are guard rails, not a sandbox. Personal overrides go in `.claude/settings.local
 ## Contributing
 
 Branches, commits, docs rules, pull requests and releases are covered in
-[CONTRIBUTING.md](CONTRIBUTING.md). verisci is built with
+[CONTRIBUTING.md](CONTRIBUTING.md). VeriSci is built with
 [Claude Code](https://claude.com/claude-code).
 
 ## License
