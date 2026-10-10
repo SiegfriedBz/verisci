@@ -29,7 +29,9 @@ environment (CI, the host) take precedence.
 server. Deployed, it needs Inngest's event and signing keys, and `instrumentation.ts`
 checks the workflows' settings when the server starts, so a bad one stops it there
 ([`packages/agents`](../../packages/agents/README.md#environment)). It checks nothing when
-`APP_ENV` is `local`, and does not run during `next build`.
+`APP_ENV` is `local`, and does not run during `next build`. On Vercel, a server starts on a
+request after the deploy is live, so a missing setting makes every route fail: set the
+workflows' settings in each Vercel environment before its first deploy.
 
 ## Scripts
 

@@ -70,8 +70,9 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
 
 - **verify:** a chain that does not answer (for a smart-wallet signature) waits 2 minutes
   and runs verify again, up to 5 times, then fails the run.
-- **read, read-paper, store, mint:** a quorum failure, or a node, gateway or GROBID that
-  does not answer, waits 2 minutes and starts a new attempt from the read; a mint not seen
+- **read, read-paper, store, mint:** a quorum failure, a node, gateway or GROBID that
+  does not answer, or a draft gone before the store (`no-content`) waits 2 minutes and
+  starts a new attempt from the read, which then reads the paper again; a mint not seen
   after 10 minutes starts a new attempt at once. Up to 5 attempts.
 - The run has 45 minutes in all, which can end it before its 5 attempts.
 - It fails at once when its settings are missing or invalid, when the node or GROBID refuses
