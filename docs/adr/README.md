@@ -40,7 +40,7 @@ How every store, mint and on-chain write behaves; both flows below rely on it.
 | --- | --- |
 | [0007. Every write converges: store, mint, fulfil and cancel](0007-all-writes-converge.md) | Each write reads state first and treats "already done" as success |
 | [0008. Mints are started, then polled in short steps](0008-mints-are-async-polled-in-short-steps.md) | A step starts the mint and stops listening before the time limit; the asset's state is polled, and no run waits for an earlier mint |
-| [0009. Retries are spaced with step.sleep](0009-retries-are-spaced-with-step-sleep.md) | Retries wait with `step.sleep`: from 2 minutes, 5 attempts, 45 minutes in all |
+| [0009. Retries are spaced with step.sleep](0009-retries-are-spaced-with-step-sleep.md) | Retries wait with `step.sleep`; each workflow sets its own values, starting from 2 minutes, 5 attempts, 45 minutes in all |
 
 ## Publish flow
 

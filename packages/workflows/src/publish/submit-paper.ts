@@ -87,8 +87,8 @@ export async function submitPaper(input: unknown, deps: SubmitDeps): Promise<Sub
   const found = await deps.findFile(submission.cid);
   if (!found.ok)
     return { ok: false, reason: found.reason === "missing" ? "not-pinned" : "unavailable" };
-  // One test for both the refusal and the unpin, so a file this refuses as not a PDF is the
-  // only kind it ever unpins.
+  // The refusal and the unpin share this one test of a PDF, so whatever a file is refused
+  // as, only one the refusal counts as not a PDF is ever unpinned.
   const pdf = found.file.mimeType === "application/pdf";
   const refusal = found.file.size > deps.maxBytes ? "too-large" : pdf ? undefined : "not-a-pdf";
   if (refusal) {
