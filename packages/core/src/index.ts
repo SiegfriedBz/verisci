@@ -8,6 +8,7 @@ export {
   targetKaName,
 } from "./asset-names.ts";
 export { BASE_SEPOLIA_CHAIN_ID } from "./chains.ts";
+export { canonicalCid } from "./cid.ts";
 export {
   canonicalContextGraph,
   SUBMISSION_DOMAIN,

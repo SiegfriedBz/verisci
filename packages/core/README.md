@@ -23,6 +23,7 @@ Status: shared constants, UAL parsing, asset names, and a Target KA's content an
 | `UalError` | Why a string is not a UAL: `empty`, `not-a-dkg-did`, `bad-chain`, `bad-address`, `bad-id`, `bad-shape` |
 | `ParseUalResult`, `NormalizeUalResult` | The results of `parseUal` and `normalizeUal` |
 | `rKaName(requestId)` | The R-KA's asset name, `verisci-rka-<request id>`, or `{ ok: false, reason: "bad-request-id" }`; returns a result for every input |
+| `canonicalCid(cid)` | A PDF's CID as CIDv1 base32, the spelling a submission signs, or `undefined` for anything an IPFS file upload would not produce; the browser runs it before asking for a signature |
 | `targetKaName(cid)` | The Target KA's asset name, `verisci-tka-<CIDv1 base32>`, or `{ ok: false, reason: "bad-cid" }`; returns a result for every input |
 | `AssetNameResult`, `AssetNameError` | The result of both, and why an input cannot be named |
 | `submissionTypedData(message)` | The EIP-712 typed data a submitter signs to publish a PDF, in the shape viem takes |
