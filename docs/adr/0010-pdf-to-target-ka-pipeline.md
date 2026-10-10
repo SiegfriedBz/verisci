@@ -18,7 +18,7 @@ Papers enter verisci as PDFs and must become Target KAs. Parsing and the DKG wri
 
 ## Consequences
 
-- A failed stage retries alone; earlier stages are not redone.
+- A retry starts again from what the node holds and redoes only what is not there yet ([0007](0007-all-writes-converge.md)): the paper is read and parsed again only when nothing was stored.
 - Nothing on chain tracks a publish, so a publish that fails after its retries is recovered by submitting the same PDF again.
 - Publishing needs a connected wallet and one signature, but no gas.
 - A signature proves an address, not a person. Every publish costs money (pinning, parsing, node funds), so issuing upload URLs is still rate-limited.
@@ -30,3 +30,4 @@ Papers enter verisci as PDFs and must become Target KAs. Parsing and the DKG wri
 - 2026-10-09: a later submitter of a PDF already stored or minted is not recorded; the KA keeps its first submitter (publish plan).
 - 2026-10-10: corrected: the second pin of each PDF is no longer tied to the publish plan, which did not add it; a later plan does.
 - 2026-10-10: corrected: the list of metadata fields moved to `packages/core` (README → Target KAs), a mechanic rather than the decision (ADR sweep).
+- 2026-10-10: a retry starts again from what the node holds, so a paper is read and parsed again when its store failed before anything was stored, rather than no earlier stage being redone; the code always worked this way, and a re-read costs seconds on a rare retry (README audit, user's choice).
