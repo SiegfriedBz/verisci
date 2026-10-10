@@ -42,7 +42,8 @@ Declared in `src/dkg-env.ts` (`createDkgEnv`) and validated on first import of
 | `client.storeAsset(name, quads)` | Stores and shares the asset, doing only what is left, and returns `stored` or `minted`; a stored or minted asset keeps its first content |
 | `client.startMint(name, { listenMs? })` | Starts the mint of a stored asset; returns `minted` with its UAL, or `minting` when no reply came within `listenMs` (10 s by default) or a mint may be in flight |
 | `DkgClient`, `DkgClientConfig` | The client's calls and its settings |
-| `Quad`, `AssetState`, `AssetResult`, `MintResult`, `DkgFailure` | The client's input and result types |
+| `client.query(sparql)` | Runs a SPARQL `SELECT` on the graph (`POST /api/query`, with the full graph id) and returns its rows; terms come as the node writes them, IRIs bare and literals quoted |
+| `Quad`, `AssetState`, `AssetResult`, `MintResult`, `QueryResult`, `DkgFailure` | The client's input and result types |
 | `env` (from `@verisci/dkg/env`) | The settings, validated from `process.env` on import |
 | `dkgSchema(isProduction)` | The three variables' rules, for a workspace that validates them with its own in one pass |
 | `contextGraphSchema(isProduction)` | The rule for `DKG_CONTEXT_GRAPH` (full id, `-prod` guard), for a script that reads only that variable |

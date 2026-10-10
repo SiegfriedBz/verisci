@@ -1,4 +1,11 @@
-import { canonicalContextGraph, targetKaName } from "@verisci/core";
+import {
+  canonicalContextGraph,
+  type PaperRecord,
+  paperRecordQuery,
+  parsePaperRecord,
+  parseUal,
+  targetKaName,
+} from "@verisci/core";
 import { type AssetResult, createDkgClient } from "@verisci/dkg";
 import { createPublicClient, http } from "viem";
 import { baseSepolia } from "viem/chains";
@@ -12,7 +19,7 @@ import {
   type SubmitResult,
   submitPaper,
 } from "./publish/submit-paper.ts";
-import { verifySubmission } from "./publish/verify-submission.ts";
+import { signatureMatches, verifySubmission } from "./publish/verify-submission.ts";
 import { type ReadRunResult, readRun } from "./runs.ts";
 
 /** The upload page's timings, in seconds. */
@@ -29,11 +36,23 @@ const PAGE_TIMEOUT_MS = 15_000;
 const INNGEST_DEV_URL = "http://127.0.0.1:8288";
 const INNGEST_API_URL = "https://api.inngest.com";
 
+/** A minted paper's record, read back from the DKG, with what anyone can check about it. */
+export interface PublishedRecord extends Omit<PaperRecord, "deadline"> {
+  /** The signed deadline, in Unix seconds, as a decimal string (JSON has no bigint). */
+  readonly deadline: string;
+  /** Whether the signature is the submitter's, checked when read: `unknown` if the chain did not answer. */
+  readonly signatureCheck: "valid" | "invalid" | "unknown";
+  /** The address that minted it, the UAL's author: our DKG node's publishing wallet. */
+  readonly publisher: string | undefined;
+}
+
 /** What the DKG and Inngest say about a paper, for the page to show as one stage. */
 export interface PaperStatus {
   readonly asset: AssetResult;
   /** Undefined when the page has no event id to ask about. */
   readonly run: ReadRunResult | undefined;
+  /** The record, once minted and readable. */
+  readonly record?: PublishedRecord;
 }
 
 /** What the upload page calls, built from the agents' settings (ADR 0003, ADR 0010). */
@@ -44,7 +63,7 @@ export interface UploadService {
   createUploadUrl(): Promise<UploadUrlResult>;
   /** Checks a signed submission and starts its publish run ({@link submitPaper}). */
   submitPaper(input: unknown, limiter: SubmitLimiter): Promise<SubmitResult>;
-  /** The paper's Target KA state and, given the event id, its publish run. */
+  /** The paper's Target KA state, its record once minted, and, given the event id, its publish run. */
   readPaper(cid: string, eventId?: string): Promise<PaperStatus>;
 }
 
@@ -75,6 +94,26 @@ export function createUploadService(env: AgentsEnv, io: UploadIo): UploadService
     fetch: io.fetch,
     timeoutMs: PAGE_TIMEOUT_MS,
   };
+
+  /** The record of a minted paper and its signature check; undefined when it cannot be read. */
+  async function readRecord(cid: string, ual: string): Promise<PublishedRecord | undefined> {
+    const sparql = paperRecordQuery(cid);
+    if (!sparql) return undefined;
+    const answer = await dkg.query(sparql);
+    const record = answer.ok ? parsePaperRecord(cid, answer.bindings) : undefined;
+    if (!record) return undefined;
+    const matches = await signatureMatches(
+      { ...record, cid, contextGraph: canonicalContextGraph(env.DKG_CONTEXT_GRAPH) },
+      chain,
+    );
+    const parsed = parseUal(ual);
+    return {
+      ...record,
+      deadline: record.deadline.toString(),
+      signatureCheck: matches === "unreachable" ? "unknown" : matches ? "valid" : "invalid",
+      publisher: parsed.ok ? parsed.ual.address : undefined,
+    };
+  }
 
   return {
     contextGraph: canonicalContextGraph(env.DKG_CONTEXT_GRAPH),
@@ -113,7 +152,9 @@ export function createUploadService(env: AgentsEnv, io: UploadIo): UploadService
           : Promise.resolve<AssetResult>({ ok: true, state: "missing" }),
         eventId === undefined ? undefined : readRun(eventId, runs),
       ]);
-      return { asset, run };
+      if (!asset.ok || asset.state !== "minted") return { asset, run };
+      const record = await readRecord(cid, asset.ual);
+      return record ? { asset, run, record } : { asset, run };
     },
   };
 }

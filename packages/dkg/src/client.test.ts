@@ -401,3 +401,42 @@ describe("failures shared by every call", () => {
     expect(await client.readAsset(NAME)).toEqual({ ok: false, reason: "unexpected", status: 200 });
   });
 });
+
+describe("query", () => {
+  const QUERY = "SELECT ?p ?o WHERE { <urn:verisci:x> ?p ?o }";
+
+  it("posts the SPARQL to the graph and returns the rows", async () => {
+    const rows = [{ p: "http://schema.org/name", o: '"T"' }];
+    const { client, calls } = fakeNode({
+      "POST /api/query": [{ status: 200, body: { result: { type: "bindings", bindings: rows } } }],
+    });
+
+    expect(await client.query(QUERY)).toEqual({ ok: true, bindings: rows });
+    expect(calls[0]?.body).toEqual({ sparql: QUERY, contextGraphId: GRAPH });
+    expect(calls[0]?.headers.get("authorization")).toBe(`Bearer ${TOKEN}`);
+  });
+
+  it("keeps only rows of strings", async () => {
+    const { client } = fakeNode({
+      "POST /api/query": [
+        { status: 200, body: { result: { bindings: [{ p: "a", o: 1 }, "x", { p: "b" }] } } },
+      ],
+    });
+
+    expect(await client.query(QUERY)).toEqual({ ok: true, bindings: [{ p: "b" }] });
+  });
+
+  it.each<[string, Reply, unknown]>([
+    ["a refused token", { status: 401 }, { ok: false, reason: "unauthorized", status: 401 }],
+    [
+      "a body with no bindings",
+      { status: 200, body: {} },
+      { ok: false, reason: "unexpected", status: 200 },
+    ],
+    ["no answer", "network-error", { ok: false, reason: "unreachable" }],
+  ])("reports %s", async (_, reply, expected) => {
+    const { client } = fakeNode({ "POST /api/query": [reply] });
+
+    expect(await client.query(QUERY)).toEqual(expected);
+  });
+});

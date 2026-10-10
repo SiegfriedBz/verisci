@@ -10,6 +10,12 @@ export {
 export { BASE_SEPOLIA_CHAIN_ID } from "./chains.ts";
 export { canonicalCid } from "./cid.ts";
 export {
+  type PaperRecord,
+  paperRecordQuery,
+  parsePaperRecord,
+  type QueryBinding,
+} from "./paper-record.ts";
+export {
   canonicalContextGraph,
   SUBMISSION_DOMAIN,
   type SubmissionMessage,

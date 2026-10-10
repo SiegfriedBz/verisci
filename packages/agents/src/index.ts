@@ -21,6 +21,7 @@ export type { ReadRunResult, RunState } from "./runs.ts";
 export {
   getUploadService,
   type PaperStatus,
+  type PublishedRecord,
   UPLOAD_SETTINGS,
   type UploadService,
 } from "./upload.ts";

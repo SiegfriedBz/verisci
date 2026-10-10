@@ -48,6 +48,11 @@ export interface DkgFailure {
 /** The result of `readAsset` and `storeAsset`: the asset's state, or why the call failed. */
 export type AssetResult = ({ readonly ok: true } & AssetState) | DkgFailure;
 
+/** The result of `query`: the SPARQL answer's rows, each a map of variable to term. */
+export type QueryResult =
+  | { readonly ok: true; readonly bindings: readonly Readonly<Record<string, string>>[] }
+  | DkgFailure;
+
 /** The result of `startMint`: minted with its UAL, a mint in flight to poll, or why it failed. */
 export type MintResult =
   | { readonly ok: true; readonly state: "minted"; readonly ual: string }

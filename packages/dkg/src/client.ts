@@ -1,6 +1,6 @@
 import { normalizeUal } from "@verisci/core";
 import { type Connection, field, isSuccess, type Reply, send, toFailure } from "./http.ts";
-import type { AssetResult, DkgFailure, MintResult, Quad } from "./types.ts";
+import type { AssetResult, DkgFailure, MintResult, Quad, QueryResult } from "./types.ts";
 
 /** How long a read, store or share waits for the node by default before reporting it unreachable. */
 const DEFAULT_TIMEOUT_MS = 30_000;
@@ -47,6 +47,12 @@ export interface DkgClient {
    * A minted asset is never minted again (ADR 0007).
    */
   startMint(name: string, options?: { readonly listenMs?: number }): Promise<MintResult>;
+  /**
+   * Runs a SPARQL `SELECT` on the graph (`POST /api/query`) and returns its rows. Terms come
+   * as the node writes them: IRIs bare, literals quoted. A row with a value that is not a
+   * string is dropped.
+   */
+  query(sparql: string): Promise<QueryResult>;
 }
 
 /** Builds a client for one context graph on one DKG node. Every UAL it returns is normalized (ADR 0031). */
@@ -161,7 +167,18 @@ export function createDkgClient(config: DkgClientConfig): DkgClient {
     return { ok: false, reason: "unexpected", status: reply.status };
   }
 
-  return { readAsset, storeAsset, startMint };
+  async function query(sparql: string): Promise<QueryResult> {
+    const reply = await send(connection, "POST", "/api/query", {
+      body: { sparql, ...graph },
+      timeoutMs,
+    });
+    if (reply.kind !== "answer" || !isSuccess(reply)) return toFailure(reply);
+    const rows = field(field(reply.body, "result"), "bindings");
+    if (!Array.isArray(rows)) return { ok: false, reason: "unexpected", status: reply.status };
+    return { ok: true, bindings: rows.filter(isStringRow) };
+  }
+
+  return { readAsset, storeAsset, startMint, query };
 }
 
 /** Same graph: the agent address in any case, the graph name exactly. */
@@ -204,4 +221,13 @@ function isQuorumFailure(body: unknown): boolean {
     .filter((part) => typeof part === "string")
     .join(" ");
   return QUORUM_CODES.some((code) => text.includes(code));
+}
+
+/** A SPARQL row whose every value is a string. */
+function isStringRow(row: unknown): row is Readonly<Record<string, string>> {
+  return (
+    typeof row === "object" &&
+    row !== null &&
+    Object.values(row).every((value) => typeof value === "string")
+  );
 }

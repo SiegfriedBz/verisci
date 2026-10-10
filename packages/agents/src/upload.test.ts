@@ -1,4 +1,4 @@
-import { submissionTypedData } from "@verisci/core";
+import { submissionTypedData, targetKaQuads } from "@verisci/core";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { describe, expect, it } from "vitest";
 import { type AgentsEnv, createAgentsEnv } from "./agents-env.ts";
@@ -138,5 +138,66 @@ describe("createUploadService", () => {
       state: "missing",
     });
     expect(requests).toEqual([]);
+  });
+});
+
+describe("readPaper on a minted paper", () => {
+  const MINTED = "did:dkg:base:84532/0xd701ed157232ad5e14bc4134a8d10d64d86f13b3/6";
+
+  async function mintedNode(signer = privateKeyToAccount(generatePrivateKey())) {
+    const deadline = 1_791_639_162n;
+    const signature = await signer.signTypedData(
+      submissionTypedData({ cid: CID, contextGraph: GRAPH, deadline }),
+    );
+    const triples = targetKaQuads(
+      { title: "Screening VP1", authors: ["Di Liu", "Yuting Xiao"] },
+      { cid: CID, submitter: signer.address.toLowerCase(), signature, deadline },
+    );
+    const paper = `urn:verisci:paper:${CID}`;
+    const bindings = triples
+      .filter((t) => t.subject === paper)
+      .map((t) => {
+        const name = triples.find((a) => a.subject === t.object && a.predicate.endsWith("/name"));
+        const position = triples.find(
+          (a) => a.subject === t.object && a.predicate.endsWith("/position"),
+        );
+        return name && position
+          ? {
+              p: t.predicate,
+              o: t.object,
+              authorName: name.object,
+              authorPosition: position.object,
+            }
+          : { p: t.predicate, o: t.object };
+      });
+    const fetch = (async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes("/api/query")) return Response.json({ result: { bindings } });
+      return Response.json({ state: "published", publishedUal: MINTED, reservedUal: MINTED });
+    }) as typeof globalThis.fetch;
+    return { fetch, signer };
+  }
+
+  it("reads the record back, checks its signature, and names the publisher", async () => {
+    const { fetch, signer } = await mintedNode();
+    const service = createUploadService(env(), { ...io().uploadIo, fetch });
+
+    const { record } = await service.readPaper(CID);
+
+    expect(record).toMatchObject({
+      title: "Screening VP1",
+      authors: ["Di Liu", "Yuting Xiao"],
+      pdf: `ipfs://${CID}`,
+      submitter: signer.address.toLowerCase(),
+      deadline: "1791639162",
+      signatureCheck: "valid",
+      publisher: "0xd701ed157232ad5e14bc4134a8d10d64d86f13b3",
+    });
+  });
+
+  it("gives no record for a paper that is not minted", async () => {
+    const { uploadIo } = io();
+
+    expect((await createUploadService(env(), uploadIo).readPaper(CID)).record).toBeUndefined();
   });
 });
