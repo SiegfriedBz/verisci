@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+/*
+ * verisci's tokens: cool greys and one accent, emerald, which reads as "verified".
+ * Light and dark follow the visitor's system setting. One radius scale: rounded-xl for
+ * panels, buttons and inputs, rounded-lg for small inline controls.
+ */
+:root {
+  --page: #f6f7f7;
+  --surface: #fcfcfc;
+  --sunken: #eef0f0;
+  --line: #dfe3e4;
+  --ink: #121516;
+  --muted: #586065;
+  --accent: #0d7a55;
+  --accent-ink: #f4fbf8;
+  --accent-soft: #e2f2eb;
+  --danger: #b4232f;
+  --danger-soft: #fbeaec;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #0c0e0f;
+    --surface: #131617;
+    --sunken: #1a1e1f;
+    --line: #262b2d;
+    --ink: #e9eced;
+    --muted: #9aa3a8;
+    --accent: #3fc28f;
+    --accent-ink: #06140e;
+    --accent-soft: #10271d;
+    --danger: #f07c86;
+    --danger-soft: #2a1316;
+  }
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  background: var(--page);
+  color: var(--ink);
+}
+
+/* The step being worked on breathes; everything else stays still. */
+@media (prefers-reduced-motion: no-preference) {
+  .step-active {
+    animation: step-breathe 1.8s ease-in-out infinite;
+  }
+
+  .enter {
+    animation: enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@keyframes step-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 35%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in oklab, var(--accent) 0%, transparent);
+  }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

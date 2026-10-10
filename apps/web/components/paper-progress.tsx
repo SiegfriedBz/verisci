@@ -1,0 +1,135 @@
+"use client";
+
+import { ArrowSquareOut, Warning } from "@phosphor-icons/react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { refusalMessage } from "../lib/messages.ts";
+import { isFinal, type PaperStage } from "../lib/progress.ts";
+import { CopyValue } from "./copy-value.tsx";
+import { ProgressChain } from "./progress-chain.tsx";
+
+const POLL_MS = 5000;
+
+const HEADLINE: Record<PaperStage["stage"], string> = {
+  reading: "Reading your paper",
+  saving: "Saving the record",
+  minting: "Anchoring it on Base",
+  published: "Published",
+  refused: "Not published",
+  failed: "Publishing stopped",
+  "not-found": "No paper here yet",
+  unavailable: "Checking on your paper",
+};
+
+/**
+ * Follows a paper from its page: asks `/api/papers/<cid>` every 5 s until a final stage,
+ * and keeps asking through a stage that could not be read.
+ */
+export function PaperProgress({ cid, eventId }: { cid: string; eventId: string | undefined }) {
+  const [stage, setStage] = useState<PaperStage | undefined>();
+
+  useEffect(() => {
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const query = eventId ? `?event=${encodeURIComponent(eventId)}` : "";
+    const poll = async () => {
+      let next: PaperStage = { stage: "unavailable" };
+      try {
+        const response = await fetch(`/api/papers/${cid}${query}`, { cache: "no-store" });
+        if (response.ok) next = (await response.json()) as PaperStage;
+      } catch {
+        // Asked again on the next poll.
+      }
+      if (stopped) return;
+      setStage(next);
+      if (!isFinal(next)) timer = setTimeout(() => void poll(), POLL_MS);
+    };
+    void poll();
+    return () => {
+      stopped = true;
+      clearTimeout(timer);
+    };
+  }, [cid, eventId]);
+
+  if (!stage) {
+    return (
+      <div aria-busy className="grid gap-4">
+        <div className="h-9 w-56 animate-pulse rounded-xl bg-sunken" />
+        <div className="h-64 animate-pulse rounded-xl bg-sunken" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="enter grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-12">
+      <div className="grid content-start gap-6">
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          {HEADLINE[stage.stage]}
+        </h1>
+        <StageNote stage={stage} />
+        <ProgressChain stage={stage.stage} />
+      </div>
+      <dl className="grid content-start gap-5 rounded-xl border border-line bg-surface p-5 sm:p-6">
+        {stage.stage === "published" && <CopyValue label="Record (UAL)" value={stage.ual} />}
+        <CopyValue label="PDF (CID)" value={cid} />
+        <CopyValue label="IPFS link" value={`ipfs://${cid}`} />
+        <a
+          href={`https://ipfs.io/ipfs/${cid}`}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex w-fit items-center gap-1.5 text-sm font-medium text-accent hover:underline"
+        >
+          Open the PDF
+          <ArrowSquareOut size={14} />
+        </a>
+      </dl>
+    </div>
+  );
+}
+
+function StageNote({ stage }: { stage: PaperStage }) {
+  switch (stage.stage) {
+    case "published":
+      return (
+        <p className="max-w-[60ch] text-muted">
+          Your paper is a public record now. Anyone can look it up by its UAL and check that you
+          submitted it.
+        </p>
+      );
+    case "refused":
+      return <Problem text={refusalMessage(stage.reason)} />;
+    case "failed":
+      return (
+        <Problem text="We couldn't finish publishing this paper. Publish the same PDF again and we'll pick up where it stopped." />
+      );
+    case "not-found":
+      return (
+        <p className="text-muted">
+          Nothing has been published for this PDF yet.{" "}
+          <Link href="/publish" className="font-medium text-accent hover:underline">
+            Publish a paper
+          </Link>
+        </p>
+      );
+    case "unavailable":
+      return <p className="text-muted">We can't reach the network right now. Still trying.</p>;
+    default:
+      return (
+        <p className="max-w-[60ch] text-muted">
+          This takes a few minutes. You can leave this page and come back to the same link.
+        </p>
+      );
+  }
+}
+
+function Problem({ text }: { text: string }) {
+  return (
+    <p
+      role="alert"
+      className="flex max-w-[60ch] items-start gap-2 rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger"
+    >
+      <Warning size={18} className="mt-px shrink-0" />
+      {text}
+    </p>
+  );
+}
