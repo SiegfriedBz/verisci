@@ -1,4 +1,14 @@
-import { ArrowRight, Cube, FilePdf, Graph, PenNib, Wallet } from "@phosphor-icons/react/dist/ssr";
+import {
+  ArrowRight,
+  Cube,
+  FilePdf,
+  Flask,
+  Graph,
+  PenNib,
+  Robot,
+  UsersThree,
+  Wallet,
+} from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { ChainDemo } from "../components/chain-demo.tsx";
 
@@ -20,6 +30,24 @@ const HOW = [
   },
 ] as const;
 
+const RATE = [
+  {
+    icon: Robot,
+    title: "Machine score",
+    body: "An AI reads the paper and gives it a score from 0 to 100, with its reasons.",
+  },
+  {
+    icon: UsersThree,
+    title: "Human review",
+    body: "Reviewers read it and add their own score to the same rating.",
+  },
+  {
+    icon: Flask,
+    title: "Wet-lab replication",
+    body: "A lab repeats the experiments, and the result becomes the last score.",
+  },
+] as const;
+
 const RECORD = [
   ["title", "Attention Is All You Need"],
   ["authors", "Vaswani, Shazeer, Parmar, …"],
@@ -29,7 +57,7 @@ const RECORD = [
   ["ual", "did:dkg:base:84532/0xd701…/5"],
 ] as const;
 
-/** Home: what verisci does, and the way to publish. */
+/** Home: what verisci does, the way to publish, and the rating flow to come. */
 export default function Home() {
   return (
     <div className="grid gap-24 sm:gap-32">
@@ -42,13 +70,22 @@ export default function Home() {
             Drop a PDF and sign with your wallet. verisci records it on the knowledge graph, with
             you as its submitter.
           </p>
-          <Link
-            href="/publish"
-            className="signal-gradient inline-flex w-fit items-center gap-2 rounded-xl px-5 py-3 font-semibold text-accent-ink shadow-[0_8px_30px_rgb(61_220_151/0.25)] transition hover:brightness-110 active:scale-[0.98]"
-          >
-            Publish a paper
-            <ArrowRight size={18} weight="bold" />
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/publish"
+              className="signal-gradient inline-flex w-fit items-center gap-2 rounded-xl px-5 py-3 font-semibold text-accent-ink shadow-[0_8px_30px_rgb(61_220_151/0.25)] transition hover:brightness-110 active:scale-[0.98]"
+            >
+              Publish a paper
+              <ArrowRight size={18} weight="bold" />
+            </Link>
+            <span
+              aria-disabled
+              className="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-xl border border-line px-5 py-3 font-medium text-muted"
+            >
+              Rate a paper
+              <span className="rounded-full bg-surface-strong px-2 py-0.5 text-xs">soon</span>
+            </span>
+          </div>
         </div>
         <div className="enter-late relative">
           <div aria-hidden className="signal-glow absolute -inset-10" />
@@ -105,27 +142,23 @@ export default function Home() {
         </p>
       </section>
 
-      <section className="grid gap-10 md:grid-cols-[1fr_1.6fr] md:gap-16">
-        <div className="grid content-start gap-3">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">How it works</h2>
-          <p className="max-w-[40ch] text-muted">Three steps, about two minutes, no gas.</p>
+      <section className="grid gap-10">
+        <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">How it works</h2>
+        <div className="grid gap-12 md:grid-cols-2 md:gap-10">
+          <Track
+            label="Publish"
+            badge={<span className="text-accent">live</span>}
+            intro="Three steps, about two minutes, no gas."
+            steps={HOW}
+          />
+          <Track
+            label="Rate"
+            badge="coming soon"
+            intro="Anyone will be able to ask for a rating of a published paper. It grows in three phases, and each score is recorded on chain. A rating is its own record pointing at the paper, which never changes."
+            steps={RATE}
+            muted
+          />
         </div>
-        <ol className="grid gap-4">
-          {HOW.map(({ icon: Icon, title, body }) => (
-            <li
-              key={title}
-              className="glass grid grid-cols-[2.75rem_1fr] items-start gap-4 rounded-2xl p-5"
-            >
-              <span className="grid size-11 place-items-center rounded-xl bg-accent-soft text-accent">
-                <Icon size={22} />
-              </span>
-              <div>
-                <h3 className="font-medium">{title}</h3>
-                <p className="mt-1 max-w-[52ch] text-sm leading-relaxed text-muted">{body}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
       </section>
 
       <section className="grid items-center gap-10 md:grid-cols-[1.6fr_1fr] md:gap-16">
@@ -153,6 +186,55 @@ export default function Home() {
           </p>
         </div>
       </section>
+    </div>
+  );
+}
+
+/** One flow of "How it works": its name, a status, a line of context and its steps. */
+function Track({
+  label,
+  badge,
+  intro,
+  steps,
+  muted = false,
+}: {
+  label: string;
+  badge: React.ReactNode;
+  intro: string;
+  steps: typeof HOW | typeof RATE;
+  muted?: boolean;
+}) {
+  return (
+    <div className="grid content-start gap-5">
+      <div className="grid gap-2">
+        <h3 className="flex items-center gap-3 text-lg font-semibold">
+          {label}
+          <span className="rounded-full bg-surface-strong px-2.5 py-0.5 font-mono text-xs font-normal text-muted">
+            {badge}
+          </span>
+        </h3>
+        <p className="max-w-[52ch] text-sm leading-relaxed text-muted">{intro}</p>
+      </div>
+      <ol className={`grid gap-4 ${muted ? "opacity-70" : ""}`}>
+        {steps.map(({ icon: Icon, title, body }) => (
+          <li
+            key={title}
+            className="glass grid grid-cols-[2.75rem_1fr] items-start gap-4 rounded-2xl p-5"
+          >
+            <span
+              className={`grid size-11 place-items-center rounded-xl ${
+                muted ? "bg-surface-strong text-muted" : "bg-accent-soft text-accent"
+              }`}
+            >
+              <Icon size={22} />
+            </span>
+            <div>
+              <h4 className="font-medium">{title}</h4>
+              <p className="mt-1 max-w-[52ch] text-sm leading-relaxed text-muted">{body}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }
