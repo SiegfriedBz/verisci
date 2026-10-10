@@ -1,6 +1,13 @@
 import { type PaperStatus, PUBLISH_SETTINGS } from "@verisci/agents";
 import { describe, expect, it } from "vitest";
-import { eventTime, FOLLOW_MS, isFinal, type PaperStage, paperProgress } from "./progress.ts";
+import {
+  eventTime,
+  FOLLOW_MS,
+  isFinal,
+  type PaperStage,
+  paperProgress,
+  STALE_RUN_MS,
+} from "./progress.ts";
 
 const UAL = "did:dkg:base:84532/0xd701ed157232ad5e14bc4134a8d10d64d86f13b3/5";
 
@@ -85,8 +92,11 @@ describe("paperProgress", () => {
     // Inngest cancels a run at its finish timeout, so one listed past it is not running.
     const listed = (sentAt: number) => paperProgress({ asset: missing, run: running }, NOW, sentAt);
 
+    // The budget counts from the run's start, so a run that started late gets a margin.
     expect(listed(NOW - 61_000)).toEqual({ stage: "reading" });
-    expect(listed(NOW - FOLLOW_MS - 1)).toEqual({ stage: "not-found" });
+    expect(listed(NOW - FOLLOW_MS - 1)).toEqual({ stage: "reading" });
+    expect(listed(NOW - STALE_RUN_MS - 1)).toEqual({ stage: "not-found" });
+    expect(STALE_RUN_MS).toBe(60 * 60_000);
   });
 
   it("follows for as long as a run may last", () => {

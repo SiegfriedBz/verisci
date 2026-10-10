@@ -31,16 +31,12 @@ export type FlowResult =
   | { readonly ok: false; readonly problem: PublishProblem };
 
 /**
- * Publishes one file from the browser (ADR 0010): checks it is a PDF, when the browser gives
- * its type, within the size cap, uploads it to a signed URL, signs its canonical CID with a
- * deadline `signatureLifetimeS` ahead, then submits. Anything thrown on the way reads as
- * `unavailable`.
+ * Publishes one file from the browser (ADR 0010): checks it is a PDF within the size cap,
+ * uploads it to a signed URL, signs its canonical CID with a deadline `signatureLifetimeS`
+ * ahead, then submits. Anything thrown on the way reads as `unavailable`.
  */
 export async function publishFile(file: File, deps: FlowDeps): Promise<FlowResult> {
-  // Some pickers give no type: Pinata reads the type from the bytes, and the server refuses
-  // a file that is not a PDF.
-  if (file.type !== "" && file.type !== "application/pdf")
-    return { ok: false, problem: "wrong-file" };
+  if (!(await looksLikePdf(file))) return { ok: false, problem: "wrong-file" };
   if (file.size > deps.maxBytes) return { ok: false, problem: "too-large" };
   try {
     deps.onPhase("uploading");
@@ -72,6 +68,15 @@ export async function publishFile(file: File, deps: FlowDeps): Promise<FlowResul
   } catch {
     return { ok: false, problem: "unavailable" };
   }
+}
+
+/**
+ * Whether the browser takes `file` for a PDF: by its type, or, when the picker gave none
+ * (some phone pickers), by the `%PDF-` header in its first kilobyte, as PDF readers accept.
+ */
+async function looksLikePdf(file: File): Promise<boolean> {
+  if (file.type !== "") return file.type === "application/pdf";
+  return (await file.slice(0, 1024).text()).includes("%PDF-");
 }
 
 /**

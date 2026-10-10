@@ -52,7 +52,7 @@ stateDiagram-v2
   reading --> following: no run a minute after the event
   following --> saving: the other run stores it
   following --> not_found: nothing stored after 45 minutes
-  reading --> not_found: still listed as running, nothing stored, after 45 minutes
+  reading --> not_found: still listed as running, nothing stored, after an hour
   reading --> not_published: run ended, output unreadable, nothing stored
   published --> [*]
   refused --> [*]
@@ -73,8 +73,9 @@ stateDiagram-v2
   this PDF; the page follows the paper on the node and gives up (`not-found`) after
   `FOLLOW_MS`, a run's whole 45-minute budget.
 - `not-found` also covers a page with no event to ask about and nothing on the node, and a
-  run still listed as running after `FOLLOW_MS` with nothing on the node: Inngest cancels a
-  run at its finish timeout.
+  run still listed as running an hour after its event with nothing on the node
+  (`STALE_RUN_MS`: the run's budget, which counts from its start, plus a margin for a late
+  start); Inngest has cancelled it by then.
 - `unavailable` (the node or Inngest not answering) is shown and asked again.
 - A published paper whose record the node did not answer for, or does not show yet after
   its run minted it (`recordProblem: "unavailable"`), is asked about again until the record loads; one whose record cannot be

@@ -58,9 +58,9 @@ export interface PaperStatus {
   /** The record, once minted and readable. */
   readonly record?: PublishedRecord;
   /**
-   * Why a minted paper has no record: the node did not answer the query, asked to retry or
-   * answered a server error (`unavailable`, worth asking again), or refused it or answered
-   * none that parses (`unreadable`) (ADR 0021).
+   * Why a minted paper has no record: the node did not answer the query, asked to retry,
+   * answered 429 or a server error (`unavailable`, worth asking again), or refused it or
+   * answered none that parses (`unreadable`) (ADR 0021).
    */
   readonly recordProblem?: "unavailable" | "unreadable";
   /** Why the run stopped, when it failed with a reason it names. */
@@ -187,11 +187,15 @@ export function createUploadService(env: AgentsEnv, io: UploadIo): UploadService
   };
 }
 
-/** Whether a failed query may pass: no answer, a retry asked for, or a server error. */
+/**
+ * Whether a failed query may pass: no answer, a retry asked for, too many requests or a
+ * server error.
+ */
 function passing(failure: DkgFailure): boolean {
   return (
     failure.reason === "unreachable" ||
     failure.reason === "retry-later" ||
+    failure.status === 429 ||
     (failure.status !== undefined && failure.status >= 500)
   );
 }

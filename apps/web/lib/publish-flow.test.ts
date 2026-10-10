@@ -70,10 +70,17 @@ describe("publishFile", () => {
     expect(phases).toEqual([]);
   });
 
-  it("uploads a file whose type the picker left empty, for Pinata to check", async () => {
-    const { flowDeps } = deps();
+  it("reads the header of a file whose type the picker left empty", async () => {
+    const { flowDeps, phases } = deps();
+    const untyped = (bytes: string) => new File([bytes], "paper", { type: "" });
 
-    expect((await publishFile(pdf(10, ""), flowDeps)).ok).toBe(true);
+    expect((await publishFile(untyped("%PDF-1.7 rest"), flowDeps)).ok).toBe(true);
+    phases.length = 0;
+    expect(await publishFile(untyped("PK zip"), flowDeps)).toEqual({
+      ok: false,
+      problem: "wrong-file",
+    });
+    expect(phases).toEqual([]);
   });
 
   it("stops when no upload URL is given", async () => {

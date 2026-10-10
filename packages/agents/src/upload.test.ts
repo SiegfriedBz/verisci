@@ -204,10 +204,10 @@ describe("readPaper on a minted paper", () => {
     });
   });
 
-  it("says the record is unavailable when the node does not answer the query", async () => {
+  it.each([503, 429])("says the record is unavailable when the query gets a %i", async (code) => {
     const minted = (async (input: string | URL | Request) =>
       String(input).includes("/api/query")
-        ? new Response("down", { status: 503 })
+        ? new Response("down", { status: code })
         : Response.json({
             state: "published",
             publishedUal: MINTED,

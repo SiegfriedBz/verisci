@@ -32,6 +32,13 @@ const SETTLE_MS = 60_000;
  */
 export const FOLLOW_MS = 45 * 60_000;
 
+/**
+ * How long after its event a run still listed as running, with nothing stored, is believed:
+ * a run's budget counts from its start, so this adds a margin for a run that started late.
+ * Past it, Inngest has cancelled the run, and the page reads `not-found`.
+ */
+export const STALE_RUN_MS = FOLLOW_MS + 15 * 60_000;
+
 const outcome = z.union([
   z.object({ state: z.literal("minted"), ual: z.string() }),
   z.object({ state: z.literal("refused"), reason: z.string() }),
@@ -58,8 +65,8 @@ export function eventTime(eventId: string): number | undefined {
  * `not-found`. An event sent (`sentAt`) over a minute ago that started no run means another
  * run holds the PDF (the function is a singleton per CID): the page shows `following` and
  * follows the paper on the node, until {@link FOLLOW_MS} have passed with nothing stored. A
- * run still listed as running past that, with nothing stored, is `not-found` too: Inngest
- * cancels a run at its finish timeout.
+ * run still listed as running past {@link STALE_RUN_MS}, with nothing stored, is `not-found`
+ * too: Inngest cancels a run at its finish timeout.
  */
 export function paperProgress(
   { asset, run, failure }: PaperStatus,
@@ -86,7 +93,7 @@ export function paperProgress(
   if (run === undefined) return { stage: "not-found" };
   const open = state === undefined || state.state === "running";
   const waited = open && sentAt !== undefined ? now - sentAt : 0;
-  if (waited > FOLLOW_MS) return { stage: "not-found" };
+  if (waited > (state === undefined ? FOLLOW_MS : STALE_RUN_MS)) return { stage: "not-found" };
   return state === undefined && waited > SETTLE_MS ? { stage: "following" } : { stage: "reading" };
 }
 

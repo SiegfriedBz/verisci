@@ -113,7 +113,7 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
   the run does, without the deadline rule, and names the publisher (the UAL's author). A
   failed run's status carries `failure`, the reason its error names; a minted paper whose
   record cannot be shown carries `recordProblem` (`unavailable` when the node did not
-  answer the query, asked to retry or answered a server error; `unreadable` when it refused
+  answer the query, asked to retry, or answered 429 or a server error; `unreadable` when it refused
   the query or no record parses; ADR 0021). Locally, a run's output
   comes from the dev server's GraphQL API, since its REST read answers it empty.
 
