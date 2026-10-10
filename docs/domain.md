@@ -180,8 +180,20 @@ docs, current at 2026-10-07; Pinata's from its v3 API docs, current at 2026-10-0
   to 174 links per node; `v0` a CIDv0 with dag-pb leaves; `unixfs-v1-2025` a CIDv1 with
   1 MiB chunks and 1,024 links. `network` is `private` unless set to `public`. The
   `publish-pdf` dev script sets `v1` and `public`: a 2.2 MB PDF got a `bafybei…` CID, the
-  same on a second upload (2026-10-10). Whether a signed-URL upload can pin the same
-  setting is still to check
+  same on a second upload (2026-10-10). A signed-URL upload pins the same setting and gives
+  the same CID (below).
+- **Signed upload URLs** (`POST https://uploads.pinata.cloud/v3/files/sign`, 2026-10-10)
+  take `date`, `expires` (seconds), `max_file_size`, `allow_mime_types` and `cid_version`,
+  and answer `{ data: "<url>" }`. The browser POSTs `file` and `network` to that URL, so the
+  uploader chooses the network. Pinata checks the type it detects from the bytes: a text
+  file is refused (400 "does not grant permissions to upload detected MIME type"), as is a
+  file over the size (400). With `cid_version: "v1"`, the 2.2 MB PDF got the same
+  `bafybei…` CID as the `publish-pdf` upload.
+- **Pinata keeps one file per CID in an account** (2026-10-10): uploading bytes already
+  pinned answers with the existing file, and `GET https://api.pinata.cloud/v3/files/public?cid=…`
+  lists one entry (`id`, `cid`, `size`, `mime_type`). So `DELETE /v3/files/public/{id}`
+  removes every upload of those bytes, earlier ones included; a second delete answers 404.
+  An unknown CID lists no files (200), and a bad key answers 401
   ([ADR 0010](adr/0010-pdf-to-target-ka-pipeline.md)).
 
 ## GROBID
@@ -230,7 +242,13 @@ Observed on Vercel Hobby with Inngest Cloud, except where a fact cites the vendo
 - **Inngest keys:** Production has its own pair; all branch environments share one other
   pair, and the SDK picks the branch from `VERCEL_GIT_COMMIT_REF`.
 - **REST reads (run status) must send `x-inngest-env`** with the branch name, or they match
-  nothing.
+  nothing. `GET /v1/events/{event id}/runs` lists an event's runs (`status`: `Running`,
+  `Completed`, `Failed`, `Cancelled`; `output`), with the signing key as bearer token
+  (Inngest docs).
+- **The local dev server's REST run read gives an empty `output`** (inngest-cli 1.46.0,
+  2026-10-10): `/v1/events/{id}/runs` answered `status: "Completed"` with `output: ""` for a
+  run that returned a refusal, and caches each answer for 15 s. Only its internal GraphQL
+  API carried the output.
 - **Preview deployments need Vercel's deployment-protection bypass** configured, or Inngest
   cannot reach `/api/inngest`. The stable `develop` deployment is a preview too, so the
   staging webhook needs the same bypass; a caller that cannot set headers passes it as the
@@ -275,6 +293,11 @@ Observed on Next.js 16.3.8.
   loads the repo-root files instead (see Tooling for why it needs `forceReload`).
 - **Next watches only `apps/web` for env changes:** editing a root env file needs a dev
   server restart, and an env file left in `apps/web` can be reapplied on a dev reload.
+
+- **Turbopack resolves lazy imports of optional packages at build** (16.3.8, 2026-10-10):
+  wagmi's connectors reach Coinbase's SDK, whose lazily imported `@x402/*` packages are
+  optional peers; `next build` fails on them until `turbopack.resolveAlias` points them at a
+  module declaring the imported names (`apps/web/next.config.ts`).
 
 ## Tooling
 

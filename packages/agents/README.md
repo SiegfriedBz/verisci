@@ -113,6 +113,8 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
    network with CIDv1 import settings, signs it with a throwaway key and sends the event. A
    relative path is read from the directory you type the command in.
    The run's steps and result show in the dev server.
+5. Or publish through the page: open http://localhost:3000/publish with `REOWN_PROJECT_ID`
+   set ([`apps/web`](../../apps/web/README.md#environment)).
 
 ## Scripts
 

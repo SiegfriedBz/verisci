@@ -18,8 +18,9 @@ replication ([ADR 0012](docs/adr/0012-three-phases-settled-by-the-oracle.md)).
 Status: early. verisci is a rebuild of an earlier prototype,
 desci-rating-dapp, which ran both flows (publish a paper, rate it) end to end on
 Base Sepolia. This repo starts again from clean foundations (monorepo, tooling,
-CI), and its ADRs and domain facts record what the prototype taught us. No
-user-facing feature has shipped here yet; the publish run works, started by a dev script.
+CI), and its ADRs and domain facts record what the prototype taught us. The first
+user-facing feature is the upload page: connect a wallet, publish a PDF, follow it until it
+is minted. Rating comes next.
 Everything runs on testnets.
 
 ## How it works
@@ -106,7 +107,7 @@ sequenceDiagram
   U->>P: upload the PDF
   P-->>U: CID
   U->>A: CID + EIP-712 signature (with graph and deadline)
-  A->>A: verify the signature and the pinned file
+  A->>A: verify the signature, the submitter's limit and the pinned file
   A->>R: event with the CID, submitter address and signature
   R->>R: verify the signature, Target KA name from CID
   R->>N: read the Target KA's state (stop if already minted)
@@ -115,13 +116,17 @@ sequenceDiagram
   R->>R: read metadata from the TEI
   R->>N: store with the submitter address and signature, then mint and poll
   N-->>R: Target KA UAL, ready to be rated
+  U->>A: poll the paper's page
+  A-->>U: reading, saving, minting, then published with its UAL
 ```
 
 Every PDF goes through one uploader with fixed IPFS import settings, so the same PDF always
 has the same CID and publishing it again converges on the existing Target KA, which keeps its
-first submitter ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)). The publish run
-exists today; until the upload page does, a dev script pins a PDF, signs it and sends the
-event ([`packages/agents`](packages/agents/README.md)).
+first submitter ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)). Anyone with a
+wallet may publish, within daily limits ([ADR 0034](docs/adr/0034-users-connect-a-wallet-anyone-may-publish.md),
+[ADR 0035](docs/adr/0035-limits-are-the-apps-only-state.md)). The pages are in
+[`apps/web`](apps/web/README.md); the work behind them, and a dev script that publishes
+without the page, in [`packages/agents`](packages/agents/README.md).
 
 ### Rating a paper
 
@@ -204,7 +209,9 @@ pnpm dev         # starts apps/web on http://localhost:3000
 ```
 
 To publish a PDF locally (the DKG node, GROBID and the Inngest dev server), follow
-[`packages/agents` → Running a publish locally](packages/agents/README.md#running-a-publish-locally).
+[`packages/agents` → Running a publish locally](packages/agents/README.md#running-a-publish-locally),
+then open http://localhost:3000/publish (it needs `REOWN_PROJECT_ID`; see
+[`apps/web`](apps/web/README.md#environment)).
 
 Environment variables are listed in [`.env.example`](.env.example): copy it to
 `.env.local` at the repo root (gitignored), where `apps/web` loads it from.

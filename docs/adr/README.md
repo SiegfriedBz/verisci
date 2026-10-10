@@ -79,6 +79,8 @@ In the order a request lives: requested, named, ingested, scored, fulfilled, and
 | ADR | Decision |
 | --- | --- |
 | [0021. Server reads and actions return typed results](0021-server-reads-return-typed-results.md) | Expected failures come back as typed results that the caller handles |
+| [0034. Users connect a wallet, and anyone may publish](0034-users-connect-a-wallet-anyone-may-publish.md) | Reown AppKit with wagmi on Base Sepolia; the signature authorizes each submission; no allowlist, no session |
+| [0035. Limits are the app's only state](0035-limits-are-the-apps-only-state.md) | The chain and the DKG hold the truth; Upstash Redis counts upload URLs per connection and submissions per address |
 
 ## Folded ADRs
 
@@ -99,9 +101,7 @@ Not decided yet. Each becomes an ADR in the plan that first needs the answer; th
 
 | Question | Leaning | Decided in |
 | --- | --- | --- |
-| How do users authenticate? | Wallet connection (Reown AppKit + wagmi). A submission is authorized by its EIP-712 signature ([0010](0010-pdf-to-target-ka-pipeline.md)), and rate limits key on the signing address; a SIWE session only if sign-in sessions are ever needed. | first web plan with a wallet |
 | Where do alerts go? | One chat-bot channel behind a single `notify()`, fed by a scheduled check (wallet balances, orphans, age of the oldest pending request) and an uptime check on the node's `/api/status`. | agents plan |
-| Where does mutable app state live? | Nowhere authoritative: the chain and the DKG hold the truth. Rate-limit counters go in one small key-value store (Upstash Redis); losing it only resets the limits. | first web plan with a wallet |
 | Who may request phases 2 and 3? | Anyone, not only the phase-1 requester. Whoever requests, our node writes the R-KA update, since it owns the R-KA ([0012](0012-three-phases-settled-by-the-oracle.md)). Also open: whether a later phase's request gets its own id or reuses the rating's. | phase-2 plan |
 | How does a local test run target a developer's own contract? | One local-only address variable for that contract, read by the agents when `APP_ENV=local`; staging's and production's addresses stay in the committed file ([0028](0028-deployed-addresses-are-committed.md), [0019](0019-oracle-transactions-are-serialized.md)). | agents plan |
 | How does a rating run find the context graph of a target verisci did not publish? | The rating request names it next to the target's UAL, since a UAL alone does not name its graph ([0011](0011-a-rating-is-a-separate-r-ka.md)); check first whether a later DKG release resolves a UAL to its graph. | agents plan |
