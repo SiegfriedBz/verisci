@@ -91,7 +91,7 @@ export default function Home() {
           <div aria-hidden className="signal-glow absolute -inset-10" />
           <figure className="glass relative grid gap-6 rounded-2xl p-6 sm:p-8">
             <figcaption className="flex items-center justify-between gap-3 text-sm text-muted">
-              <span>Example: a paper being published</span>
+              <span>Publish flow</span>
               <span className="font-mono text-xs text-accent">live</span>
             </figcaption>
             <ChainDemo />
