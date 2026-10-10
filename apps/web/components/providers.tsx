@@ -36,7 +36,11 @@ function walletAdapter(projectId: string): WagmiAdapter {
       icons: [],
     },
     features: { analytics: false },
-    themeVariables: { "--w3m-accent": "#0d7a55", "--w3m-border-radius-master": "3px" },
+    themeVariables: {
+      "--apkt-accent": "#0d7a55",
+      "--apkt-border-radius-master": "3px",
+      "--apkt-font-family": "var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif",
+    },
   });
   return adapter;
 }
