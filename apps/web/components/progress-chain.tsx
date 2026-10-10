@@ -33,6 +33,7 @@ const TONE = {
 function position(stage: PaperStage["stage"]): { done: number; active: number | undefined } {
   switch (stage) {
     case "reading":
+    case "following":
       return { done: 0, active: 0 };
     case "saving":
       return { done: 1, active: 1 };

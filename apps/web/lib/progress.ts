@@ -12,7 +12,7 @@ export type RefusalReason = Extract<PublishOutcome, { state: "refused" }>["reaso
  * nothing stored.
  */
 export type PaperStage =
-  | { readonly stage: "reading" | "saving" | "minting" }
+  | { readonly stage: "reading" | "saving" | "minting" | "following" }
   | { readonly stage: "published"; readonly ual: string }
   | { readonly stage: "refused"; readonly reason: RefusalReason }
   | { readonly stage: "failed"; readonly reason?: PublishFailure }
@@ -23,6 +23,13 @@ export type PaperStage =
  * not report a paper the run has just minted.
  */
 const SETTLE_MS = 60_000;
+
+/**
+ * How long the page follows a paper whose event started no run: a run's whole budget
+ * (`PUBLISH_SETTINGS.finishTimeout` in `@verisci/agents`, 45 minutes), after which the run
+ * that held the PDF has ended.
+ */
+export const FOLLOW_MS = 45 * 60_000;
 
 const outcome = z.union([
   z.object({ state: z.literal("minted"), ual: z.string() }),
@@ -47,8 +54,9 @@ export function eventTime(eventId: string): number | undefined {
  * One stage from what the DKG and the run say. A minted asset is published whatever the
  * run says, so a second submitter of the same PDF sees it at once (ADR 0010). A failed run
  * means submitting the same PDF again. With no run to ask about, a missing asset is
- * `not-found`; so is an event sent (`sentAt`) over a minute ago that started no run, which
- * Inngest does when it has seen the event's id in the last 24 hours.
+ * `not-found`. An event sent (`sentAt`) over a minute ago that started no run means another
+ * run holds the PDF (the function is a singleton per CID): the page shows `following` and
+ * follows the paper on the node, until {@link FOLLOW_MS} have passed with nothing stored.
  */
 export function paperProgress(
   { asset, run, failure }: PaperStatus,
@@ -73,8 +81,9 @@ export function paperProgress(
   if (asset.state === "stored") return { stage: "minting" };
   if (asset.state === "draft") return { stage: "saving" };
   if (run === undefined) return { stage: "not-found" };
-  const noRun = state === undefined && sentAt !== undefined && now - sentAt > SETTLE_MS;
-  return noRun && asset.state === "missing" ? { stage: "not-found" } : { stage: "reading" };
+  const waited = state === undefined && sentAt !== undefined ? now - sentAt : 0;
+  if (waited > FOLLOW_MS) return { stage: "not-found" };
+  return waited > SETTLE_MS ? { stage: "following" } : { stage: "reading" };
 }
 
 /** Whether the page stops polling at this stage. */

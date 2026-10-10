@@ -1,6 +1,6 @@
-import type { PaperStatus } from "@verisci/agents";
+import { type PaperStatus, PUBLISH_SETTINGS } from "@verisci/agents";
 import { describe, expect, it } from "vitest";
-import { eventTime, isFinal, type PaperStage, paperProgress } from "./progress.ts";
+import { eventTime, FOLLOW_MS, isFinal, type PaperStage, paperProgress } from "./progress.ts";
 
 const UAL = "did:dkg:base:84532/0xd701ed157232ad5e14bc4134a8d10d64d86f13b3/5";
 
@@ -67,14 +67,23 @@ describe("paperProgress", () => {
     expect(stage(stored, failed)).toEqual({ stage: "failed" });
   });
 
-  it("reads an event that started no run a minute after it was sent as not-found", () => {
-    // Inngest drops an event whose id it has seen in the last 24 hours: no run ever starts.
-    expect(paperProgress({ asset: missing, run: notStarted }, NOW, NOW - 61_000)).toEqual({
-      stage: "not-found",
+  it("follows the paper when its event started no run, as another run holds the PDF", () => {
+    // The publish function is a singleton per CID: an event sent while a run is active for
+    // that PDF starts no run.
+    const noRun = (sentAt: number) =>
+      paperProgress({ asset: missing, run: notStarted }, NOW, sentAt);
+
+    expect(noRun(NOW - 5_000)).toEqual({ stage: "reading" });
+    expect(noRun(NOW - 61_000)).toEqual({ stage: "following" });
+    expect(noRun(NOW - FOLLOW_MS - 1)).toEqual({ stage: "not-found" });
+    expect(paperProgress({ asset: stored, run: notStarted }, NOW, NOW - 61_000)).toEqual({
+      stage: "minting",
     });
-    expect(paperProgress({ asset: missing, run: notStarted }, NOW, NOW - 5_000)).toEqual({
-      stage: "reading",
-    });
+  });
+
+  it("follows for as long as a run may last", () => {
+    expect(FOLLOW_MS).toBe(45 * 60_000);
+    expect(PUBLISH_SETTINGS.finishTimeout).toBe("45m");
   });
 
   it("reads a missing asset with no run to ask about as not-found", () => {

@@ -15,6 +15,7 @@ const POLL_MS = 5000;
 
 const HEADLINE: Record<PaperStage["stage"], string> = {
   reading: "Reading your paper",
+  following: "Already being published",
   saving: "Saving the record",
   minting: "Anchoring it on Base",
   published: "Published",
@@ -27,6 +28,8 @@ const HEADLINE: Record<PaperStage["stage"], string> = {
 
 /** What happens during each step, for the panel beside the chain. */
 const NOW: Partial<Record<PaperStage["stage"], string>> = {
+  following:
+    "Another submission of this PDF is being published right now, so yours started nothing new. This page follows that one and updates when the paper is saved and minted.",
   reading:
     "We fetch your PDF from IPFS and read its first page: title, authors, abstract and DOI. Nothing is written yet.",
   saving:
