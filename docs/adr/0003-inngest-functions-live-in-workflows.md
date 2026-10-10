@@ -18,5 +18,5 @@ Inngest functions are defined in `@verisci/workflows`. `web` only serves them th
 
 ## History
 
-- 2026-10-10: the package is renamed `workflows` (was `agents`), since most of its functions are workflows with no AI; retitled (was "Inngest workflows live in the agents package"). The decision is unchanged.
+- 2026-10-10: the package is renamed `workflows` (was `agents`), since it holds background workflows and none of them uses AI; retitled (was "Inngest workflows live in the agents package"). The decision is unchanged.
 - 2026-10-10: corrected: the context no longer says the package keeps adapter code out of `web`'s build; `web` serves the functions, so its build includes it (ADR sweep).
