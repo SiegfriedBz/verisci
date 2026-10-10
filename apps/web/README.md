@@ -48,7 +48,9 @@ stateDiagram-v2
   reading --> failed: the run stopped (why)
   saving --> failed
   minting --> failed
-  reading --> not_found: no run a minute after the event
+  reading --> following: no run a minute after the event
+  following --> saving: the other run stores it
+  following --> not_found: nothing stored after 45 minutes
   reading --> not_published: run ended, output unreadable, nothing stored
   published --> [*]
   refused --> [*]
@@ -64,9 +66,15 @@ stateDiagram-v2
   that failed its checks.
 - `failed` shows why the run stopped (`failureMessage`): Base, the PDF, the DKG node or
   the mint not answering after every retry, or a problem on our side.
-- `not-found` covers no event to ask about, and an event Inngest started no run for a
-  minute after it was sent (the event's time is read from its ULID, `eventTime`).
+- `following`: the event started no run a minute after it was sent (its time is read from
+  its ULID, `eventTime`). The publish function is a singleton per CID, so another run holds
+  this PDF; the page follows the paper on the node and gives up (`not-found`) after
+  `FOLLOW_MS`, a run's whole 45-minute budget.
+- `not-found` also covers a page with no event to ask about and nothing on the node.
 - `unavailable` (the node or Inngest not answering) is shown and asked again.
+- A published paper whose record the node did not answer for (`recordProblem:
+  "unavailable"`) is asked about again until the record loads; one whose record cannot be
+  read says so (ADR 0021).
 
 Once published, the page shows the record (title, authors, DOI) and a "Verify it
 yourself" panel (`components/verify-panel.tsx`): the signature checked when read, the
@@ -86,7 +94,8 @@ A dark lab instrument with a web3 edge, in Tailwind CSS v4 (`app/globals.css`):
   on-chain asset. They blend only on the main action, live lines, and the line linking a
   save to its mint in the publish chain.
 - Sora for text, Martian Mono for on-chain values (`next/font`), Phosphor icons. One radius
-  scale: `rounded-2xl` panels, `rounded-xl` buttons and inputs, `rounded-md` flags.
+  scale: `rounded-2xl` panels, `rounded-xl` buttons and inputs, `rounded-lg` small
+  controls, `rounded-md` flags.
 - Motion: the home page plays the publish chain on a loop and the step being worked on
   breathes; all of it stops for visitors who ask for reduced motion.
 - Every page works from 360 px wide, one column on phones, and the page clips any overflow.

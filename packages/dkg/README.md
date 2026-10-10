@@ -11,7 +11,7 @@ with a credential. The node reads the chain through
 with `authority-resolution-failed` is often a chain-read problem there, not in this
 package (`docs/domain.md` → DKG).
 
-Status: a client to read an asset's state, store it and start its mint.
+Status: a client to read an asset's state, store it, start its mint, and run a SPARQL query (`query`), which reads a published paper's record back.
 
 ## Depends on
 

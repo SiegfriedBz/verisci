@@ -20,5 +20,6 @@ Inngest workflows that combine `core` logic with the `dkg` and `contracts` adapt
 - Adapters return typed results and never throw for an expected failure, as ADR 0021
   asks of server reads. A run throws `NonRetriableError` only when its settings are
   invalid (`loadDeps`), when the node or GROBID refuses our credential, when the node does
-  not serve the graph, and when its attempts run out. A deployed server checks the
-  settings at start too (`apps/web/instrumentation.ts`).
+  not serve the graph, and when its attempts run out; its message starts
+  `publish-failed:<reason>:` (`PublishFailure`), which the paper's page reads. A deployed
+  server checks the settings at start too (`apps/web/instrumentation.ts`).

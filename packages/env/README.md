@@ -102,8 +102,8 @@ included, with no defaults applied and without `extends` merged in.
 
 Nothing in the repo needs it today. It is only for a step that imports env-declaring
 modules without running code that reads the values. Never use it for `next build`,
-which prerenders pages with the values (the home page would show `undefined`), and
-never in a running app.
+where code that reads a setting at build time would get `undefined`, and never in a
+running app.
 
 ## Scripts
 

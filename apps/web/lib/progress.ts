@@ -93,8 +93,7 @@ export function paperProgress(
 export function isFinal(
   paperStage: PaperStage & { readonly recordProblem?: "unavailable" | "unreadable" },
 ): boolean {
-  if (paperStage.stage === "published" && paperStage.recordProblem === "unavailable")
-    return false;
+  if (paperStage.stage === "published" && paperStage.recordProblem === "unavailable") return false;
   return ["published", "refused", "failed", "not-found", "not-published"].includes(
     paperStage.stage,
   );

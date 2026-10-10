@@ -113,7 +113,7 @@ sequenceDiagram
     A-->>U: its UAL at once, nothing new written
   else
     A->>A: the submitter's limit and the pinned file
-    A->>R: event with the CID, submitter, signature (one run per signature)
+    A->>R: event with the CID, submitter, signature (skipped while a run holds this PDF)
     R->>R: verify the signature, Target KA name from CID
     R->>N: read the Target KA's state (stop if already minted)
     R->>P: fetch the PDF by its CID

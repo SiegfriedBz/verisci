@@ -37,7 +37,7 @@ upload page reads runs there, with no keys.
 
 | Export | What it does |
 | --- | --- |
-| `agentsName` | The package name, listed on the web app's home page |
+| `agentsName` | The package name, imported by the web app's package test |
 | `inngest` | verisci's Inngest client, in dev mode when `APP_ENV` is `local` |
 | `functions` | Every Inngest function, for `web`'s `/api/inngest` route |
 | `publishPaper` | The `publish-paper` function, run by `verisci/paper.submitted` |
@@ -99,18 +99,21 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
   submitter, signature }` as the run does. A PDF whose Target KA is already minted starts
   nothing and counts nothing: the result gives its UAL instead of an event id. Otherwise it
   checks the submitter's limit, then the file pinned
-  under that CID on Pinata's public network. A file over 30 MB or not a PDF is unpinned and
-  refused. It then sends `verisci/paper.submitted` with no time of its own, so Inngest
+  under that CID on Pinata's public network. A file over 30 MB or not a PDF is refused, and
+  unpinned only when its Target KA is known missing (Pinata keeps one file per CID). It then sends `verisci/paper.submitted` with no time of its own, so Inngest
   stamps it, under the id `paper:<cid>:<submitter>:<deadline>`: Inngest drops a repeat of
-  one signed submission for 24 hours, and a new signature always starts a run. It returns
-  Inngest's event id. Only a sent submission is counted. A chain,
+  one signed submission for 24 hours. A new signature starts a run unless one for that CID
+  is active (the singleton), and the paper's page then follows the paper on the node. It
+  returns Inngest's event id. Only a sent submission is counted. A chain,
   Pinata, limit store or Inngest that does not answer gives `unavailable`.
 - **`readPaper(cid, eventId?)`** reads the Target KA's state on the node and, given the
   event id, the run Inngest started for it (REST, from the dev server locally). Once the KA
   is minted, it also reads the record back (SPARQL through the node: title, authors, DOI,
   PDF link, submitter, signature, deadline), checks the signature against the submitter as
   the run does, without the deadline rule, and names the publisher (the UAL's author). A
-  failed run's status carries `failure`, the reason its error names. Locally, a run's output
+  failed run's status carries `failure`, the reason its error names; a minted paper whose
+  record cannot be shown carries `recordProblem` (`unavailable` when the node did not
+  answer the query, `unreadable` when no record parses; ADR 0021). Locally, a run's output
   comes from the dev server's GraphQL API, since its REST read answers it empty.
 
 ## Running a publish locally

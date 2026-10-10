@@ -7,13 +7,13 @@ Domain logic. Core does no IO: no `fetch`, no `node:*` imports and no other
 `pnpm check` enforces this: `packages/core/biome.json` turns `fetch`,
 `node:*` and `@verisci/*` into errors ("core does no IO").
 
-Status: shared constants, UAL parsing, asset names, and a Target KA's content and submission.
+Status: shared constants, UAL parsing, asset names, a Target KA's content and submission, reading a paper's record back (`paperRecordQuery`, `parsePaperRecord`), and OriginTrail's contracts with the token behind a UAL (`ORIGINTRAIL_CONTRACTS`, `knowledgeAssetToken`).
 
 ## API
 
 | Export | Description |
 | --- | --- |
-| `coreName` | The package name, listed on the web app's home page |
+| `coreName` | The package name, imported by the web app's package test |
 | `BASE_SEPOLIA_CHAIN_ID` | 84532, the chain id of Base Sepolia, where staging and production run and which UALs reference ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)) |
 | `parseUal(input)` | Parses a UAL into a `Ual` (`blockchain`, `chainId`, lowercase `address`, `bigint` `id`), or returns `{ ok: false, reason }` with a `UalError`; never throws |
 | `formatUal(ual)` | Writes a `Ual` from `parseUal` as its canonical string |

@@ -3,7 +3,10 @@ import { knowledgeAssetToken, parseUal } from "@verisci/core";
 /** Base Sepolia's block explorer, where staging and production both run until mainnet (ADR 0015). */
 const BASESCAN = "https://sepolia.basescan.org";
 
-/** Pinata's public IPFS gateway: ipfs.io and dweb.link stopped serving files directly in 2026. */
+/**
+ * Pinata's public IPFS gateway: ipfs.io answers a notice instead of the file, and dweb.link
+ * rate-limited us when tried (`docs/domain.md` → IPFS).
+ */
 const IPFS_GATEWAY = "https://gateway.pinata.cloud/ipfs";
 
 /** A link that downloads a file from IPFS by its CID. */

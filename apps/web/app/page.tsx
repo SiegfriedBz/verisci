@@ -143,9 +143,9 @@ export default function Home() {
               <h3 className="font-semibold">The content, off-chain</h3>
               <p className="text-sm leading-relaxed text-muted">
                 DKG nodes store the asset's statements: title, authors, the PDF's link, the
-                submitter, their signature and its deadline. Several nodes keep a copy, and any node
-                subscribed to VeriSci's context graph can fetch it by its UAL, the asset's permanent
-                address.
+                submitter, their signature and its deadline. Once published, OriginTrail replicates
+                them across the context graph's nodes, and any node subscribed to VeriSci's graph
+                can fetch them by the UAL, the asset's permanent address.
               </p>
             </div>
           </article>
