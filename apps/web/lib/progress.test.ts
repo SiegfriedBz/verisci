@@ -1,6 +1,6 @@
 import type { PaperStatus } from "@verisci/agents";
 import { describe, expect, it } from "vitest";
-import { isFinal, type PaperStage, paperProgress } from "./progress.ts";
+import { eventTime, isFinal, type PaperStage, paperProgress } from "./progress.ts";
 
 const UAL = "did:dkg:base:84532/0xd701ed157232ad5e14bc4134a8d10d64d86f13b3/5";
 
@@ -58,6 +58,16 @@ describe("paperProgress", () => {
     expect(stage(stored, failed)).toEqual({ stage: "failed" });
   });
 
+  it("reads an event that started no run a minute after it was sent as not-found", () => {
+    // Inngest drops an event whose id it has seen in the last 24 hours: no run ever starts.
+    expect(paperProgress({ asset: missing, run: notStarted }, NOW, NOW - 61_000)).toEqual({
+      stage: "not-found",
+    });
+    expect(paperProgress({ asset: missing, run: notStarted }, NOW, NOW - 5_000)).toEqual({
+      stage: "reading",
+    });
+  });
+
   it("reads a missing asset with no run to ask about as not-found", () => {
     expect(stage(missing, undefined)).toEqual({ stage: "not-found" });
   });
@@ -84,6 +94,17 @@ describe("paperProgress", () => {
 
   it("follows the asset when a completed run's output cannot be read but something is stored", () => {
     expect(stage(stored, completed(""))).toEqual({ stage: "minting" });
+  });
+});
+
+describe("eventTime", () => {
+  it("reads when an Inngest event was sent from its ULID", () => {
+    // The dev server logged this event 5 ms later, at 15:01:52.509Z.
+    expect(eventTime("01M4K5BC7RA0P4XR2YJQ6BNCJ9")).toBe(Date.parse("2026-10-10T15:01:52.504Z"));
+  });
+
+  it("reads nothing from an id that is not a ULID", () => {
+    expect(eventTime("event-1")).toBeUndefined();
   });
 });
 

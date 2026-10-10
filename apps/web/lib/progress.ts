@@ -28,13 +28,32 @@ const outcome = z.union([
   z.object({ state: z.literal("refused"), reason: z.string() }),
 ]);
 
+/** Crockford's base32, the alphabet of a ULID. */
+const ULID_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+
+/**
+ * When an Inngest event was sent, in milliseconds, from its id: a ULID's first 10
+ * characters are its time. `undefined` for an id that is not a ULID.
+ */
+export function eventTime(eventId: string): number | undefined {
+  if (!/^[0-9A-HJKMNP-TV-Z]{26}$/.test(eventId)) return undefined;
+  let time = 0;
+  for (const char of eventId.slice(0, 10)) time = time * 32 + ULID_ALPHABET.indexOf(char);
+  return time;
+}
+
 /**
  * One stage from what the DKG and the run say. A minted asset is published whatever the
  * run says, so a second submitter of the same PDF sees it at once (ADR 0010). A failed run
  * means submitting the same PDF again. With no run to ask about, a missing asset is
- * `not-found`.
+ * `not-found`; so is an event sent (`sentAt`) over a minute ago that started no run, which
+ * Inngest does when it has seen the event's id in the last 24 hours.
  */
-export function paperProgress({ asset, run }: PaperStatus, now = Date.now()): PaperStage {
+export function paperProgress(
+  { asset, run }: PaperStatus,
+  now = Date.now(),
+  sentAt?: number,
+): PaperStage {
   if (asset.ok && asset.state === "minted") return { stage: "published", ual: asset.ual };
   if (!asset.ok || run?.ok === false) return { stage: "unavailable" };
   const state = run?.run;
@@ -51,7 +70,9 @@ export function paperProgress({ asset, run }: PaperStatus, now = Date.now()): Pa
   }
   if (asset.state === "stored") return { stage: "minting" };
   if (asset.state === "draft") return { stage: "saving" };
-  return run === undefined ? { stage: "not-found" } : { stage: "reading" };
+  if (run === undefined) return { stage: "not-found" };
+  const noRun = state === undefined && sentAt !== undefined && now - sentAt > SETTLE_MS;
+  return noRun && asset.state === "missing" ? { stage: "not-found" } : { stage: "reading" };
 }
 
 /** Whether the page stops polling at this stage. */

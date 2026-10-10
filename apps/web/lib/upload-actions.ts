@@ -1,7 +1,7 @@
 import type { PublishedRecord, SubmitLimiter, SubmitResult, UploadService } from "@verisci/agents";
 import { canonicalCid } from "@verisci/core";
 import type { Counter } from "./limits.ts";
-import { type PaperStage, paperProgress } from "./progress.ts";
+import { eventTime, type PaperStage, paperProgress } from "./progress.ts";
 
 /** What {@link requestUploadUrl} returns to the browser (ADR 0021). */
 export type UploadUrlAnswer =
@@ -47,7 +47,11 @@ export async function readProgress(
   if (canonical === undefined) return { stage: "not-found" };
   const event = eventId !== undefined && EVENT_ID.test(eventId) ? eventId : undefined;
   const status = await service.readPaper(canonical, event);
-  const stage = paperProgress(status);
+  const stage = paperProgress(
+    status,
+    Date.now(),
+    event === undefined ? undefined : eventTime(event),
+  );
   return stage.stage === "published" && status.record ? { ...stage, record: status.record } : stage;
 }
 
