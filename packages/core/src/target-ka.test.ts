@@ -56,6 +56,12 @@ describe("targetKaQuads", () => {
     expect(quads).toHaveLength(6);
   });
 
+  it("writes no sameAs for a DOI that is not one", () => {
+    const quads = targetKaQuads({ ...metadata, doi: "10.1000/x> <urn:a> <urn:b" }, submission);
+
+    expect(quads.map((quad) => quad.predicate)).not.toContain(`${SCHEMA}sameAs`);
+  });
+
   it("escapes quotes, backslashes and line breaks in a literal", () => {
     const quads = targetKaQuads(
       { title: 'A "quoted" \\ title\r\non two lines', authors: [] },

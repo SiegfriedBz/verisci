@@ -6,7 +6,7 @@ export interface PaperMetadata {
   /** Each author's full name, in document order. */
   readonly authors: readonly string[];
   readonly abstract?: string;
-  /** Lowercase, with no `https://doi.org/` or `doi:` prefix. */
+  /** Lowercase, with no `https://doi.org/` or `doi:` prefix; absent when what GROBID read is not a DOI. */
   readonly doi?: string;
 }
 
@@ -17,6 +17,13 @@ export type TeiResult =
 
 const TEI_NS = "http://www.tei-c.org/ns/1.0";
 const DOI_PREFIX = /^(?:https?:\/\/(?:dx\.)?doi\.org\/|doi:)/i;
+/** A DOI (`10.<registrant>/<suffix>`) with no character that would break the IRI it goes into. */
+const DOI = /^10\.\d{4,9}\/[^\s<>"{}|\\^`]+$/;
+
+/** True for a lowercase DOI that can be written into an IRI as is. */
+export function isDoi(value: string): boolean {
+  return DOI.test(value);
+}
 
 /**
  * Reads a paper's title, authors, abstract and DOI from GROBID's TEI header
@@ -48,7 +55,8 @@ export function parseTeiHeader(xml: string): TeiResult {
   const doiElement = all(header, "idno").find(
     (idno) => idno.getAttribute("type")?.toUpperCase() === "DOI",
   );
-  const doi = text(doiElement).replace(DOI_PREFIX, "").toLowerCase();
+  const read = text(doiElement).replace(DOI_PREFIX, "").toLowerCase();
+  const doi = isDoi(read) ? read : "";
 
   return {
     ok: true,

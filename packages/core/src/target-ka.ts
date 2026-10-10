@@ -1,4 +1,4 @@
-import type { PaperMetadata } from "./tei.ts";
+import { isDoi, type PaperMetadata } from "./tei.ts";
 
 /** One triple, as the DKG node takes it: IRIs bare, literals quoted (`"\"7\""`). */
 export interface Triple {
@@ -28,7 +28,8 @@ const XSD_INTEGER = "http://www.w3.org/2001/XMLSchema#integer";
  * The triples of a paper's Target KA: its schema.org description (title, `ipfs://` link,
  * abstract, DOI, authors with their position) and its submission (submitter's lowercase
  * address, signature and deadline under `urn:verisci:` predicates), so anyone can rebuild
- * the signed message from the KA and verify it. Fields that are absent produce no triple.
+ * the signed message from the KA and verify it. Fields that are absent, and a DOI that is
+ * not one, produce no triple.
  *
  * The same input always gives the same triples in the same order.
  */
@@ -46,7 +47,7 @@ export function targetKaQuads(metadata: PaperMetadata, submission: PaperSubmissi
       object: literal(metadata.abstract),
     });
   }
-  if (metadata.doi) {
+  if (metadata.doi && isDoi(metadata.doi)) {
     triples.push({
       subject: paper,
       predicate: `${SCHEMA}sameAs`,

@@ -51,6 +51,21 @@ describe("parseTeiHeader", () => {
     expect(result).toMatchObject({ ok: true, metadata: { doi } });
   });
 
+  it.each([
+    ["an IRI-breaking character", "10.1000/x>"],
+    ["a quote", '10.1000/x"y'],
+    ["no 10. prefix", "11.1000/abc"],
+    ["no suffix", "10.1000/"],
+  ])("drops a DOI with %s", (_, idno) => {
+    const result = parseTeiHeader(
+      tei({
+        analytic: `<idno type="DOI">${idno.replace(">", "&gt;").replace('"', "&quot;")}</idno>`,
+      }),
+    );
+
+    expect(result.ok && result.metadata.doi).toBe(undefined);
+  });
+
   it("collapses whitespace and line breaks inside a field and trims it", () => {
     const result = parseTeiHeader(
       tei({
