@@ -9,7 +9,6 @@ import {
 import { type AssetResult, createDkgClient, type DkgFailure } from "@verisci/dkg";
 import { createPublicClient, http } from "viem";
 import { baseSepolia } from "viem/chains";
-import { type AgentsEnv, createAgentsEnv } from "./agents-env.ts";
 import { inngest } from "./inngest.ts";
 import { createUploadUrl, deleteFile, findPublicFile, type UploadUrlResult } from "./pinata.ts";
 import {
@@ -25,6 +24,7 @@ import {
 } from "./publish/submit-paper.ts";
 import { signatureMatches, verifySubmission } from "./publish/verify-submission.ts";
 import { type ReadRunResult, readRun } from "./runs.ts";
+import { createWorkflowsEnv, type WorkflowsEnv } from "./workflows-env.ts";
 
 /** The upload page's timings, in seconds. */
 export const UPLOAD_SETTINGS = {
@@ -67,7 +67,7 @@ export interface PaperStatus {
   readonly failure?: PublishFailure;
 }
 
-/** What the upload page calls, built from the agents' settings (ADR 0003, ADR 0010). */
+/** What the upload page calls, built from the workflows' settings (ADR 0003, ADR 0010). */
 export interface UploadService {
   /** This environment's context graph id, in the spelling a submission signs. */
   readonly contextGraph: string;
@@ -88,7 +88,7 @@ export interface UploadIo {
 }
 
 /** Builds the upload page's calls from validated settings. */
-export function createUploadService(env: AgentsEnv, io: UploadIo): UploadService {
+export function createUploadService(env: WorkflowsEnv, io: UploadIo): UploadService {
   const pinata = { jwt: env.PINATA_JWT, fetch: io.fetch, timeoutMs: PAGE_TIMEOUT_MS };
   const chain = createPublicClient({ chain: baseSepolia, transport: http(env.CHAIN_RPC_URL) });
   const dkg = createDkgClient({
@@ -208,7 +208,7 @@ let service: UploadService | undefined;
  * verisci's Inngest client.
  */
 export function getUploadService(): UploadService {
-  service ??= createUploadService(createAgentsEnv(), {
+  service ??= createUploadService(createWorkflowsEnv(), {
     fetch: (input, init) => fetch(input, init),
     send: async (event) => {
       const { ids } = await inngest.send({

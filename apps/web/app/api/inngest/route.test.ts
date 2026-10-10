@@ -13,7 +13,7 @@ describe("/api/inngest", () => {
     expect([GET, POST, PUT].every((handler) => typeof handler === "function")).toBe(true);
   });
 
-  it("describes the agents' functions to the dev server", async () => {
+  it("describes the workflows' functions to the dev server", async () => {
     const { GET } = await route();
 
     const response = await GET(

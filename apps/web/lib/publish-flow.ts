@@ -1,5 +1,5 @@
-import type { SubmitResult } from "@verisci/agents";
 import { canonicalCid, submissionTypedData } from "@verisci/core";
+import type { SubmitResult } from "@verisci/workflows";
 import type { PublishProblem } from "./messages.ts";
 import type { UploadUrlAnswer } from "./upload-actions.ts";
 

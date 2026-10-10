@@ -7,7 +7,7 @@ const createUploadUrl = vi.fn(async () => ({
 }));
 const submitPaper = vi.fn(async () => ({ ok: false, reason: "bad-signature" }));
 
-vi.mock("@verisci/agents", () => ({
+vi.mock("@verisci/workflows", () => ({
   getUploadService: () => ({ createUploadUrl, submitPaper }),
 }));
 vi.mock("next/headers", () => ({

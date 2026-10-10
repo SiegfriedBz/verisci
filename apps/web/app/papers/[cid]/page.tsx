@@ -1,4 +1,4 @@
-import { getUploadService } from "@verisci/agents";
+import { getUploadService } from "@verisci/workflows";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { PaperProgress } from "../../../components/paper-progress.tsx";

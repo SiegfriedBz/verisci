@@ -2,7 +2,7 @@ import { defineProject } from "vitest/config";
 
 export default defineProject({
   test: {
-    name: "agents",
+    name: "workflows",
     environment: "node",
     passWithNoTests: true,
   },

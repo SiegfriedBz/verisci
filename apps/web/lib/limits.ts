@@ -1,6 +1,6 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import type { SubmitLimiter } from "@verisci/agents";
+import type { SubmitLimiter } from "@verisci/workflows";
 
 /** How much one visitor may ask for, per rolling day (ADR 0035). */
 export const UPLOAD_LIMITS = {

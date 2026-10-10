@@ -8,9 +8,9 @@ import type { RuntimeEnv } from "@verisci/env";
  */
 export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
-  const { createAgentsEnv } = await import("@verisci/agents");
+  const { createWorkflowsEnv } = await import("@verisci/workflows");
   const { createWebEnv } = await import("./lib/web-env.ts");
-  checkServerSettings(process.env, [createAgentsEnv, createWebEnv]);
+  checkServerSettings(process.env, [createWorkflowsEnv, createWebEnv]);
 }
 
 /**

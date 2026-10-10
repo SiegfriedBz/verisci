@@ -50,9 +50,6 @@ importers:
       '@upstash/redis':
         specifier: 1.39.0
         version: 1.39.0
-      '@verisci/agents':
-        specifier: workspace:*
-        version: link:../../packages/agents
       '@verisci/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -65,6 +62,9 @@ importers:
       '@verisci/env':
         specifier: workspace:*
         version: link:../../packages/env
+      '@verisci/workflows':
+        specifier: workspace:*
+        version: link:../../packages/workflows
       inngest:
         specifier: 4.22.0
         version: 4.22.0(@opentelemetry/core@2.12.0(@opentelemetry/api@1.9.1))(h3@1.15.11)(next@16.3.8(@opentelemetry/api@1.9.1)(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)(typescript@6.0.3)(zod@4.6.5)
@@ -110,34 +110,6 @@ importers:
         version: 4.3.3
 
   infra/rpc-proxy:
-    devDependencies:
-      '@types/node':
-        specifier: 24.19.1
-        version: 24.19.1
-
-  packages/agents:
-    dependencies:
-      '@verisci/contracts':
-        specifier: workspace:*
-        version: link:../contracts
-      '@verisci/core':
-        specifier: workspace:*
-        version: link:../core
-      '@verisci/dkg':
-        specifier: workspace:*
-        version: link:../dkg
-      '@verisci/env':
-        specifier: workspace:*
-        version: link:../env
-      inngest:
-        specifier: 4.22.0
-        version: 4.22.0(@opentelemetry/core@2.12.0(@opentelemetry/api@1.9.1))(h3@1.15.11)(next@16.3.8(@opentelemetry/api@1.9.1)(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)(typescript@6.0.3)(zod@4.6.5)
-      viem:
-        specifier: 2.57.4
-        version: 2.57.4(typescript@6.0.3)(zod@4.6.5)
-      zod:
-        specifier: 4.6.5
-        version: 4.6.5
     devDependencies:
       '@types/node':
         specifier: 24.19.1
@@ -196,6 +168,34 @@ importers:
       '@t3-oss/env-core':
         specifier: 0.13.11
         version: 0.13.11(typescript@6.0.3)(zod@4.6.5)
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
+    devDependencies:
+      '@types/node':
+        specifier: 24.19.1
+        version: 24.19.1
+
+  packages/workflows:
+    dependencies:
+      '@verisci/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@verisci/core':
+        specifier: workspace:*
+        version: link:../core
+      '@verisci/dkg':
+        specifier: workspace:*
+        version: link:../dkg
+      '@verisci/env':
+        specifier: workspace:*
+        version: link:../env
+      inngest:
+        specifier: 4.22.0
+        version: 4.22.0(@opentelemetry/core@2.12.0(@opentelemetry/api@1.9.1))(h3@1.15.11)(next@16.3.8(@opentelemetry/api@1.9.1)(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)(typescript@6.0.3)(zod@4.6.5)
+      viem:
+        specifier: 2.57.4
+        version: 2.57.4(typescript@6.0.3)(zod@4.6.5)
       zod:
         specifier: 4.6.5
         version: 4.6.5
@@ -5630,7 +5630,7 @@ snapshots:
 
   '@scure/bip32@1.7.0':
     dependencies:
-      '@noble/curves': 1.9.1
+      '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
 
@@ -7732,7 +7732,7 @@ snapshots:
   ox@0.6.9(typescript@6.0.3)(zod@4.6.5):
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
-      '@noble/curves': 1.9.1
+      '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0

@@ -1,4 +1,4 @@
-import { type PaperStatus, PUBLISH_SETTINGS } from "@verisci/agents";
+import { type PaperStatus, PUBLISH_SETTINGS } from "@verisci/workflows";
 import { describe, expect, it } from "vitest";
 import {
   eventTime,

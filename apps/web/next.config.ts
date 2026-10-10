@@ -31,11 +31,11 @@ const nextConfig: NextConfig = {
     resolveAlias: Object.fromEntries(OPTIONAL_PEERS.map((name) => [name, "./lib/empty-module.ts"])),
   },
   transpilePackages: [
-    "@verisci/agents",
     "@verisci/contracts",
     "@verisci/core",
     "@verisci/dkg",
     "@verisci/env",
+    "@verisci/workflows",
   ],
 };
 

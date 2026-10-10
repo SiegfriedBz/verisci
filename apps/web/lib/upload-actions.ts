@@ -1,5 +1,10 @@
-import type { PublishedRecord, SubmitLimiter, SubmitResult, UploadService } from "@verisci/agents";
 import { canonicalCid } from "@verisci/core";
+import type {
+  PublishedRecord,
+  SubmitLimiter,
+  SubmitResult,
+  UploadService,
+} from "@verisci/workflows";
 import type { Counter } from "./limits.ts";
 import { eventTime, type PaperStage, paperProgress } from "./progress.ts";
 

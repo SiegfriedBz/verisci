@@ -1,4 +1,4 @@
-import type { PaperStatus, PublishFailure, PublishOutcome } from "@verisci/agents";
+import type { PaperStatus, PublishFailure, PublishOutcome } from "@verisci/workflows";
 import { z } from "zod";
 
 /** Why a run refused a paper, as its outcome says. */
@@ -27,7 +27,7 @@ const SETTLE_MS = 60_000;
 
 /**
  * How long the page follows a paper whose event started no run: a run's whole budget
- * (`PUBLISH_SETTINGS.finishTimeout` in `@verisci/agents`, 45 minutes), after which the run
+ * (`PUBLISH_SETTINGS.finishTimeout` in `@verisci/workflows`, 45 minutes), after which the run
  * that held the PDF has ended.
  */
 export const FOLLOW_MS = 45 * 60_000;

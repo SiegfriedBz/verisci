@@ -1,6 +1,6 @@
 import { EnvError } from "@verisci/env";
 import { describe, expect, it } from "vitest";
-import { createAgentsEnv } from "./agents-env.ts";
+import { createWorkflowsEnv } from "./workflows-env.ts";
 
 const runtimeEnv = {
   APP_ENV: "staging",
@@ -15,9 +15,9 @@ const runtimeEnv = {
   INNGEST_SIGNING_KEY: "signkey-test-0123",
 };
 
-describe("createAgentsEnv", () => {
+describe("createWorkflowsEnv", () => {
   it("returns GROBID, the gateway and the RPC URL with the DKG and shared settings", () => {
-    const env = createAgentsEnv(runtimeEnv);
+    const env = createWorkflowsEnv(runtimeEnv);
 
     expect(env.GROBID_URL).toBe("http://127.0.0.1:8070");
     expect(env.PINATA_GATEWAY_URL).toBe("https://example.mypinata.cloud");
@@ -29,7 +29,7 @@ describe("createAgentsEnv", () => {
   it("names every missing or invalid variable", () => {
     let caught: unknown;
     try {
-      createAgentsEnv({ ...runtimeEnv, GROBID_URL: undefined, CHAIN_RPC_URL: "not a url" });
+      createWorkflowsEnv({ ...runtimeEnv, GROBID_URL: undefined, CHAIN_RPC_URL: "not a url" });
     } catch (error) {
       caught = error;
     }
@@ -41,10 +41,10 @@ describe("createAgentsEnv", () => {
     ]);
   });
 
-  it("names bad DKG and agents variables in one error", () => {
+  it("names bad DKG and workflows variables in one error", () => {
     let caught: unknown;
     try {
-      createAgentsEnv({ ...runtimeEnv, DKG_TOKEN: undefined, GROBID_URL: undefined });
+      createWorkflowsEnv({ ...runtimeEnv, DKG_TOKEN: undefined, GROBID_URL: undefined });
     } catch (error) {
       caught = error;
     }
@@ -56,7 +56,7 @@ describe("createAgentsEnv", () => {
   });
 
   it("returns the Pinata key and Inngest's keys", () => {
-    const env = createAgentsEnv(runtimeEnv);
+    const env = createWorkflowsEnv(runtimeEnv);
 
     expect(env.PINATA_JWT).toBe("secret-pinata-jwt");
     expect(env.INNGEST_EVENT_KEY).toBe("secret-event-key");
@@ -67,7 +67,7 @@ describe("createAgentsEnv", () => {
     const keyless = { ...runtimeEnv, INNGEST_EVENT_KEY: undefined, INNGEST_SIGNING_KEY: undefined };
     let caught: unknown;
     try {
-      createAgentsEnv(keyless);
+      createWorkflowsEnv(keyless);
     } catch (error) {
       caught = error;
     }
@@ -76,16 +76,21 @@ describe("createAgentsEnv", () => {
       "INNGEST_EVENT_KEY",
       "INNGEST_SIGNING_KEY",
     ]);
-    expect(createAgentsEnv({ ...keyless, APP_ENV: "local" }).INNGEST_SIGNING_KEY).toBeUndefined();
+    expect(
+      createWorkflowsEnv({ ...keyless, APP_ENV: "local" }).INNGEST_SIGNING_KEY,
+    ).toBeUndefined();
   });
 
   it("requires the Pinata key", () => {
-    expect(() => createAgentsEnv({ ...runtimeEnv, PINATA_JWT: "" })).toThrow(EnvError);
+    expect(() => createWorkflowsEnv({ ...runtimeEnv, PINATA_JWT: "" })).toThrow(EnvError);
   });
 
   it("keeps the DKG node's -prod guard", () => {
     expect(() =>
-      createAgentsEnv({ ...runtimeEnv, DKG_CONTEXT_GRAPH: `${runtimeEnv.DKG_CONTEXT_GRAPH}-prod` }),
+      createWorkflowsEnv({
+        ...runtimeEnv,
+        DKG_CONTEXT_GRAPH: `${runtimeEnv.DKG_CONTEXT_GRAPH}-prod`,
+      }),
     ).toThrow(EnvError);
   });
 });
