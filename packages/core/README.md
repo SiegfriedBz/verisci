@@ -7,11 +7,19 @@ Domain logic. Core does no IO: no `fetch`, no `node:*` imports and no other
 `pnpm check` enforces this: `packages/core/biome.json` turns `fetch`,
 `node:*` and `@verisci/*` into errors ("core does no IO").
 
-Status: shared constants, UAL parsing, asset names, a Target KA's content and submission, reading a paper's record back (`paperRecordQuery`, `parsePaperRecord`), and OriginTrail's contracts with the token behind a UAL (`ORIGINTRAIL_CONTRACTS`, `knowledgeAssetToken`).
+Status: shared constants, UAL parsing, asset names, a Target KA's content and submission,
+reading a paper's record back (`paperRecordQuery`, `parsePaperRecord`), and OriginTrail's
+contracts with the token behind a UAL (`ORIGINTRAIL_CONTRACTS`, `knowledgeAssetToken`).
+
+## Depends on
+
+The `multiformats` library, to parse CIDs, `@xmldom/xmldom`, to read TEI, and no other
+workspace. pnpm does not hoist undeclared workspace packages, so an import of another
+`@verisci/*` package fails to typecheck.
 
 ## API
 
-| Export | Description |
+| Export | What it does |
 | --- | --- |
 | `coreName` | The package name, imported by the web app's package test |
 | `BASE_SEPOLIA_CHAIN_ID` | 84532, the chain id of Base Sepolia, where staging and production run and which UALs reference ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)) |
@@ -28,7 +36,7 @@ Status: shared constants, UAL parsing, asset names, a Target KA's content and su
 | `AssetNameResult`, `AssetNameError` | The result of both, and why an input cannot be named |
 | `submissionTypedData(message)` | The EIP-712 typed data a submitter signs to publish a PDF, in the shape viem takes |
 | `canonicalContextGraph(id)` | A context graph id with its address in lowercase and its name unchanged: the one spelling a submission signs |
-| `SUBMISSION_DOMAIN`, `SubmissionMessage` | verisci's EIP-712 domain, and the signed `{ cid, contextGraph, deadline }` |
+| `SUBMISSION_DOMAIN`, `SubmissionMessage` | VeriSci's EIP-712 domain, and the signed `{ cid, contextGraph, deadline }` |
 | `parseTeiHeader(xml)` | A paper's `PaperMetadata` (title, authors, abstract, DOI) from GROBID's TEI header, or `not-tei` or `no-title`; returns a result for every input |
 | `PaperMetadata`, `TeiResult` | The metadata read from a TEI header, and the result of `parseTeiHeader` |
 | `ORIGINTRAIL_CONTRACTS`, `OriginTrailContracts`, `knowledgeAssetToken(ual)` | OriginTrail's `DKGKnowledgeAssets` (the ERC-721 holding every asset's token) and `KnowledgeAssetsLifecycle` addresses by chain id, and the contract and token id behind a UAL: the id itself when the UAL names the contract, else the author's address above the asset number in the low 96 bits; `undefined` for a chain with no recorded contracts |
@@ -105,13 +113,6 @@ A Target KA describes a paper and who submitted it
   submission signs; and
   verify the signature against the submitter's address with any EIP-712 library (viem's
   `verifyTypedData` also checks smart-contract wallets).
-
-## Depends on
-
-The `multiformats` library, to parse CIDs, `@xmldom/xmldom`, to read TEI, and no other
-workspace. pnpm does not hoist
-undeclared workspace packages, so an import of another `@verisci/*` package fails to
-typecheck.
 
 ## Scripts
 

@@ -5,6 +5,13 @@ daemon takes a single `chain.rpcUrl`; this proxy is that URL. It spreads the dae
 Sepolia reads over free public endpoints and keeps Alchemy, the fallback, within
 a daily budget.
 
+Status: in use beside the DKG node on a developer's computer, started by hand; its server
+setup waits for the node server plan.
+
+## Depends on
+
+Node's standard library only.
+
 ## Where it sits
 
 The proxy is a separate process beside the DKG daemon, not part of it. It listens on
@@ -85,8 +92,10 @@ only this folder's `src/`. By hand, from the repo root, with the settings in a f
 node --env-file="$HOME/.config/verisci/rpc-proxy.env" infra/rpc-proxy/src/main.ts
 ```
 
-On a server, [`rpc-proxy.service`](rpc-proxy.service) is its systemd unit.
-The DKG daemon must start after it, or a reboot leaves the daemon without a chain:
+On a server, [`rpc-proxy.service`](rpc-proxy.service) is a starting systemd unit: it still
+carries the previous host's user and paths (`ubuntu`, `/home/ubuntu/rpc-proxy`), to adapt
+when the node server plan sets the node up there. The DKG daemon must start after it, or a
+reboot leaves the daemon without a chain:
 
 ```ini
 # /etc/systemd/system/dkg.service.d/10-after-rpc-proxy.conf
@@ -106,7 +115,3 @@ journalctl -u rpc-proxy -f | grep stat    # the status line, every 30 s
 | `pnpm --filter @verisci/rpc-proxy test` | Vitest; upstreams and clock are faked |
 | `pnpm --filter @verisci/rpc-proxy typecheck` | Typechecks the package |
 | `pnpm --filter @verisci/rpc-proxy start` | Runs it locally (needs `UPSTREAM_RPC`) |
-
-## Depends on
-
-Node's standard library only.

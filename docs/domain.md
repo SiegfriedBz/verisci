@@ -1,9 +1,9 @@
 # Domain facts
 
-Hard-won facts about the systems verisci runs on, each written once so plans cite them
+Hard-won facts about the systems VeriSci runs on, each written once so plans cite them
 instead of rediscovering them. Decisions built on them are in [`docs/adr/`](adr/README.md).
 
-Many facts were observed in the previous verisci repo; the DKG facts marked 10.0.22 were
+Many facts were observed in the earlier prototype, `desci-rating-dapp`; the DKG facts marked 10.0.22 were
 re-checked on this repo's own node. Each section names the versions they were seen on:
 when a version moves, re-check the facts before relying on them. Add a fact when you learn
 one the hard way.
@@ -17,7 +17,7 @@ edge`, testnet), Base Sepolia.
   `packages/core/src/ka-ual-identity.ts`, checked at `abfd785`, 2026-09):
   - `did:dkg:base:{chainId}/{authorAddress}/{kaNumber}`: the V10 form. The author is the
     publishing agent's wallet, packed into the id's high 160 bits. Ours look like this: the
-    previous repo's middle segment equals the node's agent address and has no contract code.
+    prototype's middle segment equals the node's agent address and has no contract code.
   - `did:dkg:base:{chainId}/{DKGKnowledgeAssets address}/{kaId}`: the older form, for ids
     with no author bits. OriginTrail's docs still show only this one.
 
@@ -103,7 +103,7 @@ edge`, testnet), Base Sepolia.
     answers 404 ("does not exist or is not subscribed locally");
   - after `POST /api/context-graph/subscribe` with `syncMode: "on-demand"`, the same call
     with the graph id and the UALs (1 to 10 per call, per the daemon source) fetched the
-    old verisci node's KAs 0 to 3, in 22 to 24 s per call, with that node off (so other
+    previous VeriSci node's KAs 0 to 3, in 22 to 24 s per call, with that node off (so other
     peers presumably hold copies);
   - `/api/query` then read their triples.
 
@@ -305,7 +305,7 @@ Observed on Vercel Hobby with Inngest Cloud, except where a fact cites the vendo
   holds one of the 5 (whether branch environments share them is to verify), so a long
   step such as waiting for a receipt delays every other workflow ([ADR 0019](adr/0019-oracle-transactions-are-serialized.md)).
 - **Vercel caps a function's request body at 4.5 MB** (Vercel docs, to verify on our
-  plan). The previous repo raised the server-action limit to 5 MB, so uploads between 4.5
+  plan). The prototype raised the server-action limit to 5 MB, so uploads between 4.5
   and 5 MB likely failed with a 413 in production ([ADR 0010](adr/0010-pdf-to-target-ka-pipeline.md)).
 
 ## Next.js
@@ -318,7 +318,6 @@ Observed on Next.js 16.3.8.
   loads the repo-root files instead (see Tooling for why it needs `forceReload`).
 - **Next watches only `apps/web` for env changes:** editing a root env file needs a dev
   server restart, and an env file left in `apps/web` can be reapplied on a dev reload.
-
 - **Turbopack resolves lazy imports of optional packages at build** (16.3.8, 2026-10-10):
   wagmi's connectors reach Coinbase's SDK, whose lazily imported `@x402/*` packages are
   optional peers; `next build` fails on them until `turbopack.resolveAlias` points them at a

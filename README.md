@@ -16,7 +16,7 @@ score and is meant to grow stronger through human review and, later, wet-lab
 replication ([ADR 0012](docs/adr/0012-three-phases-settled-by-the-oracle.md)).
 
 Status: early. VeriSci is a rebuild of an earlier prototype,
-desci-rating-dapp, which ran both flows (publish a paper, rate it) end to end on
+`desci-rating-dapp`, which ran both flows (publish a paper, rate it) end to end on
 Base Sepolia. This repo starts again from clean foundations (monorepo, tooling,
 CI), and its ADRs and domain facts record what the prototype taught us. The first
 user-facing feature is the upload page: connect a wallet, publish a PDF, follow it until it
@@ -26,28 +26,42 @@ Everything runs on testnets.
 
 ## How it works
 
+Built:
+
 - **A paper becomes a Target KA.** Its submitter signs it with their wallet; the
   PDF is parsed, its metadata read, and it is published to the DKG as a
   Knowledge Asset that records who submitted it
-  ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)).
-- **Anyone can request a rating on chain.** VeriSci scores the paper, our DKG
-  node publishes the rating as its own Rating KA (R-KA), and the oracle records
-  the score on the contract ([ADR 0011](docs/adr/0011-a-rating-is-a-separate-r-ka.md),
-  [ADR 0014](docs/adr/0014-contract-owns-scores-dkg-owns-content.md)).
+  ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)). A publish that fails
+  after its retries is recovered by publishing the same PDF again.
 - **Every write is safe to retry.** Each step checks what is already done
   before acting, so a retry never duplicates anything
   ([ADR 0007](docs/adr/0007-all-writes-converge.md)).
-- **A cron job restarts anything stuck**, from the contract's own list of
-  pending requests, and that request's run finishes or cancels it
-  ([ADR 0020](docs/adr/0020-stuck-requests-recovered-only-oracle-cancels.md)).
 - **Staging and production are kept apart**, with their own contracts, graphs,
   oracle wallets and limit stores; the DKG node, the Reown project and the pinning
   account are shared ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)).
 
-Terms: a **KA** (Knowledge Asset) is a record on the DKG; the ones VeriSci
-publishes (Target KAs and every R-KA) are minted and owned by its DKG node. The
-**oracle** is VeriSci's account that records rating
-results on the contract.
+Next (the contracts are deployed; the rating runs are not built yet):
+
+- **Anyone requests a rating on chain.** VeriSci scores the paper, our DKG node
+  publishes the rating as its own Rating KA (R-KA), and the oracle records the
+  score on the contract ([ADR 0011](docs/adr/0011-a-rating-is-a-separate-r-ka.md),
+  [ADR 0014](docs/adr/0014-contract-owns-scores-dkg-owns-content.md)).
+- **A cron job restarts stuck rating requests**, from the contract's own list of
+  pending requests, and that request's run finishes or cancels it
+  ([ADR 0020](docs/adr/0020-stuck-requests-recovered-only-oracle-cancels.md)).
+
+Terms:
+
+- A **KA** (Knowledge Asset) is a record on the DKG: content off-chain on the DKG,
+  an ERC-721 token and a merkle root of the content on-chain. The ones VeriSci
+  publishes are minted to its DKG node's agent address, which alone can update them.
+- A **Target KA** is a paper's KA (the pages call it a paper asset); an **R-KA** is
+  a rating's KA (a rating asset), which points at its Target KA.
+- A **UAL** is a KA's stable address (`did:dkg:base:84532/<agent address>/<number>`),
+  the link between its off-chain content and its on-chain token.
+- A **context graph** is the DKG graph a KA lives in; each environment has its own.
+- The **submitter** is the wallet that signed a paper's submission; the **oracle** is
+  VeriSci's account that records rating results on the contract.
 
 ## Architecture
 
@@ -55,8 +69,9 @@ The diagrams below show the target design; the workspaces build it plan by plan.
 
 ### Environments and resources
 
-Each environment has one context graph on the shared DKG node
-([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)). Our node
+Each environment has its own context graph on the shared DKG node
+([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)); staging's exists today,
+production's comes with the first production deploy. Our node
 publishes the ratings of every contract of an environment to that environment's
 graph, so a redeployed contract keeps the graph of the one it replaces; the old
 contract is paused and drained ([ADR 0023](docs/adr/0023-a-fix-is-a-redeploy-owner-powers-fixed.md)).
@@ -80,19 +95,29 @@ oracle key ([ADR 0019](docs/adr/0019-oracle-transactions-are-serialized.md)).
 flowchart TB
   subgraph staging["Staging: develop"]
     direction TB
+    sa["App server<br/>upload page, Upstash limits"]
+    sp["Publish runs<br/>Inngest environment"]
     sc["RatingController (staging)<br/>Base Sepolia<br/>+ past contracts, paused"]
-    sr["Rating and publish runs<br/>oracle wallet, Alchemy webhook,<br/>Inngest environment"]
+    sr["Rating runs (next)<br/>oracle wallet, Alchemy webhook,<br/>same Inngest environment"]
     sg["Staging graph<br/>on the shared DKG node host"]
-    sc --> sr -->|"stores and mints KAs"| sg
+    sa -->|"paper.submitted"| sp -->|"stores and mints Target KAs"| sg
+    sc --> sr -->|"stores and mints R-KAs"| sg
   end
   subgraph production["Production: main"]
     direction TB
+    pa["App server<br/>upload page, Upstash limits"]
+    pp["Publish runs<br/>Inngest environment"]
     pc["RatingController (production)<br/>Base Sepolia<br/>+ past contracts, paused"]
-    pr["Rating and publish runs<br/>oracle wallet, Alchemy webhook,<br/>Inngest environment"]
+    pr["Rating runs (next)<br/>oracle wallet, Alchemy webhook,<br/>same Inngest environment"]
     pg["Production graph<br/>on the shared DKG node host"]
-    pc --> pr -->|"stores and mints KAs"| pg
+    pa -->|"paper.submitted"| pp -->|"stores and mints Target KAs"| pg
+    pc --> pr -->|"stores and mints R-KAs"| pg
   end
 ```
+
+`develop` is staging and `main` is production, both on testnets for now. Feature PRs
+target `develop`; release PRs move `develop` into `main`
+([CONTRIBUTING.md](CONTRIBUTING.md#environments)).
 
 ### Publishing a paper
 
@@ -197,6 +222,20 @@ RPC proxy that runs on the DKG node server (`infra/rpc-proxy`). Packages ship
 TypeScript source, with no build step; Next.js compiles them through
 `transpilePackages`, and the server runs the proxy's source with plain Node.
 
+| Workspace | What it is | Depends on |
+| --- | --- | --- |
+| [`apps/web`](apps/web/README.md) | Next.js app: the pages and the server they call | all five packages |
+| [`packages/env`](packages/env/README.md) | Typed environment variables | none |
+| [`packages/core`](packages/core/README.md) | Domain logic, no IO | none |
+| [`packages/dkg`](packages/dkg/README.md) | DKG adapter | core, env |
+| [`packages/contracts`](packages/contracts/README.md) | Solidity contracts and their TypeScript side | core, env |
+| [`packages/agents`](packages/agents/README.md) | Inngest workflows and the upload page's calls | core, env, dkg, contracts |
+| [`infra/rpc-proxy`](infra/rpc-proxy/README.md) | JSON-RPC proxy run on the DKG node server | none |
+
+Each workspace may only import the workspaces it declares. pnpm does not
+hoist undeclared workspace packages, so breaking this rule fails `pnpm
+typecheck`.
+
 ## Requirements
 
 - Node 24.15 or later within 24.x; `.nvmrc` pins 24.21.0, which CI uses.
@@ -215,7 +254,7 @@ pnpm install
 pnpm dev         # starts apps/web on http://localhost:3000
 ```
 
-To publish a PDF locally (the DKG node, GROBID and the Inngest dev server), follow
+To publish a PDF locally (the RPC proxy, the DKG node, GROBID and the Inngest dev server), follow
 [`packages/agents` → Running a publish locally](packages/agents/README.md#running-a-publish-locally),
 then open http://localhost:3000/publish (it needs the agents' settings and
 `REOWN_PROJECT_ID`; see [`apps/web`](apps/web/README.md#environment)).
@@ -224,8 +263,8 @@ Environment variables are listed in [`.env.example`](.env.example): copy it to
 `.env.local` at the repo root (gitignored), where `apps/web` loads it from.
 `pnpm test` runs without it, and `pnpm build` needs only `APP_ENV` (`APP_ENV=local`).
 `pnpm dev` starts without it, but the publish and paper pages need the DKG node and
-publish run settings, and the wallet window `REOWN_PROJECT_ID`. How workspaces declare and validate them is in the
-[`@verisci/env` README](packages/env/README.md).
+publish run settings, and the wallet window `REOWN_PROJECT_ID`. How workspaces declare
+and validate them is in the [`@verisci/env` README](packages/env/README.md).
 
 ## Commands
 
@@ -235,7 +274,7 @@ publish run settings, and the wallet window `REOWN_PROJECT_ID`. How workspaces d
 | `pnpm check:fix` | Biome rewrites what it can fix safely |
 | `pnpm typecheck` | `tsc` in every workspace |
 | `pnpm test` | Vitest in every workspace, plus `forge test` in `packages/contracts` |
-| `pnpm test:coverage` | Vitest across all workspaces with coverage thresholds: `core` ≥ 90% branches, the others ≥ 70% lines. Until real code lands, only files imported by tests count (see `vitest.config.ts`) |
+| `pnpm test:coverage` | Vitest across all workspaces with coverage thresholds: `core` ≥ 90% branches, the others ≥ 70% lines. Only files imported by tests count until end-to-end tests cover the pages (see `vitest.config.ts`) |
 | `pnpm vitest related <file> --run` | Only the tests that touch `<file>` |
 | `pnpm build` | Builds `apps/web`; needs `APP_ENV` (from the root `.env.local`, or `APP_ENV=local pnpm build`) |
 
@@ -258,33 +297,11 @@ Every PR into `develop` or `main`, and every push to them, runs
 Architecture decisions are in [`docs/adr/`](docs/adr/README.md); facts about the DKG,
 chain, Inngest, Vercel and tooling are in [`docs/domain.md`](docs/domain.md).
 
-## Workspaces
-
-| Workspace | What it is | Depends on |
-| --- | --- | --- |
-| [`apps/web`](apps/web/README.md) | Next.js app | all five packages |
-| [`packages/env`](packages/env/README.md) | Typed environment variables | none |
-| [`packages/core`](packages/core/README.md) | Domain logic, no IO | none |
-| [`packages/dkg`](packages/dkg/README.md) | DKG adapter | core, env |
-| [`packages/contracts`](packages/contracts/README.md) | Solidity contracts and their TypeScript side | core, env |
-| [`packages/agents`](packages/agents/README.md) | Inngest workflows | core, env, dkg, contracts |
-| [`infra/rpc-proxy`](infra/rpc-proxy/README.md) | JSON-RPC proxy run on the DKG node server | none |
-
-Each workspace may only import the workspaces it declares. pnpm does not
-hoist undeclared workspace packages, so breaking this rule fails `pnpm
-typecheck`.
-
-## Environments
-
-`develop` is staging and `main` is production, both on testnets for now, with
-separate resources ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)). Feature
-PRs target `develop`; release PRs move `develop` into `main`. Details are in
-[CONTRIBUTING.md](CONTRIBUTING.md#environments).
-
 ## Working with Claude Code
 
 [`CLAUDE.md`](CLAUDE.md) and one `CLAUDE.md` per workspace give Claude Code the project
-rules. `.claude/` holds the shared settings, hooks and skills:
+rules. `.claude/` holds the shared settings, hooks, skills and the read-only reviewer agent
+(`.claude/agents/reviewer.md`) that `/review-branch` and `/review-adrs` run:
 
 | Skill | What it does |
 | --- | --- |

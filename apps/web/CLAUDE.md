@@ -16,14 +16,14 @@ Next.js 16 App Router app. See `README.md` here for scripts and status.
   ([ADR 0021](../../docs/adr/0021-server-reads-return-typed-results.md)).
 - Inngest functions live in `@verisci/agents`; `web` only serves them
   ([ADR 0003](../../docs/adr/0003-inngest-workflows-live-in-agents.md)).
-- Playwright end-to-end tests arrive in M7; until then, cover logic in unit tests. Put a
-  flow's logic in `lib/` with its IO passed in (`publishFile`, `paperProgress`,
+- Playwright end-to-end tests come in a later plan; until then, cover logic in unit tests.
+  Put a flow's logic in `lib/` with its IO passed in (`publishFile`, `paperProgress`,
   `requestUploadUrl`), and keep components and `app/actions.ts` thin.
 - Styling is Tailwind v4 with the tokens and classes in `app/globals.css` (`glass`,
-  `signal-gradient`, `text-muted`, `text-accent`…): dark only, emerald for off-chain and cyan for on-chain (nothing else), no raw
-  colours; `rounded-2xl` panels, `rounded-xl` buttons and inputs, `rounded-lg` small controls,
-  `rounded-md` flags.
-  Check every page at 360, 768 and 1280 px with no horizontal scroll. Page copy follows the
+  `signal-gradient`, `text-muted`, `text-accent`…): dark only, emerald for off-chain and
+  cyan for on-chain (nothing else), no raw colours; `rounded-2xl` panels, `rounded-xl`
+  buttons and inputs, `rounded-lg` small controls, `rounded-md` flags. Check every page at
+  360, 768 and 1280 px with no horizontal scroll. Page copy follows the
   `design-taste-frontend` and humanizer skills: plain words, no em dashes.
 - Wallet hooks (wagmi, AppKit) run only under `Providers` with a project id: render them
   behind `useWalletReady()`. Never pass server-only values to a client component except

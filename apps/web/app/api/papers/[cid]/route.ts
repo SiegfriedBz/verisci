@@ -2,7 +2,7 @@ import { getUploadService } from "@verisci/agents";
 import { readProgress } from "../../../../lib/upload-actions.ts";
 
 /**
- * Where a paper stands, as JSON (`PaperStage`), for its page to poll: a read, so a route
+ * Where a paper stands, as JSON (`PaperView`), for its page to poll: a read, so a route
  * rather than a server action, which Next.js runs one at a time. `?event=` names the
  * Inngest event its run started from.
  */

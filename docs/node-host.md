@@ -1,6 +1,6 @@
 # The DKG node
 
-How to build verisci's DKG node: the DKG daemon, its RPC proxy (`infra/rpc-proxy`) and
+How to build VeriSci's DKG node: the DKG daemon, its RPC proxy (`infra/rpc-proxy`) and
 GROBID. It runs on the developer's computer for now, started by hand, and moves to a server
 later by restoring its backup, so its agent address and graph ids stay the same
 ([ADR 0006](adr/0006-dkg-node-runs-on-a-dedicated-host.md)). Moving it is documented here

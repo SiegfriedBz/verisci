@@ -14,9 +14,12 @@ and the web app on the request that reads them
 
 Built on [`@t3-oss/env-core`](https://env.t3.gg) and [Zod](https://zod.dev).
 
+Status: `defineEnv`, the shared `NODE_ENV`/`APP_ENV` schema and `EnvError`, used by every
+workspace's env module.
+
 ## Depends on
 
-No other workspace.
+`@t3-oss/env-core` and Zod; no other workspace.
 
 ## Shared variables
 
@@ -82,16 +85,18 @@ as `DEPLOY_ENV` are passed on the command line
 
 Programs that run on the DKG node server (`infra/*`, such as the RPC proxy) read their
 own settings from an env file on that server, since it runs them with plain Node and no
-install. Each lists its variables in its README (ADR 0004).
+install. Each lists its variables in its README
+([ADR 0004](../../docs/adr/0004-env-variables-per-workspace-one-root-file.md)).
 
 ## API
 
 | Export | What it does |
 | --- | --- |
 | `defineEnv({ server, extends?, runtimeEnv? })` | Validates `runtimeEnv` (default `process.env`, never mutated) and returns a typed, read-only object; throws `EnvError` |
-| `EnvError` | `message` lists each variable and the schema's message; `issues` is `{ variable, message }[]`. Never contains a value |
+| `DefineEnvOptions`, `RuntimeEnv` | `defineEnv`'s options, and the variables it reads (`process.env` or a plain object) |
+| `EnvError`, `EnvIssue` | `message` lists each variable and the schema's message; `issues` is `EnvIssue[]` (`{ variable, message }`). Never contains a value |
 | `sharedSchema(runtimeEnv?)` | The Zod schemas for `NODE_ENV` and `APP_ENV`; `APP_ENV` is required when `runtimeEnv.NODE_ENV` is `production` |
-| `sharedEnv` | The shared variables, validated from `process.env` |
+| `sharedEnv`, `SharedEnv` | The shared variables, validated from `process.env`, and their type |
 | `createSharedEnv(runtimeEnv?)` | Builds the shared env from a given object, for tests and scripts |
 
 In tests, pass `runtimeEnv` explicitly rather than setting `process.env`.

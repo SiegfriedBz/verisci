@@ -2,11 +2,21 @@
 
 The Next.js 16 app (App Router).
 
-Status: the upload pages, where a visitor connects a wallet, publishes a PDF and follows it
-until its Target KA is minted, plus `/api/inngest`, which serves the agents' Inngest
-functions ([ADR 0003](../../docs/adr/0003-inngest-workflows-live-in-agents.md)). A production
-build validates the shared variables: `build` needs `APP_ENV` (see the
-[`@verisci/env` README](../../packages/env/README.md)).
+Status: the home page; the upload pages, where a visitor connects a wallet, publishes a PDF,
+follows it until its Target KA is minted and verifies its record; and `/api/inngest`, which
+serves the agents' Inngest functions
+([ADR 0003](../../docs/adr/0003-inngest-workflows-live-in-agents.md)).
+
+## Depends on
+
+All five packages: `@verisci/env`, `@verisci/core`, `@verisci/dkg`,
+`@verisci/contracts`, `@verisci/agents`. Each one must be listed in
+`transpilePackages` in `next.config.ts`. Also `inngest` (the `/api/inngest` route's `serve`
+handler); Reown AppKit, wagmi, viem and TanStack Query (the wallet); `@upstash/ratelimit`
+and `@upstash/redis` (the limits); Zod (settings and run outputs); `@next/env` (loads the
+root env files in `next.config.ts`); Tailwind CSS and Phosphor icons. `next.config.ts`
+points the optional `@x402/*` packages, reached through wagmi's connectors, at
+`lib/empty-module.ts` (`docs/domain.md` → Next.js).
 
 ## Pages and routes
 
@@ -22,9 +32,11 @@ build validates the shared variables: `build` needs `APP_ENV` (see the
 The publish form calls two server actions (`app/actions.ts`): `requestUpload()` signs a
 Pinata upload URL within the connection's daily limit, and `submitPaper(input)` checks the
 signed submission and starts its publish run within the address's daily limit
-([ADR 0035](../../docs/adr/0035-limits-are-the-apps-only-state.md)). The browser uploads the
-PDF straight to Pinata, canonicalizes the CID it answers, and has the wallet sign
-`{ cid, contextGraph, deadline }` with a deadline 10 minutes ahead. The work itself is
+([ADR 0035](../../docs/adr/0035-limits-are-the-apps-only-state.md)). The browser
+(`lib/publish-flow.ts`) first refuses a file that is not a PDF (by its type, or, when the
+picker gives none, by the `%PDF-` it must start with) or is over 30 MB, before spending an
+upload URL. It then uploads the PDF straight to Pinata, canonicalizes the CID it answers,
+and has the wallet sign `{ cid, contextGraph, deadline }` with a deadline 10 minutes ahead. The work itself is
 `@verisci/agents`' `getUploadService()` ([`packages/agents`](../../packages/agents/README.md#the-upload-pages-calls)).
 
 Limits (`lib/limits.ts`): 10 upload URLs per connection (IP) and 5 submissions per signing
@@ -36,8 +48,9 @@ rather than letting requests through.
 
 `components/paper-progress.tsx` asks `/api/papers/<cid>` every 5 s and stops on a final
 stage; it shows and asks by the CID's canonical spelling, the one the signature covers,
-whatever spelling the address has. `lib/progress.ts` (`paperProgress`, pure) maps the asset's state on the node, the
-run Inngest started for the event, and why that run stopped to one stage:
+whatever spelling the address has. `lib/progress.ts` (`paperProgress`, pure) maps the
+asset's state on the node, the run Inngest started for the event, and why that run stopped
+to one stage:
 
 ```mermaid
 stateDiagram-v2
@@ -78,15 +91,16 @@ stateDiagram-v2
   start); Inngest has cancelled it by then.
 - `unavailable` (the node or Inngest not answering) is shown and asked again.
 - A published paper whose record the node did not answer for, or does not show yet after
-  its run minted it (`recordProblem: "unavailable"`), is asked about again until the record loads; one whose record cannot be
-  read says so (ADR 0021).
+  its run minted it (`recordProblem: "unavailable"`), is asked about again until the record
+  loads; one whose record cannot be read says so
+  ([ADR 0021](../../docs/adr/0021-server-reads-return-typed-results.md)).
 
 Once published, the page shows the record (title, authors, DOI) and a "Verify it
 yourself" panel (`components/verify-panel.tsx`): the signature checked when read, the
 submitter, the signature, its deadline and the context graph, the EIP-712 domain and type
-to check it with, the address the asset was minted to, the asset's ERC-721 token in
-OriginTrail's `DKGKnowledgeAssets` (`lib/explorer.ts` → `assetTokenUrl`), the UAL, and the
-PDF's CID, linked through Pinata's public gateway (`ipfsUrl`; ipfs.io no longer serves
+to check it with, the agent address the asset is minted to (our node, the UAL's author),
+the asset's ERC-721 token in OriginTrail's `DKGKnowledgeAssets` (`lib/explorer.ts` →
+`assetTokenUrl`), the UAL, and the PDF's CID, linked through Pinata's public gateway (`ipfsUrl`; ipfs.io no longer serves
 files). Addresses and the token link to Basescan.
 
 ## Design
@@ -113,16 +127,6 @@ A dark lab instrument with a web3 edge, in Tailwind CSS v4 (`app/globals.css`):
   Basescan: OriginTrail's `DKGKnowledgeAssets` and `KnowledgeAssetsLifecycle`
   (`ORIGINTRAIL_CONTRACTS` from `@verisci/core`), and this environment's RatingController
   from `@verisci/contracts` (`local` shows staging's).
-
-## Depends on
-
-All five packages: `@verisci/env`, `@verisci/core`, `@verisci/dkg`,
-`@verisci/contracts`, `@verisci/agents`. Each one must be listed in
-`transpilePackages` in `next.config.ts`. Also `inngest` (the `/api/inngest` route's `serve`
-handler); Reown AppKit, wagmi, viem and TanStack Query (the wallet); `@upstash/ratelimit`
-and `@upstash/redis` (the limits); Tailwind CSS and Phosphor icons. `next.config.ts` points
-the optional `@x402/*` packages, reached through wagmi's connectors, at `lib/empty-module.ts`
-(`docs/domain.md` → Next.js).
 
 ## Environment
 
