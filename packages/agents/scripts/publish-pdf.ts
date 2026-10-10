@@ -8,6 +8,7 @@
 import { readFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";
 import { submissionTypedData, targetKaName } from "@verisci/core";
+import { contextGraphSchema } from "@verisci/dkg";
 import { createSharedEnv, defineEnv } from "@verisci/env";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { z } from "zod";
@@ -25,9 +26,13 @@ if (!file) {
   process.exit(1);
 }
 
+const shared = createSharedEnv();
 const env = defineEnv({
-  extends: [createSharedEnv()],
-  server: { PINATA_JWT: z.string().min(1), DKG_CONTEXT_GRAPH: z.string().min(1) },
+  extends: [shared],
+  server: {
+    PINATA_JWT: z.string().min(1),
+    DKG_CONTEXT_GRAPH: contextGraphSchema(shared.APP_ENV === "production"),
+  },
   runtimeEnv: process.env,
 });
 

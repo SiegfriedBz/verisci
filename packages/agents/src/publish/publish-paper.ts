@@ -69,7 +69,9 @@ type Attempt =
  * credential, the node does not serve the graph, or the attempts run out.
  *
  * The deadline is checked against `receivedAt`, so retries during an outage never expire a
- * signature that was valid when it arrived.
+ * signature that was valid when it arrived. `receivedAt` is the event's `ts`, which its
+ * sender may set: only verisci's own server and scripts send this event, and the server
+ * must never take `ts` from a browser.
  */
 export async function runPublish(
   data: unknown,

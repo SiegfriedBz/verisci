@@ -177,6 +177,17 @@ describe("runPublish", () => {
     expect(dkg.storeAsset).toHaveBeenCalledWith(NAME, []);
   });
 
+  it("reads the paper again when a draft is gone before the store", async () => {
+    const { run, log } = await publish({
+      reads: [{ ok: true, state: "draft" }, missing],
+      stores: [{ ok: false, reason: "no-content" }, stored],
+    });
+
+    expect(await run).toEqual({ state: "minted", ual: UAL });
+    expect(log).toContain("sleep retry-1 2m");
+    expect(log).toContain("read-paper-2");
+  });
+
   it("returns the UAL when the store finds the KA already minted", async () => {
     const { run, log, dkg } = await publish({ stores: [minted] });
 
