@@ -296,5 +296,5 @@ giving the reason.
 | `FOUNDRY_PROFILE=ci forge test` | Runs the tests with the CI fuzz and invariant settings |
 
 The TypeScript code ships as source (`src/index.ts`), with no build step. The
-tools run under Node's type stripping; `erasableSyntaxOnly` in `tsconfig.json`
-restricts the package to syntax Node can strip.
+tools run under Node's type stripping; `erasableSyntaxOnly` in the root
+`tsconfig.base.json` restricts every package to syntax Node can strip.

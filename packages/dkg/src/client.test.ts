@@ -191,6 +191,27 @@ describe("storeAsset", () => {
     });
   });
 
+  it("refuses to create an asset with no quads, and writes nothing", async () => {
+    const { client, writes } = fakeNode({ [`GET ${ASSET}`]: [missing] });
+
+    expect(await client.storeAsset(NAME, [])).toEqual({ ok: false, reason: "no-content" });
+    expect(writes()).toEqual([]);
+  });
+
+  it("shares a draft given no quads", async () => {
+    const { client, writes } = fakeNode({
+      [`GET ${ASSET}`]: [created, promoted],
+      [`POST ${ASSET}/swm/share`]: [{ status: 200, body: { swmShared: true } }],
+    });
+
+    expect(await client.storeAsset(NAME, [])).toEqual({
+      ok: true,
+      state: "stored",
+      reservedUal: RESERVED,
+    });
+    expect(writes()).toEqual([`${ASSET}/swm/share`]);
+  });
+
   it("only shares a draft, without sending the new quads", async () => {
     const { client, writes } = fakeNode({
       [`GET ${ASSET}`]: [created, promoted],

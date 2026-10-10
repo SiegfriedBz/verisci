@@ -35,8 +35,9 @@ export interface DkgClient {
   /**
    * Stores the asset and shares it, so it is ready to mint. Reads the state first and does
    * only what is left (ADR 0007): a stored or minted asset keeps its first content, and
-   * `quads` are sent only when the name was never stored. Returns `stored` or `minted`, or
-   * a failure: never `draft`.
+   * `quads` are sent only when the name was never stored. Empty `quads` only share a draft:
+   * for a name never stored they return `no-content`, so no asset is ever created empty.
+   * Returns `stored` or `minted`, or a failure: never `draft`.
    */
   storeAsset(name: string, quads: readonly Quad[]): Promise<AssetResult>;
   /**
@@ -96,6 +97,8 @@ export function createDkgClient(config: DkgClientConfig): DkgClient {
     if (!current.ok) return current;
 
     if (current.state === "missing") {
+      // Never mint an empty asset: its name would be taken for good.
+      if (quads.length === 0) return { ok: false, reason: "no-content" };
       const created = await send(connection, "POST", "/api/knowledge-assets", {
         body: { ...graph, name, quads },
         timeoutMs,

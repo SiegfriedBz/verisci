@@ -7,7 +7,7 @@ Domain logic. Core does no IO: no `fetch`, no `node:*` imports and no other
 `pnpm check` enforces this: `packages/core/biome.json` turns `fetch`,
 `node:*` and `@verisci/*` into errors ("core does no IO").
 
-Status: shared constants, UAL parsing and asset names.
+Status: shared constants, UAL parsing, asset names, and a Target KA's content and submission.
 
 ## API
 
@@ -25,6 +25,13 @@ Status: shared constants, UAL parsing and asset names.
 | `rKaName(requestId)` | The R-KA's asset name, `verisci-rka-<request id>`, or `{ ok: false, reason: "bad-request-id" }`; returns a result for every input |
 | `targetKaName(cid)` | The Target KA's asset name, `verisci-tka-<CIDv1 base32>`, or `{ ok: false, reason: "bad-cid" }`; returns a result for every input |
 | `AssetNameResult`, `AssetNameError` | The result of both, and why an input cannot be named |
+| `submissionTypedData(message)` | The EIP-712 typed data a submitter signs to publish a PDF, in the shape viem takes |
+| `canonicalContextGraph(id)` | A context graph id with its address in lowercase and its name unchanged: the one spelling a submission signs |
+| `SUBMISSION_DOMAIN`, `SubmissionMessage` | verisci's EIP-712 domain, and the signed `{ cid, contextGraph, deadline }` |
+| `parseTeiHeader(xml)` | A paper's `PaperMetadata` (title, authors, abstract, DOI) from GROBID's TEI header, or `not-tei` or `no-title`; returns a result for every input |
+| `PaperMetadata`, `TeiResult` | The metadata read from a TEI header, and the result of `parseTeiHeader` |
+| `targetKaQuads(metadata, submission)` | The `Triple`s of a paper's Target KA: its description and who submitted it |
+| `Triple`, `PaperSubmission`, `VERISCI_NS` | One triple as the DKG node takes it, the submitter's address, signature and deadline, and the `urn:verisci:` prefix |
 
 ## UALs
 
@@ -67,9 +74,38 @@ from the request id or the CID.
 - Every name is lowercase `[a-z0-9-]`, 78 characters for an R-KA and 71 for a Target KA,
   within the daemon's 1 to 256 and with no `:`, so the daemon reads it as a name.
 
+## Target KAs
+
+A Target KA describes a paper and who submitted it
+([ADR 0010](../../docs/adr/0010-pdf-to-target-ka-pipeline.md)).
+
+- **Metadata** comes from GROBID's TEI header, read by `parseTeiHeader`: the main title,
+  each author's forenames and surname in document order, the abstract's paragraphs and the
+  DOI, each with its whitespace collapsed. A header with no title is refused, and so is XML
+  with any parse error (`not-tei`), without printing anything.
+- **Triples:** the subject is `urn:verisci:paper:<cid>`, typed `schema:ScholarlyArticle`,
+  with `schema:name`, `schema:url` (`ipfs://<cid>`), `schema:abstract`, `schema:sameAs`
+  (`https://doi.org/<doi>`), and one `schema:author` node per author,
+  `urn:verisci:paper:<cid>/author/<n>`, with `schema:name` and `schema:position`.
+  `schema:abstract` and `schema:sameAs` are written only when an abstract or a DOI was
+  read; the DOI is lowercase, with any `doi:` or `https://doi.org/` prefix removed.
+  `schema:position` and `urn:verisci:deadline` are `xsd:integer` literals
+  (`"7"^^<http://www.w3.org/2001/XMLSchema#integer>`).
+- **Submission:** `urn:verisci:submitter` (the lowercase address), `urn:verisci:signature`
+  and `urn:verisci:deadline` record the EIP-712 signature over
+  `Submission { string cid; string contextGraph; uint256 deadline }`, under the domain
+  `{ name: "verisci", version: "1", chainId: 84532 }`.
+- **Checking who submitted a paper:** take the CID from `schema:url`, the context graph id
+  the KA is in, and the deadline; rebuild the typed data with `submissionTypedData`, which
+  writes the graph id's address in lowercase (`canonicalContextGraph`), the spelling every
+  submission signs; and
+  verify the signature against the submitter's address with any EIP-712 library (viem's
+  `verifyTypedData` also checks smart-contract wallets).
+
 ## Depends on
 
-The `multiformats` library, to parse CIDs, and no other workspace. pnpm does not hoist
+The `multiformats` library, to parse CIDs, `@xmldom/xmldom`, to read TEI, and no other
+workspace. pnpm does not hoist
 undeclared workspace packages, so an import of another `@verisci/*` package fails to
 typecheck.
 

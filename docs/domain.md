@@ -162,8 +162,7 @@ edge`, testnet), Base Sepolia.
 ## IPFS
 
 CID facts checked with `multiformats` 14.0.5, 2026-10-07; import defaults from the Kubo
-docs, current at 2026-10-07. The settings Pinata's signed-URL uploads use are still to be
-checked.
+docs, current at 2026-10-07; Pinata's from its v3 API docs, current at 2026-10-09.
 
 - **One file has several CIDs, depending on the import settings:** CID version, raw
   leaves or UnixFS leaves, and the chunker. Kubo's default gives a CIDv0 (`Qm…`, dag-pb);
@@ -176,6 +175,31 @@ checked.
   base32. It refuses uppercase base32 (`B…`).
 - **A valid CID can name any hash and any size:** `CID.parse` checks the format only. An
   identity-hash CID carries its data inline, so it can be hundreds of characters long.
+- **Pinata's v3 upload (`POST https://uploads.pinata.cloud/v3/files`) takes a
+  `cid_version`:** `v1` (the default) gives a CIDv1 with raw leaves, 256 KiB chunks and up
+  to 174 links per node; `v0` a CIDv0 with dag-pb leaves; `unixfs-v1-2025` a CIDv1 with
+  1 MiB chunks and 1,024 links. `network` is `private` unless set to `public`. The
+  `publish-pdf` dev script sets `v1` and `public`: a 2.2 MB PDF got a `bafybei…` CID, the
+  same on a second upload (2026-10-10). Whether a signed-URL upload can pin the same
+  setting is still to check
+  ([ADR 0010](adr/0010-pdf-to-target-ka-pipeline.md)).
+
+## GROBID
+
+Observed on `lfoppiano/grobid:0.9.1-crf`, 2026-10-09, except where a fact cites its docs.
+
+- **`POST /api/processHeaderDocument`** takes the PDF as the multipart field `input` and,
+  with `Accept: application/xml`, returns the header as TEI: the title under
+  `titleStmt/title`, each author's `persName` (`forename`s, `surname`) under
+  `sourceDesc/biblStruct/analytic/author`, the abstract's paragraphs under
+  `profileDesc/abstract`, and any DOI as `idno type="DOI"`. arXiv 1706.03762 parsed in
+  about a second.
+- **It answers 204 when it finds nothing to extract and 503 when all its workers are
+  busy** (GROBID docs): the first is final, the second worth a retry.
+- **The CRF header model can read an affiliation as an author:** on arXiv 1706.03762 it
+  listed "Google Brain" and "Google Research" among the ten authors, and found no DOI
+  (the arXiv PDF prints none). A Target KA carries what GROBID read
+  ([ADR 0010](adr/0010-pdf-to-target-ka-pipeline.md)).
 
 ## Chain
 
@@ -254,8 +278,13 @@ Observed on Next.js 16.3.8.
 
 ## Tooling
 
-Observed on Turbo 2.11, `@next/env` 16.3.8, `@t3-oss/env-core` 0.13 and Zod 4.6.
+Observed on Turbo 2.11, `@next/env` 16.3.8, `@t3-oss/env-core` 0.13 and Zod 4.6, except where
+a fact names another tool.
 
+- **Node's type stripping (Node 24) only erases type syntax:** `enum`, `namespace` and
+  constructor parameter properties create JavaScript, so plain Node refuses them.
+  `erasableSyntaxOnly` in `tsconfig.base.json` makes `tsc` refuse them too
+  ([ADR 0002](adr/0002-internal-packages-ship-typescript-source.md)).
 - **`@next/env` caches its first `loadEnvConfig`,** and Next has already loaded `apps/web`
   before it reads `next.config.ts`, so loading the root needs `forceReload`. Env values set
   while the config loads are copied into Next's startup snapshot, so they survive dev env

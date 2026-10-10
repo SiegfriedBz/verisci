@@ -19,12 +19,13 @@ Status: early. verisci is a rebuild of an earlier prototype,
 desci-rating-dapp, which ran both flows (publish a paper, rate it) end to end on
 Base Sepolia. This repo starts again from clean foundations (monorepo, tooling,
 CI), and its ADRs and domain facts record what the prototype taught us. No
-user-facing feature has shipped here yet. Everything runs on testnets.
+user-facing feature has shipped here yet; the publish run works, started by a dev script.
+Everything runs on testnets.
 
 ## How it works
 
 - **A paper becomes a Target KA.** Its submitter signs it with their wallet; the
-  PDF is parsed, its metadata extracted, and it is published to the DKG as a
+  PDF is parsed, its metadata read, and it is published to the DKG as a
   Knowledge Asset that records who submitted it
   ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)).
 - **Anyone can request a rating on chain.** verisci scores the paper, our DKG
@@ -104,19 +105,23 @@ sequenceDiagram
   A-->>U: short-lived signed upload URL
   U->>P: upload the PDF
   P-->>U: CID
-  U->>A: CID + EIP-712 signature
+  U->>A: CID + EIP-712 signature (with graph and deadline)
   A->>A: verify the signature and the pinned file
   A->>R: event with the CID, submitter address and signature
-  R->>R: Target KA name from CID
+  R->>R: verify the signature, Target KA name from CID
+  R->>N: read the Target KA's state (stop if already minted)
   R->>P: fetch the PDF by its CID
   R->>G: parse the PDF
-  R->>R: extract metadata (LLM)
+  R->>R: read metadata from the TEI
   R->>N: store with the submitter address and signature, then mint and poll
   N-->>R: Target KA UAL, ready to be rated
 ```
 
 Every PDF goes through one uploader with fixed IPFS import settings, so the same PDF always
-has the same CID and publishing it again converges on the existing Target KA ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)).
+has the same CID and publishing it again converges on the existing Target KA, which keeps its
+first submitter ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)). The publish run
+exists today; until the upload page does, a dev script pins a PDF, signs it and sends the
+event ([`packages/agents`](packages/agents/README.md)).
 
 ### Rating a paper
 
@@ -197,6 +202,9 @@ pnpm install
 (cd packages/contracts && forge soldeer install)   # Solidity dependencies
 pnpm dev         # starts apps/web on http://localhost:3000
 ```
+
+To publish a PDF locally (the DKG node, GROBID and the Inngest dev server), follow
+[`packages/agents` → Running a publish locally](packages/agents/README.md#running-a-publish-locally).
 
 Environment variables are listed in [`.env.example`](.env.example): copy it to
 `.env.local` at the repo root (gitignored), where `apps/web` loads it from.
