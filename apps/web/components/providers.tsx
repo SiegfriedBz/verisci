@@ -37,9 +37,11 @@ function walletAdapter(projectId: string): WagmiAdapter {
     },
     features: { analytics: false },
     themeVariables: {
+      // A darker emerald than --accent: AppKit writes white text on its accent, and white on
+      // the page's emerald would fail contrast.
       "--apkt-accent": "#0d7a55",
       "--apkt-border-radius-master": "3px",
-      "--apkt-font-family": "var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif",
+      "--apkt-font-family": "var(--font-sora), ui-sans-serif, system-ui, sans-serif",
     },
   });
   return adapter;

@@ -1,4 +1,4 @@
-/** Package name, listed on the web app's home page. */
+/** Package name, imported by the web app's package test (`apps/web/app/packages.test.ts`). */
 export const contractsName = "@verisci/contracts";
 
 export { ratingControllerDeployments } from "./committed-deployments.ts";

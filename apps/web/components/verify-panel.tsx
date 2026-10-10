@@ -1,12 +1,20 @@
 import { CheckCircle, Question, XCircle } from "@phosphor-icons/react/dist/ssr";
 import type { PublishedRecord } from "@verisci/agents";
-import { knowledgeAssetToken, parseUal, SUBMISSION_DOMAIN } from "@verisci/core";
+import {
+  knowledgeAssetToken,
+  parseUal,
+  SUBMISSION_DOMAIN,
+  submissionTypedData,
+} from "@verisci/core";
 import { addressUrl, assetTokenUrl, ipfsUrl } from "../lib/explorer.ts";
 import { CopyValue } from "./copy-value.tsx";
 
 /** The signature's EIP-712 domain and type, as `@verisci/core`'s `submissionTypedData` builds them. */
 const EIP712_DOMAIN = `{ name: "${SUBMISSION_DOMAIN.name}", version: "${SUBMISSION_DOMAIN.version}", chainId: ${SUBMISSION_DOMAIN.chainId} }`;
-const EIP712_TYPE = "Submission(string cid, string contextGraph, uint256 deadline)";
+/** The type as EIP-712 encodes it (no spaces after commas), from the fields that are signed. */
+const EIP712_TYPE = `Submission(${submissionTypedData({ cid: "", contextGraph: "", deadline: 0n })
+  .types.Submission.map((field) => `${field.type} ${field.name}`)
+  .join(",")})`;
 
 const CHECK = {
   valid: {
