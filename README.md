@@ -37,8 +37,9 @@ Built:
   before acting, so a retry never duplicates anything
   ([ADR 0007](docs/adr/0007-all-writes-converge.md)).
 - **Staging and production are kept apart**, with their own contracts, graphs,
-  oracle wallets and limit stores; the DKG node, the Reown project and the pinning
-  account are shared ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)).
+  oracle wallets and limit stores (production's graph and store come with its first app
+  deployment); the DKG node, the Reown project and the pinning account are shared
+  ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)).
 
 Next (the contracts are deployed; the rating runs are not built yet):
 
@@ -53,12 +54,14 @@ Next (the contracts are deployed; the rating runs are not built yet):
 Terms:
 
 - A **KA** (Knowledge Asset) is a record on the DKG: content off-chain on the DKG,
-  an ERC-721 token and a merkle root of the content on-chain. The ones VeriSci
-  publishes are minted to its DKG node's agent address, which alone can update them.
+  an ERC-721 token and a merkle root of the content on-chain (`docs/domain.md` → DKG).
+  The ones VeriSci publishes are minted to its DKG node's agent address, which alone can
+  update them.
 - A **Target KA** is a paper's KA (the pages call it a paper asset); an **R-KA** is
   a rating's KA (a rating asset), which points at its Target KA.
-- A **UAL** is a KA's stable address (`did:dkg:base:84532/<agent address>/<number>`),
-  the link between its off-chain content and its on-chain token.
+- A **UAL** is a KA's stable address, the link between its off-chain content and its
+  on-chain token; the ones VeriSci publishes read
+  `did:dkg:base:84532/<agent address>/<number>`.
 - A **context graph** is the DKG graph a KA lives in; each environment has its own.
 - The **submitter** is the wallet that signed a paper's submission; the **oracle** is
   VeriSci's account that records rating results on the contract.
@@ -71,7 +74,7 @@ The diagrams below show the target design; the workspaces build it plan by plan.
 
 Each environment has its own context graph on the shared DKG node
 ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)); staging's exists today,
-production's comes with the first production deploy. Our node
+production's comes with production's first app deployment. Our node
 publishes the ratings of every contract of an environment to that environment's
 graph, so a redeployed contract keeps the graph of the one it replaces; the old
 contract is paused and drained ([ADR 0023](docs/adr/0023-a-fix-is-a-redeploy-owner-powers-fixed.md)).
@@ -254,8 +257,8 @@ pnpm install
 pnpm dev         # starts apps/web on http://localhost:3000
 ```
 
-To publish a PDF locally (the RPC proxy, the DKG node, GROBID and the Inngest dev server), follow
-[`packages/agents` → Running a publish locally](packages/agents/README.md#running-a-publish-locally),
+To publish a PDF locally (the RPC proxy, the DKG node, GROBID and the Inngest dev server),
+follow [`packages/agents` → Running a publish locally](packages/agents/README.md#running-a-publish-locally),
 then open http://localhost:3000/publish (it needs the agents' settings and
 `REOWN_PROJECT_ID`; see [`apps/web`](apps/web/README.md#environment)).
 

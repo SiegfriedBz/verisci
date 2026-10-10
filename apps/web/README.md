@@ -36,8 +36,9 @@ signed submission and starts its publish run within the address's daily limit
 (`lib/publish-flow.ts`) first refuses a file that is not a PDF (by its type, or, when the
 picker gives none, by the `%PDF-` it must start with) or is over 30 MB, before spending an
 upload URL. It then uploads the PDF straight to Pinata, canonicalizes the CID it answers,
-and has the wallet sign `{ cid, contextGraph, deadline }` with a deadline 10 minutes ahead. The work itself is
-`@verisci/agents`' `getUploadService()` ([`packages/agents`](../../packages/agents/README.md#the-upload-pages-calls)).
+and has the wallet sign `{ cid, contextGraph, deadline }` with a deadline 10 minutes ahead.
+The work itself is `@verisci/agents`' `getUploadService()`
+([`packages/agents`](../../packages/agents/README.md#the-upload-pages-calls)).
 
 Limits (`lib/limits.ts`): 10 upload URLs per connection (IP) and 5 submissions per signing
 address, each per rolling day, in Upstash; in memory with `APP_ENV=local` and no Upstash
@@ -100,8 +101,8 @@ yourself" panel (`components/verify-panel.tsx`): the signature checked when read
 submitter, the signature, its deadline and the context graph, the EIP-712 domain and type
 to check it with, the agent address the asset is minted to (our node, the UAL's author),
 the asset's ERC-721 token in OriginTrail's `DKGKnowledgeAssets` (`lib/explorer.ts` →
-`assetTokenUrl`), the UAL, and the PDF's CID, linked through Pinata's public gateway (`ipfsUrl`; ipfs.io no longer serves
-files). Addresses and the token link to Basescan.
+`assetTokenUrl`), the UAL, and the PDF's CID, linked through Pinata's public gateway
+(`ipfsUrl`; ipfs.io no longer serves files). Addresses and the token link to Basescan.
 
 ## Design
 

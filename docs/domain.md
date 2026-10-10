@@ -3,8 +3,8 @@
 Hard-won facts about the systems VeriSci runs on, each written once so plans cite them
 instead of rediscovering them. Decisions built on them are in [`docs/adr/`](adr/README.md).
 
-Many facts were observed in the earlier prototype, `desci-rating-dapp`; the DKG facts marked 10.0.22 were
-re-checked on this repo's own node. Each section names the versions they were seen on:
+Many facts were observed in the earlier prototype, `desci-rating-dapp`; the DKG facts marked
+10.0.22 were re-checked on this repo's own node. Each section names the versions they were seen on:
 when a version moves, re-check the facts before relying on them. Add a fact when you learn
 one the hard way.
 
@@ -16,8 +16,8 @@ edge`, testnet), Base Sepolia.
 - **A UAL has two shapes on V10,** chosen by the on-chain id (OriginTrail/dkg
   `packages/core/src/ka-ual-identity.ts`, checked at `abfd785`, 2026-09):
   - `did:dkg:base:{chainId}/{authorAddress}/{kaNumber}`: the V10 form. The author is the
-    publishing agent's wallet, packed into the id's high 160 bits. Ours look like this: the
-    prototype's middle segment equals the node's agent address and has no contract code.
+    publishing agent's wallet, packed into the id's high 160 bits. The prototype's UALs
+    had the node's agent address, which has no contract code, as their middle segment.
   - `did:dkg:base:{chainId}/{DKGKnowledgeAssets address}/{kaId}`: the older form, for ids
     with no author bits. OriginTrail's docs still show only this one.
 
@@ -152,6 +152,11 @@ edge`, testnet), Base Sepolia.
   id is the author's address shifted left 96 bits, OR the asset number (asset 8's id equals the
   `batchId` the daemon logs). Basescan shows a token at `/nft/<contract>/<token id>`. Recorded
   in `@verisci/core` as `ORIGINTRAIL_CONTRACTS`; re-check after an OriginTrail upgrade.
+- **A KA's content is committed on chain by a merkle root** (OriginTrail's `dkg` repository
+  README, 2026-10-10: "a set of RDF statements committed by a Merkle root anchored to the
+  blockchain"; each published version is bound to its on-chain commitment). The ERC-721 is
+  minted to the author, and the UAL stays the same across updates
+  (docs.origintrail.io → Knowledge Assets).
 - **KA numbers are counted per author** and reserved at store time (the `reservedUal`).
   Both our graphs publish as one author, and a stored asset that is never minted keeps
   its number, so each environment sees gaps in its numbering. Expected, not a bug.

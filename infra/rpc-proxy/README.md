@@ -94,8 +94,9 @@ node --env-file="$HOME/.config/verisci/rpc-proxy.env" infra/rpc-proxy/src/main.t
 
 On a server, [`rpc-proxy.service`](rpc-proxy.service) is a starting systemd unit: it still
 carries the previous host's user and paths (`ubuntu`, `/home/ubuntu/rpc-proxy`), to adapt
-when the node server plan sets the node up there. The DKG daemon must start after it, or a
-reboot leaves the daemon without a chain:
+when the node server plan sets the node up there. That plan also gives the daemon its own
+unit (`dkg.service` below; `docs/node-host.md` starts it by hand for now), which must start
+after the proxy, or a reboot leaves the daemon without a chain:
 
 ```ini
 # /etc/systemd/system/dkg.service.d/10-after-rpc-proxy.conf

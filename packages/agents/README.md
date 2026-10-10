@@ -2,7 +2,6 @@
 
 Inngest workflows that combine `core` logic with the `dkg` and `contracts` adapters;
 `apps/web` only serves them ([ADR 0003](../../docs/adr/0003-inngest-workflows-live-in-agents.md)).
-It also holds the calls the upload page makes to start and follow a publish.
 
 Status: the publish run, which turns a pinned PDF into a minted Target KA, and the calls
 the upload page makes to start and follow it.
@@ -85,7 +84,8 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
   and runs verify again, up to 5 times, then fails the run.
 - **read, read-paper, store, mint:** a quorum failure, a node, gateway or GROBID that
   does not answer, or a draft gone before the store (`no-content`) waits 2 minutes and
-  starts a new attempt from the read, which then reads the paper again; a mint not seen
+  starts a new attempt from the read, which reads the paper again only when nothing is
+  stored ([ADR 0010](../../docs/adr/0010-pdf-to-target-ka-pipeline.md)); a mint not seen
   after 10 minutes starts a new attempt at once. Up to 5 attempts.
 - The run has 45 minutes in all, which can end it before its 5 attempts.
 - It fails at once when its settings are missing or invalid, when the node or GROBID refuses
@@ -110,7 +110,8 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
   Inngest drops a repeat of one signed submission for 24 hours. A new signature starts a run
   unless one for that CID is active (the singleton), and the paper's page then follows the
   paper on the node. It returns Inngest's event id. Only a sent submission is counted. A
-  chain, node, Pinata, limit store or Inngest that does not answer gives `unavailable`.
+  chain, Pinata, limit store or Inngest that does not answer gives `unavailable`; a node that
+  does not answer leaves the already-minted check to the run.
 - **`readPaper(cid, eventId?)`** reads the Target KA's state on the node and, given the
   event id, the run Inngest started for it (REST, from the dev server locally). Once the KA
   is minted, it also reads the record back (SPARQL through the node: title, authors, DOI,
