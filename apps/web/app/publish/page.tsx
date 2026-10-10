@@ -25,8 +25,8 @@ const BEFORE = [
   },
   {
     icon: Gauge,
-    title: "Daily limits",
-    body: `Each wallet can publish ${UPLOAD_LIMITS.submissionsPerAddressPerDay} papers and each connection can upload ${UPLOAD_LIMITS.urlsPerIpPerDay} PDFs in any 24 hours. Sending a paper that's already published doesn't count toward the ${UPLOAD_LIMITS.submissionsPerAddressPerDay}.`,
+    title: "Limits",
+    body: `You can publish up to ${UPLOAD_LIMITS.submissionsPerAddressPerDay} papers per wallet every 24 hours; a paper that's already published doesn't count. Each PDF you drop is stored before you sign, so uploads have their own cap: ${UPLOAD_LIMITS.urlsPerIpPerDay} per internet connection every 24 hours.`,
   },
 ] as const;
 
