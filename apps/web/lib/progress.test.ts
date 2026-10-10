@@ -12,7 +12,7 @@ const nodeDown = { ok: false, reason: "unreachable" } as const;
 
 const running = { ok: true, run: { state: "running" } } as const;
 const notStarted = { ok: true, run: undefined } as const;
-const failed = { ok: true, run: { state: "failed" } } as const;
+const failed = { ok: true, run: { state: "failed", output: undefined } } as const;
 const inngestDown = { ok: false, reason: "unavailable" } as const;
 const NOW = 1_800_000_000_000;
 const completed = (output: unknown, endedAt: number | undefined = NOW - 120_000) =>
@@ -50,6 +50,15 @@ describe("paperProgress", () => {
     expect(stage(missing, completed({ state: "refused", reason: "no-title" }))).toEqual({
       stage: "refused",
       reason: "no-title",
+    });
+  });
+
+  it("reads a failed run with the reason it names", () => {
+    expect(
+      paperProgress({ asset: missing, run: failed, failure: "node-unreachable" }, NOW),
+    ).toEqual({
+      stage: "failed",
+      reason: "node-unreachable",
     });
   });
 

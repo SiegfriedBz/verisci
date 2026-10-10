@@ -4,7 +4,7 @@ import { ArrowSquareOut, Warning } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ipfsUrl } from "../lib/explorer.ts";
-import { refusalMessage } from "../lib/messages.ts";
+import { failureMessage, refusalMessage } from "../lib/messages.ts";
 import { isFinal, type PaperStage } from "../lib/progress.ts";
 import type { PaperView } from "../lib/upload-actions.ts";
 import { CopyValue } from "./copy-value.tsx";
@@ -179,9 +179,7 @@ function StageNote({ stage, resubmitted }: { stage: PaperView; resubmitted: bool
     case "refused":
       return <Problem text={refusalMessage(stage.reason)} />;
     case "failed":
-      return (
-        <Problem text="We couldn't finish publishing this paper. Publish the same PDF again and we'll pick up where it stopped." />
-      );
+      return <Problem text={failureMessage(stage.reason)} />;
     case "not-published":
       return (
         <Problem text="This paper didn't pass our checks. Make sure it's a readable PDF with a title on its first page, then publish it again." />

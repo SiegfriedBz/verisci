@@ -1,4 +1,4 @@
-import type { PaperStatus, PublishOutcome } from "@verisci/agents";
+import type { PaperStatus, PublishFailure, PublishOutcome } from "@verisci/agents";
 import { z } from "zod";
 
 /** Why a run refused a paper, as its outcome says. */
@@ -15,7 +15,8 @@ export type PaperStage =
   | { readonly stage: "reading" | "saving" | "minting" }
   | { readonly stage: "published"; readonly ual: string }
   | { readonly stage: "refused"; readonly reason: RefusalReason }
-  | { readonly stage: "failed" | "not-found" | "not-published" | "unavailable" };
+  | { readonly stage: "failed"; readonly reason?: PublishFailure }
+  | { readonly stage: "not-found" | "not-published" | "unavailable" };
 
 /**
  * How long after a run ends a missing asset still reads as `reading`: the node can briefly
@@ -50,14 +51,15 @@ export function eventTime(eventId: string): number | undefined {
  * Inngest does when it has seen the event's id in the last 24 hours.
  */
 export function paperProgress(
-  { asset, run }: PaperStatus,
+  { asset, run, failure }: PaperStatus,
   now = Date.now(),
   sentAt?: number,
 ): PaperStage {
   if (asset.ok && asset.state === "minted") return { stage: "published", ual: asset.ual };
   if (!asset.ok || run?.ok === false) return { stage: "unavailable" };
   const state = run?.run;
-  if (state?.state === "failed") return { stage: "failed" };
+  if (state?.state === "failed")
+    return failure ? { stage: "failed", reason: failure } : { stage: "failed" };
   if (state?.state === "completed") {
     const parsed = outcome.safeParse(state.output);
     if (parsed.success) {

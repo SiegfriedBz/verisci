@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { type PublishProblem, publishProblemMessage, refusalMessage } from "./messages.ts";
+import {
+  failureMessage,
+  type PublishProblem,
+  publishProblemMessage,
+  refusalMessage,
+} from "./messages.ts";
 import type { RefusalReason } from "./progress.ts";
 
 const problems: PublishProblem[] = [
@@ -51,5 +56,22 @@ describe("messages", () => {
 describe("refusalMessage", () => {
   it("tells a no-title refusal that pages saved as pictures cannot be read", () => {
     expect(refusalMessage("no-title")).toMatch(/pictures/);
+  });
+});
+
+describe("failureMessage", () => {
+  it.each([
+    ["chain-unreachable", /Base/],
+    ["paper-unreachable", /PDF/],
+    ["node-unreachable", /DKG node/],
+    ["mint-not-confirmed", /mint/],
+    ["setup", /our side/],
+  ] as const)("says why publishing stopped on %s", (reason, words) => {
+    expect(failureMessage(reason)).toMatch(words);
+    expect(failureMessage(reason)).not.toMatch(/[—–]/);
+  });
+
+  it("falls back to a general message when the run named no reason", () => {
+    expect(failureMessage(undefined)).toMatch(/couldn't finish/);
   });
 });

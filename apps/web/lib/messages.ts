@@ -1,4 +1,4 @@
-import type { SubmitResult } from "@verisci/agents";
+import type { PublishFailure, SubmitResult } from "@verisci/agents";
 import type { RefusalReason } from "./progress.ts";
 import type { UploadUrlAnswer } from "./upload-actions.ts";
 
@@ -35,6 +35,24 @@ export function publishProblemMessage(problem: PublishProblem): string {
     case "bad-cid":
     case "wrong-graph":
       return "Something went wrong while preparing your paper. Try again.";
+  }
+}
+
+/** Why a publish run stopped, for its page; a run that named no reason gets the general message. */
+export function failureMessage(reason: PublishFailure | undefined): string {
+  switch (reason) {
+    case "chain-unreachable":
+      return "We couldn't reach Base to check your signature, even after several tries. Publish the same PDF again in a few minutes.";
+    case "paper-unreachable":
+      return "We couldn't read your PDF: the IPFS gateway or our paper reader didn't answer, even after several tries. Publish the same PDF again in a few minutes.";
+    case "node-unreachable":
+      return "VeriSci's DKG node didn't answer, even after several tries. Publish the same PDF again in a few minutes: it picks up where it stopped.";
+    case "mint-not-confirmed":
+      return "The mint on Base wasn't confirmed in time. Publish the same PDF again: if it was minted meanwhile, the page shows it.";
+    case "setup":
+      return "Publishing stopped because of a problem on our side, not with your paper. We need to fix it before it can work.";
+    default:
+      return "We couldn't finish publishing this paper. Publish the same PDF again and we'll pick up where it stopped.";
   }
 }
 
