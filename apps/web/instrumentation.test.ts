@@ -1,8 +1,8 @@
 // @vitest-environment node
 import { createAgentsEnv } from "@verisci/agents";
 import { EnvError, type RuntimeEnv } from "@verisci/env";
-import { describe, expect, it } from "vitest";
-import { checkWorkflowSettings as check } from "./instrumentation.ts";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { checkWorkflowSettings as check, register } from "./instrumentation.ts";
 
 const checkWorkflowSettings = (runtimeEnv: RuntimeEnv) => check(runtimeEnv, createAgentsEnv);
 
@@ -40,5 +40,27 @@ describe("checkWorkflowSettings", () => {
 
   it("starts a deployed server whose settings are valid", () => {
     expect(() => checkWorkflowSettings({ APP_ENV: "staging", ...settings })).not.toThrow();
+  });
+});
+
+describe("register", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("checks nothing on the edge runtime", async () => {
+    vi.stubEnv("NEXT_RUNTIME", "edge");
+    vi.stubEnv("APP_ENV", "staging");
+    vi.stubEnv("GROBID_URL", "");
+
+    await expect(register()).resolves.toBeUndefined();
+  });
+
+  it("checks the workflows' settings on the Node.js runtime", async () => {
+    vi.stubEnv("NEXT_RUNTIME", "nodejs");
+    vi.stubEnv("APP_ENV", "staging");
+    vi.stubEnv("GROBID_URL", "");
+
+    await expect(register()).rejects.toThrow(EnvError);
   });
 });
