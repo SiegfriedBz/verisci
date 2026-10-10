@@ -46,7 +46,7 @@ Declared in `src/dkg-env.ts` (`createDkgEnv`) and validated on first import of
 | `env` (from `@verisci/dkg/env`) | The settings, validated from `process.env` on import |
 | `dkgSchema(isProduction)` | The three variables' rules, for a workspace that validates them with its own in one pass |
 | `contextGraphSchema(isProduction)` | The rule for `DKG_CONTEXT_GRAPH` (full id, `-prod` guard), for a script that reads only that variable |
-| `createDkgEnv(runtimeEnv)`, `DkgEnv` (from either entry) | The function that validates the settings from a given object, when called, and their type; another workspace's env extends it |
+| `createDkgEnv(runtimeEnv)`, `DkgEnv` (from either entry) | The function that validates the settings from a given object, when called (what `@verisci/dkg/env` and tests use), and their type; a workspace that also reads the DKG settings spreads `dkgSchema` into its own `defineEnv` instead |
 
 ```ts
 import { createDkgClient } from "@verisci/dkg";
