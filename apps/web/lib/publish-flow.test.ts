@@ -80,7 +80,21 @@ describe("publishFile", () => {
       ok: false,
       problem: "wrong-file",
     });
+    expect(await publishFile(untyped("x%PDF-1.7"), flowDeps)).toEqual({
+      ok: false,
+      problem: "wrong-file",
+    });
     expect(phases).toEqual([]);
+  });
+
+  it("reads an untyped file the browser cannot read as unavailable", async () => {
+    const { flowDeps } = deps();
+    const unreadable = new File(["%PDF-"], "paper", { type: "" });
+    unreadable.slice = () => {
+      throw new DOMException("gone", "NotReadableError");
+    };
+
+    expect(await publishFile(unreadable, flowDeps)).toEqual({ ok: false, problem: "unavailable" });
   });
 
   it("stops when no upload URL is given", async () => {

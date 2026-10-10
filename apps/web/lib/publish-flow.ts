@@ -36,9 +36,9 @@ export type FlowResult =
  * ahead, then submits. Anything thrown on the way reads as `unavailable`.
  */
 export async function publishFile(file: File, deps: FlowDeps): Promise<FlowResult> {
-  if (!(await looksLikePdf(file))) return { ok: false, problem: "wrong-file" };
-  if (file.size > deps.maxBytes) return { ok: false, problem: "too-large" };
   try {
+    if (!(await looksLikePdf(file))) return { ok: false, problem: "wrong-file" };
+    if (file.size > deps.maxBytes) return { ok: false, problem: "too-large" };
     deps.onPhase("uploading");
     const signedUrl = await deps.requestUpload();
     if (!signedUrl.ok) return { ok: false, problem: signedUrl.reason };
@@ -72,11 +72,11 @@ export async function publishFile(file: File, deps: FlowDeps): Promise<FlowResul
 
 /**
  * Whether the browser takes `file` for a PDF: by its type, or, when the picker gave none
- * (some phone pickers), by the `%PDF-` header in its first kilobyte, as PDF readers accept.
+ * (some phone pickers), by the `%PDF-` header it starts with, as the publish run requires.
  */
 async function looksLikePdf(file: File): Promise<boolean> {
   if (file.type !== "") return file.type === "application/pdf";
-  return (await file.slice(0, 1024).text()).includes("%PDF-");
+  return (await file.slice(0, 5).text()) === "%PDF-";
 }
 
 /**
