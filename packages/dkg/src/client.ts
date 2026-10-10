@@ -96,6 +96,8 @@ export function createDkgClient(config: DkgClientConfig): DkgClient {
     if (!current.ok) return current;
 
     if (current.state === "missing") {
+      // Never mint an empty asset: its name would be taken for good.
+      if (quads.length === 0) return { ok: false, reason: "no-content" };
       const created = await send(connection, "POST", "/api/knowledge-assets", {
         body: { ...graph, name, quads },
         timeoutMs,

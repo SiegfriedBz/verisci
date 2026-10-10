@@ -44,6 +44,7 @@ Declared in `src/dkg-env.ts` (`createDkgEnv`) and validated on first import of
 | `DkgClient`, `DkgClientConfig` | The client's calls and its settings |
 | `Quad`, `AssetState`, `AssetResult`, `MintResult`, `DkgFailure` | The client's input and result types |
 | `env` (from `@verisci/dkg/env`) | The settings, validated from `process.env` on import |
+| `contextGraphSchema(isProduction)` | The rule for `DKG_CONTEXT_GRAPH` (full id, `-prod` guard), for a script that reads only that variable |
 | `createDkgEnv(runtimeEnv)`, `DkgEnv` (from either entry) | The function that validates the settings from a given object, when called, and their type; another workspace's env extends it |
 
 ```ts
@@ -62,7 +63,7 @@ const mint = await dkg.startMint(name);
 ```
 
 Every call returns a typed result and never throws for an expected failure. A failure's
-`reason` is `unreachable`, `unauthorized`, `graph-not-served`, `not-stored`, `retry-later` (a quorum failure:
+`reason` is `unreachable`, `unauthorized`, `graph-not-served`, `not-stored`, `no-content` (a store with no quads found no asset to share: an asset is never created empty), `retry-later` (a quorum failure:
 retry after a pause, [ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md))
 or `unexpected`, with the HTTP status and the node's error code. No result carries the
 token. The node answers 404 both for an asset never stored and for a graph it does not

@@ -14,25 +14,33 @@ const GRAPH_ID = /^0x[0-9a-fA-F]{40}\/[^/\s]+$/;
  */
 export function createDkgEnv(runtimeEnv: RuntimeEnv = process.env) {
   const shared = createSharedEnv(runtimeEnv);
-  const isProduction = shared.APP_ENV === "production";
 
   return defineEnv({
     extends: [shared],
     server: {
       DKG_URL: z.url(),
       DKG_TOKEN: z.string().min(1),
-      DKG_CONTEXT_GRAPH: z
-        .string()
-        .regex(GRAPH_ID, "must be the full id, <agent address>/<graph name>")
-        .refine(
-          (id) => id.endsWith("-prod") === isProduction,
-          isProduction
-            ? "must be a -prod graph when APP_ENV is production"
-            : "a -prod graph needs APP_ENV=production",
-        ),
+      DKG_CONTEXT_GRAPH: contextGraphSchema(shared.APP_ENV === "production"),
     },
     runtimeEnv,
   });
+}
+
+/**
+ * The rule for `DKG_CONTEXT_GRAPH`: a full id, `<agent address>/<graph name>`, that is a
+ * `-prod` graph exactly when `isProduction` (ADR 0005). Shared with scripts that read the
+ * variable without the rest of the DKG settings.
+ */
+export function contextGraphSchema(isProduction: boolean) {
+  return z
+    .string()
+    .regex(GRAPH_ID, "must be the full id, <agent address>/<graph name>")
+    .refine(
+      (id) => id.endsWith("-prod") === isProduction,
+      isProduction
+        ? "must be a -prod graph when APP_ENV is production"
+        : "a -prod graph needs APP_ENV=production",
+    );
 }
 
 /** The validated DKG settings: `DKG_URL`, `DKG_TOKEN`, `DKG_CONTEXT_GRAPH`, plus the shared ones. */

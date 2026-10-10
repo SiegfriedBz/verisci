@@ -1,6 +1,6 @@
 import { EnvError } from "@verisci/env";
 import { describe, expect, it } from "vitest";
-import { createDkgEnv } from "./dkg-env.ts";
+import { contextGraphSchema, createDkgEnv } from "./dkg-env.ts";
 
 const AGENT = "0xD701ed157232ad5E14BC4134a8D10D64D86f13B3";
 const TOKEN = "secret-admin-token";
@@ -72,5 +72,17 @@ describe("createDkgEnv", () => {
 
     expect(error.message).not.toContain(TOKEN);
     expect(JSON.stringify(error.issues)).not.toContain(TOKEN);
+  });
+});
+
+describe("contextGraphSchema", () => {
+  it.each([
+    [false, `${AGENT}/verisci-staging`, true],
+    [false, `${AGENT}/verisci-prod`, false],
+    [false, "verisci-staging", false],
+    [true, `${AGENT}/verisci-prod`, true],
+    [true, `${AGENT}/verisci-staging`, false],
+  ])("in production %s, accepts %s: %s", (isProduction, id, accepted) => {
+    expect(contextGraphSchema(isProduction).safeParse(id).success).toBe(accepted);
   });
 });

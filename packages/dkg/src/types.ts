@@ -26,6 +26,7 @@ export type AssetState =
  *   dropped from its config after a restart), so no asset in it can be read or written;
  * - `not-stored`: a mint was asked for an asset that is not stored and shared yet;
  * - `retry-later`: the network could not take the mint now (quorum); retry after a pause;
+ * - `no-content`: a store found no asset to share and was given no quads to create one;
  * - `unexpected`: any other answer, with its HTTP status and the node's error code if any.
  *
  * Never carries the token.
@@ -38,6 +39,7 @@ export interface DkgFailure {
     | "graph-not-served"
     | "not-stored"
     | "retry-later"
+    | "no-content"
     | "unexpected";
   readonly status?: number;
   readonly code?: string;
