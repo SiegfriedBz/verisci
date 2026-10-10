@@ -104,8 +104,9 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
   nothing and counts nothing: the result gives its UAL instead of an event id. Otherwise it
   checks the submitter's limit (`rate-limited`), then the file pinned under that CID on
   Pinata's public network (`not-pinned` when there is none). A file over 30 MB or not a PDF
-  is refused (`too-large`, `not-a-pdf`), and unpinned only when its Target KA is known
-  missing (Pinata keeps one file per CID). It then sends `verisci/paper.submitted` with no
+  is refused (`too-large`, `not-a-pdf`). A file that is not a PDF is also unpinned when its
+  Target KA is known missing; a PDF stays pinned, since every environment shares Pinata's
+  one file per CID and their size limits may differ (ADR 0005). It then sends `verisci/paper.submitted` with no
   time of its own, so Inngest stamps it, under the id `paper:<cid>:<submitter>:<deadline>`:
   Inngest drops a repeat of one signed submission for 24 hours. A new signature starts a run
   unless one for that CID is active (the singleton), and the paper's page then follows the

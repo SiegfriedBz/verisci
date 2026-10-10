@@ -58,8 +58,9 @@ export type SubmitResult =
  * which case nothing starts or counts and the result gives its UAL (the KA keeps its first
  * submitter); otherwise the submitter's limit, then the pinned file. A state that cannot be
  * read leaves the check to the run. A file over `maxBytes` or not detected as a PDF is
- * refused, and unpinned only when its asset is known to be missing. Only a submission whose
- * event was sent is counted. Never throws for an expected failure.
+ * refused; one that is not a PDF is also unpinned, when its asset is known to be missing
+ * (ADR 0005). Only a submission whose event was sent is counted. Never throws for an
+ * expected failure.
  *
  * Each signature sends its own event, but the publish function is a singleton per CID: while
  * a run for this PDF is active, Inngest starts no run for the new event, and the paper's page
@@ -93,8 +94,10 @@ export async function submitPaper(input: unknown, deps: SubmitDeps): Promise<Sub
         ? "not-a-pdf"
         : undefined;
   if (refusal) {
-    // Pinata keeps one file per CID: unpin only when no asset can point at it.
-    if (asset.ok && asset.state === "missing") await deps.deleteFile(found.file.id);
+    // Every environment shares Pinata's one file per CID, and a size limit may differ between
+    // them: unpin only a file no environment publishes, one that is not a PDF.
+    const pdf = found.file.mimeType === "application/pdf";
+    if (!pdf && asset.ok && asset.state === "missing") await deps.deleteFile(found.file.id);
     return { ok: false, reason: refusal };
   }
 

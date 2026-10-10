@@ -159,13 +159,23 @@ describe("submitPaper", () => {
   });
 
   it.each([
-    ["too-large", { id: "file-1", size: 30_000_001, mimeType: "application/pdf" }],
     ["not-a-pdf", { id: "file-1", size: 1000, mimeType: "text/plain" }],
-  ] as const)("unpins and refuses a %s file", async (reason, file) => {
+    ["too-large", { id: "file-1", size: 30_000_001, mimeType: "text/plain" }],
+  ] as const)("unpins a file that is not a PDF and refuses it as %s", async (reason, file) => {
     const { submitDeps, calls } = deps({ file: { ok: true, file } });
 
     expect(await submitPaper(INPUT, submitDeps)).toEqual({ ok: false, reason });
     expect(calls.deleted).toEqual(["file-1"]);
+    expect(calls.sent).toEqual([]);
+    expect(calls.counted).toEqual([]);
+  });
+
+  it("refuses a PDF over the size limit and keeps it pinned: another environment's limit may differ", async () => {
+    const file = { id: "file-1", size: 30_000_001, mimeType: "application/pdf" };
+    const { submitDeps, calls } = deps({ file: { ok: true, file } });
+
+    expect(await submitPaper(INPUT, submitDeps)).toEqual({ ok: false, reason: "too-large" });
+    expect(calls.deleted).toEqual([]);
     expect(calls.sent).toEqual([]);
     expect(calls.counted).toEqual([]);
   });
