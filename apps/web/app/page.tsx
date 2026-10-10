@@ -48,6 +48,28 @@ const RATE = [
   },
 ] as const;
 
+/** The example UAL of the "What a paper asset holds" card, split into what each part names. */
+const UAL_PARTS = [
+  { value: "did:dkg:base:84532", label: "chain: Base Sepolia" },
+  { value: "0xd701…13b3", label: "publisher: VeriSci's node" },
+  { value: "5", label: "asset number" },
+] as const;
+
+const HOLDS = [
+  {
+    term: "The token",
+    detail: "Held by VeriSci's node, which publishes the asset and pays its fees.",
+  },
+  {
+    term: "Your claim",
+    detail: "Your signature inside the asset, covered by the merkle root.",
+  },
+  {
+    term: "The PDF",
+    detail: "On IPFS, addressed by its CID, a hash of its bytes.",
+  },
+] as const;
+
 const RECORD = [
   ["title", "Attention Is All You Need"],
   ["authors", "Vaswani, Shazeer, Parmar, …"],
@@ -140,19 +162,50 @@ export default function Home() {
             </div>
           </article>
         </div>
-        <div className="grid max-w-[62ch] gap-3 text-sm leading-relaxed text-muted">
-          <p>
-            The UAL is the link between the two: it names the chain, the publisher's address and the
-            asset's number, so the same address leads to the content on the graph and to its token
-            on Base. The graph makes the record readable and searchable; the chain makes it
-            tamper-evident.
-          </p>
-          <p>
-            The token is held by VeriSci's node, which publishes and pays for it. Your claim to the
-            paper is your signature inside the asset, covered by the merkle root. The PDF itself
-            sits on IPFS, addressed by its CID, a hash of its bytes.
-          </p>
-        </div>
+        <figure className="glass grid gap-5 rounded-2xl p-5 sm:p-6">
+          <div className="grid gap-4 md:grid-cols-[auto_1fr] md:items-start md:gap-8">
+            <figcaption className="text-sm font-semibold md:pt-1">
+              The UAL links both layers
+            </figcaption>
+            <div className="grid gap-3">
+              <ol className="flex flex-wrap items-start gap-x-1.5 gap-y-2 font-mono text-xs">
+                {UAL_PARTS.map(({ value, label }, index) => (
+                  <li key={label} className="flex items-start gap-1.5">
+                    <span className="grid gap-1">
+                      <span className="w-fit rounded-md border border-line bg-surface-strong px-2 py-1 text-ink">
+                        {value}
+                      </span>
+                      <span className="font-sans text-[11px] text-muted">{label}</span>
+                    </span>
+                    {index < UAL_PARTS.length - 1 && (
+                      <span aria-hidden className="pt-1 text-muted">
+                        /
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ol>
+              <div className="flex flex-wrap gap-x-6 gap-y-1.5 text-xs text-muted">
+                <span className="flex items-center gap-1.5">
+                  <Graph size={14} className="shrink-0 text-accent" />
+                  Any DKG node returns the paper's statements
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Cube size={14} className="shrink-0 text-accent" />
+                  It also gives the ERC-721 token's id on Base
+                </span>
+              </div>
+            </div>
+          </div>
+          <dl className="grid gap-3 border-t border-line pt-4 text-sm sm:grid-cols-3 sm:gap-6">
+            {HOLDS.map(({ term, detail }) => (
+              <div key={term} className="grid content-start gap-0.5">
+                <dt className="font-medium">{term}</dt>
+                <dd className="leading-relaxed text-muted">{detail}</dd>
+              </div>
+            ))}
+          </dl>
+        </figure>
       </section>
 
       <section className="grid gap-10">
