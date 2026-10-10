@@ -38,33 +38,41 @@ export default async function PublishPage() {
   await connection();
   const { contextGraph } = getUploadService();
   return (
-    <div className="grid items-start gap-8 md:grid-cols-[1fr_1.4fr] md:gap-x-16 md:gap-y-8">
-      <div className="grid gap-3 md:col-start-1 md:row-start-1">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Publish a paper</h1>
-        <p className="max-w-[48ch] leading-relaxed text-muted">
-          Your paper becomes a public record on the DKG, with your wallet as its submitter.
-        </p>
-      </div>
-      <div className="md:col-start-2 md:row-span-2 md:row-start-1">
+    <div className="grid gap-14 md:gap-20">
+      <div className="grid items-center gap-8 md:grid-cols-[1fr_1.3fr] md:gap-16">
+        <div className="grid gap-3">
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Publish a paper</h1>
+          <p className="max-w-[48ch] leading-relaxed text-muted">
+            Your paper becomes a public record on the DKG, with your wallet as its submitter.
+          </p>
+        </div>
         <PublishForm
           contextGraph={contextGraph}
           maxBytes={PUBLISH_SETTINGS.maxPdfBytes}
           signatureLifetimeS={UPLOAD_SETTINGS.signatureLifetimeS}
         />
       </div>
-      <ul className="grid gap-4 md:col-start-1 md:row-start-2">
-        {BEFORE.map(({ icon: Icon, title, body }) => (
-          <li key={title} className="grid grid-cols-[2.25rem_1fr] gap-3">
-            <span className="grid size-9 place-items-center rounded-lg bg-accent-soft text-accent">
-              <Icon size={18} />
-            </span>
-            <div>
-              <p className="text-sm font-medium">{title}</p>
-              <p className="mt-0.5 text-sm leading-relaxed text-muted">{body}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <section aria-labelledby="before-title" className="grid gap-5">
+        <h2 id="before-title" className="text-xl font-semibold tracking-tight">
+          Before you publish
+        </h2>
+        <ul className="grid gap-4 sm:grid-cols-2">
+          {BEFORE.map(({ icon: Icon, title, body }) => (
+            <li
+              key={title}
+              className="glass grid grid-cols-[2.25rem_1fr] content-start gap-3 rounded-2xl p-5"
+            >
+              <span className="grid size-9 place-items-center rounded-lg bg-accent-soft text-accent">
+                <Icon size={18} />
+              </span>
+              <div>
+                <h3 className="text-sm font-medium">{title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-muted">{body}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }
