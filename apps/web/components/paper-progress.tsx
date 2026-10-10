@@ -29,7 +29,7 @@ const NOW: Partial<Record<PaperStage["stage"], string>> = {
   reading:
     "We fetch your PDF from IPFS and read its first page: title, authors, abstract and DOI. Nothing is written yet.",
   saving:
-    "The record is written to VeriSci's DKG node and shared with other nodes of the network, so they hold a copy.",
+    "The record is written to VeriSci's DKG node, then shared to the context graph's shared memory, where peer nodes acknowledge it.",
   minting:
     "The node mints the record on Base as a Knowledge Asset: a token, and the merkle root of its statements, so any change to the content would no longer match.",
 };
@@ -41,10 +41,13 @@ const NOW: Partial<Record<PaperStage["stage"], string>> = {
  */
 export function PaperProgress({
   cid,
+  contextGraph,
   eventId,
   resubmitted = false,
 }: {
   cid: string;
+  /** The context graph this environment publishes to, which the signature covers. */
+  contextGraph: string;
   eventId: string | undefined;
   /** The visitor just submitted a paper that was already published. */
   resubmitted?: boolean;
@@ -123,7 +126,7 @@ export function PaperProgress({
         <ProgressChain stage={view.stage} />
       </div>
       {view.stage === "published" && record ? (
-        <VerifyPanel record={record} ual={view.ual} cid={cid} />
+        <VerifyPanel record={record} ual={view.ual} cid={cid} contextGraph={contextGraph} />
       ) : (
         <aside className="glass grid content-start gap-5 rounded-2xl p-5 sm:p-6">
           {NOW[view.stage] && (
@@ -168,8 +171,8 @@ function StageNote({ stage, resubmitted }: { stage: PaperView; resubmitted: bool
         </p>
       ) : (
         <p className="max-w-[60ch] leading-relaxed text-muted">
-          This paper is a public record. Anyone can look it up by its UAL and check who submitted
-          it.
+          This paper is a public record. Anyone with a DKG node can fetch it and check who submitted
+          it: the panel shows how.
         </p>
       );
     case "refused":

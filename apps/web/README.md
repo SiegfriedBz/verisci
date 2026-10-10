@@ -14,7 +14,7 @@ build validates the shared variables: `build` needs `APP_ENV` (see the
 | --- | --- |
 | `/` | Home: what VeriSci does, the DKG's two layers (content off chain, token and merkle root on chain), how publishing works and the rating flow to come, and what a paper asset holds |
 | `/publish` | Connect a wallet, drop a PDF, sign once ([ADR 0010](../../docs/adr/0010-pdf-to-target-ka-pipeline.md), [ADR 0034](../../docs/adr/0034-users-connect-a-wallet-anyone-may-publish.md)) |
-| `/papers/<cid>?event=<id>` | Where a paper stands, polled every 5 s until published, refused or stopped. Once published: the record's title, authors and DOI, and a "Verify it yourself" panel (submitter and publisher linked on Basescan, the asset's ERC-721 token linked on Basescan, the signature checked when read, the UAL and the CID, and how to check them). `?already=1` says a re-submitted PDF was already published |
+| `/papers/<cid>?event=<id>` | Where a paper stands, polled every 5 s until published, refused or stopped. Once published: the record's title, authors and DOI, and a "Verify it yourself" panel (submitter and publisher linked on Basescan, the asset's ERC-721 token linked on Basescan, the signed deadline and the context graph, the EIP-712 domain and type to check the signature with, the signature checked when read, the UAL and the CID, and how to check them). `?already=1` says a re-submitted PDF was already published |
 | `/api/papers/<cid>?event=<id>` | The same as JSON (`PaperView`: the stage, and the record once published), never cached: a read, so a route rather than a server action |
 | `/api/inngest` | Serves the Inngest functions |
 | any other path | `app/not-found.tsx`; a page that fails to render shows `app/error.tsx` with a retry |

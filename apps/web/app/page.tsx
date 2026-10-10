@@ -34,7 +34,7 @@ const RATE = [
   {
     icon: Robot,
     title: "Phase 1 · Machine score",
-    body: "An AI reads the paper and scores it from 0 to 100, with its reasons. This score is recorded on chain.",
+    body: "An AI model scores the paper's record (title, authors, abstract) from 0 to 100. The score goes on chain, its reasons into the rating's asset.",
   },
   {
     icon: UsersThree,
@@ -66,7 +66,7 @@ const HOLDS = [
   },
   {
     term: "The PDF",
-    detail: "On IPFS, addressed by its CID, a hash of its bytes.",
+    detail: "On IPFS, addressed by its CID, computed from its bytes.",
   },
 ] as const;
 
@@ -76,6 +76,7 @@ const RECORD = [
   ["pdf", "ipfs://bafybeicrwkcuh…ats642m"],
   ["submitter", "0x7a31…c9f2"],
   ["signature", "0x4be0…1c (EIP-712)"],
+  ["deadline", "1791639162 (Unix seconds)"],
 ] as const;
 
 /** Home: what VeriSci does, the way to publish, and the rating flow to come. */
@@ -142,8 +143,9 @@ export default function Home() {
               <h3 className="font-semibold">The content, off chain</h3>
               <p className="text-sm leading-relaxed text-muted">
                 DKG nodes store the asset's statements: title, authors, the PDF's link, the
-                submitter and their signature. Several nodes keep a copy, and anyone can query it by
-                its UAL, the asset's permanent address.
+                submitter, their signature and its deadline. Several nodes keep a copy, and any node
+                subscribed to VeriSci's context graph can fetch it by its UAL, the asset's permanent
+                address.
               </p>
             </div>
           </article>
@@ -187,8 +189,8 @@ export default function Home() {
               </ol>
               <div className="flex flex-wrap gap-x-6 gap-y-1.5 text-xs text-muted">
                 <span className="flex items-center gap-1.5">
-                  <Graph size={14} className="shrink-0 text-accent" />
-                  Any DKG node returns the paper's statements
+                  <Graph size={14} className="shrink-0 text-accent" />A node on VeriSci's graph
+                  returns its statements
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Cube size={14} className="shrink-0 text-accent" />
@@ -214,7 +216,7 @@ export default function Home() {
           <Track
             label="Publish"
             badge={<span className="text-accent">live</span>}
-            intro="Three steps, about two minutes, no gas."
+            intro="Three steps and one signature. No gas."
             steps={HOW}
           />
           <Track

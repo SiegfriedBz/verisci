@@ -1,4 +1,6 @@
+import { getUploadService } from "@verisci/agents";
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { PaperProgress } from "../../../components/paper-progress.tsx";
 
 export const metadata: Metadata = { title: "Paper · VeriSci" };
@@ -11,11 +13,13 @@ export default async function PaperPage({
   params: Promise<{ cid: string }>;
   searchParams: Promise<{ event?: string | string[]; already?: string | string[] }>;
 }) {
+  await connection();
   const { cid } = await params;
   const { event, already } = await searchParams;
   return (
     <PaperProgress
       cid={cid}
+      contextGraph={getUploadService().contextGraph}
       eventId={typeof event === "string" ? event : undefined}
       resubmitted={already === "1"}
     />

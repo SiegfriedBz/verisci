@@ -5,7 +5,7 @@ const STEPS = [
   { label: "Read", detail: "Title, authors and abstract taken from the PDF" },
   { label: "Saved", detail: "The record is written to the knowledge graph" },
   { label: "Minted", detail: "The asset is minted on Base, with its merkle root" },
-  { label: "Published", detail: "Anyone can look it up and check who submitted it" },
+  { label: "Published", detail: "Anyone can check who submitted it" },
 ] as const;
 
 /** How many steps are done, and which one is being worked on, at each stage. */

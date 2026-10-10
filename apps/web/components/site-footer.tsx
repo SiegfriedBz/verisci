@@ -30,7 +30,7 @@ export function SiteFooter({ ratingController }: { ratingController: string | un
           {
             name: "DKGKnowledgeAssets",
             owner: "OriginTrail" as const,
-            role: "Holds every asset's ERC-721 token",
+            role: "The ERC-721 contract of each asset's token",
             address: origintrail.knowledgeAssets,
           },
           {
