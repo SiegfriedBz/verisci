@@ -278,8 +278,13 @@ Observed on Next.js 16.3.8.
 
 ## Tooling
 
-Observed on Turbo 2.11, `@next/env` 16.3.8, `@t3-oss/env-core` 0.13 and Zod 4.6.
+Observed on Turbo 2.11, `@next/env` 16.3.8, `@t3-oss/env-core` 0.13 and Zod 4.6, except where
+a fact names another tool.
 
+- **Node's type stripping (Node 24) only erases type syntax:** `enum`, `namespace` and
+  constructor parameter properties create JavaScript, so plain Node refuses them.
+  `erasableSyntaxOnly` in `tsconfig.base.json` makes `tsc` refuse them too
+  ([ADR 0002](adr/0002-internal-packages-ship-typescript-source.md)).
 - **`@next/env` caches its first `loadEnvConfig`,** and Next has already loaded `apps/web`
   before it reads `next.config.ts`, so loading the root needs `forceReload`. Env values set
   while the config loads are copied into Next's startup snapshot, so they survive dev env
