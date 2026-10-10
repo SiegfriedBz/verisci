@@ -25,7 +25,7 @@ taken, so a later ADR can sit in an earlier group.
 
 | ADR | Decision |
 | --- | --- |
-| [0004. Env variables are declared per workspace, in one root file](0004-env-variables-per-workspace-one-root-file.md) | Each workspace validates the variables it reads, a deployed server its workflows' when it starts; a dev script declares those only it reads; forge reads the same root env file; programs on the DKG node server read their own |
+| [0004. Env variables are declared per workspace, in one root file](0004-env-variables-per-workspace-one-root-file.md) | Each workspace validates the variables it reads, a deployed server its workflows' and the web app's when it starts; a dev script declares those only it reads; forge reads the same root env file; programs on the DKG node server read their own |
 | [0005. Staging and production use separate resources](0005-staging-and-production-are-isolated.md) | Each environment has its own contract, graph, webhook, oracle wallet and Inngest environment; the DKG node is shared, so a `-prod` guard protects production |
 | [0006. The DKG node runs on a dedicated host](0006-dkg-node-runs-on-a-dedicated-host.md) | The node, GROBID and an RPC proxy run on their own host, behind authentication, with keys backed up; on a developer's computer until a deployed environment calls the node |
 | [0023. A fix is a redeploy, and the owner's powers are fixed](0023-a-fix-is-a-redeploy-owner-powers-fixed.md) | A fix is a redeploy; old contracts are paused and drained; the owner sets the oracle and cap, pauses and unpauses, and transfers ownership in two steps, never to the oracle, with no renounce |
