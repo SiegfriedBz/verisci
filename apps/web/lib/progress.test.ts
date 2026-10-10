@@ -14,10 +14,12 @@ const running = { ok: true, run: { state: "running" } } as const;
 const notStarted = { ok: true, run: undefined } as const;
 const failed = { ok: true, run: { state: "failed" } } as const;
 const inngestDown = { ok: false, reason: "unavailable" } as const;
-const completed = (output: unknown) => ({ ok: true, run: { state: "completed", output } }) as const;
+const NOW = 1_800_000_000_000;
+const completed = (output: unknown, endedAt: number | undefined = NOW - 120_000) =>
+  ({ ok: true, run: { state: "completed", output, endedAt } }) as const;
 
 function stage(asset: PaperStatus["asset"], run: PaperStatus["run"]): PaperStage {
-  return paperProgress({ asset, run });
+  return paperProgress({ asset, run }, NOW);
 }
 
 describe("paperProgress", () => {
@@ -69,6 +71,15 @@ describe("paperProgress", () => {
     // The local dev server answers an empty output (inngest-cli 1.46.0).
     expect(stage(missing, completed(""))).toEqual({ stage: "not-published" });
     expect(stage(missing, completed({ state: "odd" }))).toEqual({ stage: "not-published" });
+  });
+
+  it("keeps reading for a minute after such a run ends, while the node catches up", () => {
+    expect(stage(missing, completed("", NOW - 30_000))).toEqual({ stage: "reading" });
+    const noEnd = {
+      ok: true,
+      run: { state: "completed", output: "", endedAt: undefined },
+    } as const;
+    expect(stage(missing, noEnd)).toEqual({ stage: "reading" });
   });
 
   it("follows the asset when a completed run's output cannot be read but something is stored", () => {

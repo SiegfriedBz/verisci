@@ -3,7 +3,12 @@ import { z } from "zod";
 /** Where a run stands: still going, finished with the function's return value, or failed. */
 export type RunState =
   | { readonly state: "running" }
-  | { readonly state: "completed"; readonly output: unknown }
+  | {
+      readonly state: "completed";
+      readonly output: unknown;
+      /** When the run ended, in milliseconds, if Inngest says. */
+      readonly endedAt: number | undefined;
+    }
   | { readonly state: "failed" };
 
 /**
@@ -30,7 +35,13 @@ export interface ReadRunOptions {
 const EVENT_ID = /^[0-9A-Za-z]{1,64}$/;
 
 const runs = z.object({
-  data: z.array(z.object({ status: z.string(), output: z.unknown().optional() })),
+  data: z.array(
+    z.object({
+      status: z.string(),
+      output: z.unknown().optional(),
+      ended_at: z.string().nullish(),
+    }),
+  ),
 });
 
 /**
@@ -57,8 +68,17 @@ export async function readRun(eventId: string, options: ReadRunOptions): Promise
     if (!parsed.success) return { ok: false, reason: "unavailable" };
     const [first] = parsed.data.data;
     if (!first) return { ok: true, run: undefined };
-    if (first.status === "Completed")
-      return { ok: true, run: { state: "completed", output: first.output } };
+    if (first.status === "Completed") {
+      const endedAt = first.ended_at ? Date.parse(first.ended_at) : Number.NaN;
+      return {
+        ok: true,
+        run: {
+          state: "completed",
+          output: first.output,
+          endedAt: Number.isNaN(endedAt) ? undefined : endedAt,
+        },
+      };
+    }
     if (first.status === "Failed" || first.status === "Cancelled")
       return { ok: true, run: { state: "failed" } };
     return { ok: true, run: { state: "running" } };

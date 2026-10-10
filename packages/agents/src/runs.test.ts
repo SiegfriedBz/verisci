@@ -17,7 +17,14 @@ function fakeFetch(response: () => Response | Promise<Response>) {
 }
 
 function run(status: string, output: unknown = null) {
-  return { run_id: "run-1", event_id: "event-1", function_id: "f", status, output };
+  return {
+    run_id: "run-1",
+    event_id: "event-1",
+    function_id: "f",
+    status,
+    output,
+    ended_at: "2026-10-10T13:19:23.300825134Z",
+  };
 }
 
 const cloud = {
@@ -52,13 +59,27 @@ describe("readRun", () => {
   it.each([
     ["Running", { state: "running" }],
     ["Queued", { state: "running" }],
-    ["Completed", { state: "completed", output: OUTPUT }],
+    [
+      "Completed",
+      { state: "completed", output: OUTPUT, endedAt: Date.parse("2026-10-10T13:19:23.300Z") },
+    ],
     ["Failed", { state: "failed" }],
     ["Cancelled", { state: "failed" }],
   ])("reads a %s run", async (status, expected) => {
     const { fetch } = fakeFetch(() => Response.json({ data: [run(status, OUTPUT)] }));
 
     expect(await readRun(EVENT_ID, { ...cloud, fetch })).toEqual({ ok: true, run: expected });
+  });
+
+  it("reads a completed run with no end time", async () => {
+    const { fetch } = fakeFetch(() =>
+      Response.json({ data: [{ status: "Completed", output: "" }] }),
+    );
+
+    expect(await readRun(EVENT_ID, { ...cloud, fetch })).toEqual({
+      ok: true,
+      run: { state: "completed", output: "", endedAt: undefined },
+    });
   });
 
   it("reports no run while Inngest has not started one", async () => {

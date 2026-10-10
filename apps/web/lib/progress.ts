@@ -7,14 +7,21 @@ export type RefusalReason = Extract<PublishOutcome, { state: "refused" }>["reaso
 /**
  * Where a paper stands, as its page shows it: on the way (`reading`, `saving`, `minting`),
  * done (`published`, `refused`, `failed`, `not-found`, `not-published`), or not readable now
- * (`unavailable`, asked again on the next poll). `not-published` is a run that ended with
- * nothing stored and an output that cannot be read, as the local dev server answers.
+ * (`unavailable`, asked again on the next poll). `not-published` is a run that ended over a
+ * minute ago with an output that cannot be read, as the local dev server answers, and
+ * nothing stored.
  */
 export type PaperStage =
   | { readonly stage: "reading" | "saving" | "minting" }
   | { readonly stage: "published"; readonly ual: string }
   | { readonly stage: "refused"; readonly reason: RefusalReason }
   | { readonly stage: "failed" | "not-found" | "not-published" | "unavailable" };
+
+/**
+ * How long after a run ends a missing asset still reads as `reading`: the node can briefly
+ * not report a paper the run has just minted.
+ */
+const SETTLE_MS = 60_000;
 
 const outcome = z.union([
   z.object({ state: z.literal("minted"), ual: z.string() }),
@@ -27,7 +34,7 @@ const outcome = z.union([
  * means submitting the same PDF again. With no run to ask about, a missing asset is
  * `not-found`.
  */
-export function paperProgress({ asset, run }: PaperStatus): PaperStage {
+export function paperProgress({ asset, run }: PaperStatus, now = Date.now()): PaperStage {
   if (asset.ok && asset.state === "minted") return { stage: "published", ual: asset.ual };
   if (!asset.ok || run?.ok === false) return { stage: "unavailable" };
   const state = run?.run;
@@ -39,7 +46,8 @@ export function paperProgress({ asset, run }: PaperStatus): PaperStage {
         ? { stage: "published", ual: parsed.data.ual }
         : { stage: "refused", reason: parsed.data.reason as RefusalReason };
     }
-    if (asset.state === "missing") return { stage: "not-published" };
+    const settled = state.endedAt !== undefined && now - state.endedAt > SETTLE_MS;
+    if (asset.state === "missing" && settled) return { stage: "not-published" };
   }
   if (asset.state === "stored") return { stage: "minting" };
   if (asset.state === "draft") return { stage: "saving" };
