@@ -26,6 +26,7 @@ Status: shared constants, UAL parsing, asset names, and a Target KA's content an
 | `targetKaName(cid)` | The Target KA's asset name, `verisci-tka-<CIDv1 base32>`, or `{ ok: false, reason: "bad-cid" }`; returns a result for every input |
 | `AssetNameResult`, `AssetNameError` | The result of both, and why an input cannot be named |
 | `submissionTypedData(message)` | The EIP-712 typed data a submitter signs to publish a PDF, in the shape viem takes |
+| `canonicalContextGraph(id)` | A context graph id with its address in lowercase and its name unchanged: the one spelling a submission signs |
 | `SUBMISSION_DOMAIN`, `SubmissionMessage` | verisci's EIP-712 domain, and the signed `{ cid, contextGraph, deadline }` |
 | `parseTeiHeader(xml)` | A paper's `PaperMetadata` (title, authors, abstract, DOI) from GROBID's TEI header, or `not-tei` or `no-title`; returns a result for every input |
 | `PaperMetadata`, `TeiResult` | The metadata read from a TEI header, and the result of `parseTeiHeader` |
@@ -80,7 +81,8 @@ A Target KA describes a paper and who submitted it
 
 - **Metadata** comes from GROBID's TEI header, read by `parseTeiHeader`: the main title,
   each author's forenames and surname in document order, the abstract's paragraphs and the
-  DOI, each with its whitespace collapsed. A header with no title is refused.
+  DOI, each with its whitespace collapsed. A header with no title is refused, and so is XML
+  with any parse error (`not-tei`), without printing anything.
 - **Triples:** the subject is `urn:verisci:paper:<cid>`, typed `schema:ScholarlyArticle`,
   with `schema:name`, `schema:url` (`ipfs://<cid>`), `schema:abstract`, `schema:sameAs`
   (`https://doi.org/<doi>`), and one `schema:author` node per author,
@@ -94,7 +96,9 @@ A Target KA describes a paper and who submitted it
   `Submission { string cid; string contextGraph; uint256 deadline }`, under the domain
   `{ name: "verisci", version: "1", chainId: 84532 }`.
 - **Checking who submitted a paper:** take the CID from `schema:url`, the context graph id
-  the KA is in, and the deadline; rebuild the typed data with `submissionTypedData`; and
+  the KA is in, and the deadline; rebuild the typed data with `submissionTypedData`, which
+  writes the graph id's address in lowercase (`canonicalContextGraph`), the spelling every
+  submission signs; and
   verify the signature against the submitter's address with any EIP-712 library (viem's
   `verifyTypedData` also checks smart-contract wallets).
 

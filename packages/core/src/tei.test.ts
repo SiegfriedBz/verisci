@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { attentionTei } from "./fixtures/attention-tei.ts";
 import { parseTeiHeader } from "./tei.ts";
 
@@ -112,7 +112,25 @@ describe("parseTeiHeader", () => {
     ["broken XML", "<TEI><teiHeader>"],
     ["XML that is not TEI", "<html><head><title>A Title</title></head></html>"],
     ["TEI with no header", '<TEI xmlns="http://www.tei-c.org/ns/1.0"><text/></TEI>'],
+    ["TEI with an unknown entity", tei({}).replace("A Title", "A &bogus; Title")],
+    ["TEI with content after the root", `${tei({})}<extra/>`],
   ])("refuses %s as not-tei", (_, xml) => {
     expect(parseTeiHeader(xml)).toEqual({ ok: false, reason: "not-tei" });
+  });
+
+  it("prints nothing when it refuses broken XML", () => {
+    // core has no DOM or Node types, so console is reached through globalThis.
+    const output = (globalThis as unknown as { console: Record<"error" | "warn", () => void> })
+      .console;
+    const error = vi.spyOn(output, "error").mockImplementation(() => {});
+    const warn = vi.spyOn(output, "warn").mockImplementation(() => {});
+
+    parseTeiHeader("<TEI><teiHeader>");
+    parseTeiHeader(`${tei({})}<extra/>`);
+
+    expect(error).not.toHaveBeenCalled();
+    expect(warn).not.toHaveBeenCalled();
+    error.mockRestore();
+    warn.mockRestore();
   });
 });

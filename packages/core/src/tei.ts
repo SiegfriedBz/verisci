@@ -71,7 +71,13 @@ export function parseTeiHeader(xml: string): TeiResult {
 
 function teiHeader(xml: string): Element | undefined {
   try {
-    const document = new DOMParser().parseFromString(xml, "text/xml");
+    // Stop on any error, silently: core prints nothing, and a broken answer is not-tei.
+    const parser = new DOMParser({
+      onError: (level) => {
+        if (level !== "warning") throw new Error("not-tei");
+      },
+    });
+    const document = parser.parseFromString(xml, "text/xml");
     return first(document.documentElement, "teiHeader");
   } catch {
     return undefined;
