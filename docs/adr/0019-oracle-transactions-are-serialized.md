@@ -20,4 +20,8 @@ Every `fulfil` and `cancel` is sent from one oracle account. In the previous rep
 - No nonce races, and a stuck transaction cannot block the queue for good.
 - One oracle transaction per confirmation time: ample for testnet.
 - Previews never sign as the oracle.
-- The agents plan builds the function and sets its timeouts, fee cap and alert threshold.
+- The rating plan builds the function and sets its timeouts, fee cap and alert threshold.
+
+## History
+
+- 2026-10-10: corrected: "the agents plan" is now "the rating plan", since the agents package was renamed `workflows`.

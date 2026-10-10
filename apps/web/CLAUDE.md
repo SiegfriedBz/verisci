@@ -15,7 +15,7 @@ Next.js 16 App Router app. See `README.md` here for scripts and status.
   client, never swallow it into empty data
   ([ADR 0021](../../docs/adr/0021-server-reads-return-typed-results.md)).
 - Inngest functions live in `@verisci/agents`; `web` only serves them
-  ([ADR 0003](../../docs/adr/0003-inngest-workflows-live-in-agents.md)).
+  ([ADR 0003](../../docs/adr/0003-inngest-functions-live-in-workflows.md)).
 - Playwright end-to-end tests come in a later plan; until then, cover logic in unit tests.
   Put a flow's logic in `lib/` with its IO passed in (`publishFile`, `paperProgress`,
   `requestUploadUrl`), and keep components and `app/actions.ts` thin.

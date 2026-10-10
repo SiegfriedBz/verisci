@@ -25,10 +25,11 @@ Requests can stop halfway ([0007](0007-all-writes-converge.md)), or never start 
 - Correctness rests on the singleton, on convergent writes ([0007](0007-all-writes-converge.md)) and on the contract's own checks.
 - The function and the reconciler run only where the oracle key is ([0019](0019-oracle-transactions-are-serialized.md)). Staging's reconciler needs crons in a branch environment, which is unverified ([domain](../domain.md)).
 - While the owner has pointed the oracle role at another key, the backend's oracle transactions fail until it is pointed back.
-- The contracts plan builds the pending set and the cancel path; the agents plan sets the threshold, the cron interval and the maximum age.
+- The contracts plan builds the pending set and the cancel path; the rating plan sets the threshold, the cron interval and the maximum age.
 
 ## History
 
 - 2026-10-04: only the oracle cancels, and the cancel reasons are maximum age and invalid target. An owner cancel added a second way to cancel and no capability the system lacks, and an "owner" reason said who, not why (was ADR 0024).
 - 2026-10-07: ADR 0024 folded into this one, so recovery and cancelling read in one file.
 - 2026-10-07: retitled to name everything it now covers (was "A cron reconciler recovers stuck requests").
+- 2026-10-10: corrected: "the agents plan" is now "the rating plan", since the agents package was renamed `workflows`.

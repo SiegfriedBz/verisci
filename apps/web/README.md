@@ -5,7 +5,7 @@ The Next.js 16 app (App Router).
 Status: the home page; the upload pages, where a visitor connects a wallet, publishes a PDF,
 follows it until its Target KA is minted and verifies its record; and `/api/inngest`, which
 serves the agents' Inngest functions
-([ADR 0003](../../docs/adr/0003-inngest-workflows-live-in-agents.md)).
+([ADR 0003](../../docs/adr/0003-inngest-functions-live-in-workflows.md)).
 
 ## Depends on
 

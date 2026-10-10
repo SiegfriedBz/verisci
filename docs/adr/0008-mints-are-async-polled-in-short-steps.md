@@ -18,8 +18,9 @@ A DKG mint takes from about 5 seconds to over 300, and Vercel Hobby stops any fu
 - A mint in flight reads the same as no mint, so a mint started twice (a retry racing an earlier run) costs one reverted transaction's gas. That race is rare and cheaper than waiting the maximum mint time on every recovery.
 - No step can hit the function time limit because of a slow mint. Every other step (GROBID, the LLM, the oracle's receipt) must also finish well inside that limit.
 - More steps per publish, so more Inngest executions.
-- The poll interval and the maximum mint time are settings, chosen in the agents plan.
+- The poll interval and the maximum mint time are settings, chosen in the rating plan.
 
 ## History
 
 - 2026-10-09: retitled (was "Mints are async, polled in short steps"). Mints start with the ordinary mint call and poll the asset's state instead of using the daemon's async route, and a run no longer waits for an earlier mint before minting. The DKG spike showed that the async route needs extra setup on the node, that a mint outlives its client, and that an asset cannot be minted twice ([domain](../domain.md)).
+- 2026-10-10: corrected: "the agents plan" is now "the rating plan", since the agents package was renamed `workflows`.

@@ -1,7 +1,7 @@
 # @verisci/agents
 
 Inngest workflows that combine `core` logic with the `dkg` and `contracts` adapters;
-`apps/web` only serves them ([ADR 0003](../../docs/adr/0003-inngest-workflows-live-in-agents.md)).
+`apps/web` only serves them ([ADR 0003](../../docs/adr/0003-inngest-functions-live-in-workflows.md)).
 
 Status: the publish run, which turns a pinned PDF into a minted Target KA, and the calls
 the upload page makes to start and follow it.

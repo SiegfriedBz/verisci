@@ -18,7 +18,7 @@ taken, so a later ADR can sit in an earlier group.
 | --- | --- |
 | [0001. Toolchain: Biome, TypeScript 6, Soldeer, exact pins](0001-toolchain-biome-ts6-soldeer-exact-pins.md) | Biome, TypeScript 6, Soldeer and solc 0.8.37; every dependency pinned exactly |
 | [0002. Internal packages ship TypeScript source](0002-internal-packages-ship-typescript-source.md) | Packages export their `.ts` source, with no build step; scripts and programs on the DKG node server run it with plain Node |
-| [0003. Inngest workflows live in the agents package](0003-inngest-workflows-live-in-agents.md) | Inngest functions live in `agents`; `web` only serves them |
+| [0003. Inngest functions live in the workflows package](0003-inngest-functions-live-in-workflows.md) | Inngest functions live in `workflows`; `web` only serves them |
 | [0025. Reviews gate on ADR consistency and Foundry lint](0025-reviews-gate-on-adrs-and-lint.md) | A review blocks on an ADR conflict until the user decides; every Foundry lint warning fails |
 
 ## Environments and infrastructure
@@ -101,11 +101,11 @@ Not decided yet. Each becomes an ADR in the plan that first needs the answer; th
 
 | Question | Leaning | Decided in |
 | --- | --- | --- |
-| Where do alerts go? | One chat-bot channel behind a single `notify()`, fed by a scheduled check (wallet balances, orphans, age of the oldest pending request) and an uptime check on the node's `/api/status`. | agents plan |
+| Where do alerts go? | One chat-bot channel behind a single `notify()`, fed by a scheduled check (wallet balances, orphans, age of the oldest pending request) and an uptime check on the node's `/api/status`. | rating plan |
 | Who may request phases 2 and 3? | Anyone, not only the phase-1 requester. Whoever requests, our node writes the R-KA update, since it owns the R-KA ([0012](0012-three-phases-settled-by-the-oracle.md)). Also open: whether a later phase's request gets its own id or reuses the rating's. | phase-2 plan |
 | Where does phases 2 and 3's human input wait before the oracle scores it? | None yet: on the DKG, as a draft the node holds, or in a store of the app's own, which would amend [0035](0035-limits-are-the-apps-only-state.md) ([0012](0012-three-phases-settled-by-the-oracle.md)). | phase-2 plan |
-| How does a local test run target a developer's own contract? | One local-only address variable for that contract, read by the agents when `APP_ENV=local`; staging's and production's addresses stay in the committed file ([0028](0028-deployed-addresses-are-committed.md), [0019](0019-oracle-transactions-are-serialized.md)). | agents plan |
-| How does a rating run find the context graph of a target VeriSci did not publish? | The rating request names it next to the target's UAL, since a UAL alone does not name its graph ([0011](0011-a-rating-is-a-separate-r-ka.md)); check first whether a later DKG release resolves a UAL to its graph. | agents plan |
+| How does a local test run target a developer's own contract? | One local-only address variable for that contract, read by the workflows when `APP_ENV=local`; staging's and production's addresses stay in the committed file ([0028](0028-deployed-addresses-are-committed.md), [0019](0019-oracle-transactions-are-serialized.md)). | rating plan |
+| How does a rating run find the context graph of a target VeriSci did not publish? | The rating request names it next to the target's UAL, since a UAL alone does not name its graph ([0011](0011-a-rating-is-a-separate-r-ka.md)); check first whether a later DKG release resolves a UAL to its graph. | rating plan |
 | Who holds the DKG node's credential? | Caddy keeps the daemon's admin token on the host and checks one credential per environment, so each can be revoked alone. The `-prod` guard stays ([0005](0005-staging-and-production-are-isolated.md)). | node server plan |
 
 ## Adding an ADR

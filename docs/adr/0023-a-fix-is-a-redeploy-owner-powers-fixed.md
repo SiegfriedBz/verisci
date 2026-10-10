@@ -21,7 +21,7 @@ Requests can still be pending on a contract when it is replaced, and no request 
 
 - The deployed code is the code that runs; nobody can change its logic afterwards.
 - No request stays pending forever across a redeploy, and nothing is migrated: each request settles on the contract that took it.
-- The app, the agents and the reconciler read every contract of an environment listed in the deployments file ([0028](0028-deployed-addresses-are-committed.md)), current and past; the agents plan builds that.
+- The app, the workflows and the reconciler read every contract of an environment listed in the deployments file ([0028](0028-deployed-addresses-are-committed.md)), current and past; the rating plan builds that.
 - The pause is reversible, so it also stops a wave of spam requests without a redeploy.
 - Control of a deployed contract can move to a safer wallet, such as a multisig, or away from an exposed key, with no redeploy. A mistyped address cannot take ownership: an address that never accepts leaves the current owner in place.
 - The contract keeps an owner for its whole life, so an emergency always has someone to act.
@@ -34,3 +34,4 @@ Requests can still be pending on a contract when it is replaced, and no request 
 - 2026-10-06: the owner can transfer ownership in two steps, never to the oracle, and cannot renounce, so a lost or exposed owner key is handled without a redeploy and an emergency always has an owner to act (was ADR 0032).
 - 2026-10-07: corrected the owner's list to include unpausing, which the contract already had (was ADR 0033). ADRs 0027, 0032 and 0033 folded into this one, so the contract's lifecycle and the owner's powers read in one file.
 - 2026-10-07: retitled to name everything it now covers (was "The contract is not upgradeable").
+- 2026-10-10: corrected: "the agents" is now "the workflows" and "the agents plan" "the rating plan", since the agents package was renamed `workflows`.
