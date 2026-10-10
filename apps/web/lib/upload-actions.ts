@@ -60,7 +60,8 @@ export async function readProgress(
   );
   if (stage.stage !== "published") return stage;
   if (status.record) return { ...stage, record: status.record };
-  return status.recordProblem ? { ...stage, recordProblem: status.recordProblem } : stage;
+  // A run's mint can show before the node does: its record is not readable yet.
+  return { ...stage, recordProblem: status.recordProblem ?? "unavailable" };
 }
 
 /** The visitor's address as the host forwards it (Vercel sets both headers). */

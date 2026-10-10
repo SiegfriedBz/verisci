@@ -35,7 +35,8 @@ rather than letting requests through.
 ### The paper page
 
 `components/paper-progress.tsx` asks `/api/papers/<cid>` every 5 s and stops on a final
-stage. `lib/progress.ts` (`paperProgress`, pure) maps the asset's state on the node, the
+stage; it shows and asks by the CID's canonical spelling, the one the signature covers,
+whatever spelling the address has. `lib/progress.ts` (`paperProgress`, pure) maps the asset's state on the node, the
 run Inngest started for the event, and why that run stopped to one stage:
 
 ```mermaid
@@ -72,8 +73,8 @@ stateDiagram-v2
   `FOLLOW_MS`, a run's whole 45-minute budget.
 - `not-found` also covers a page with no event to ask about and nothing on the node.
 - `unavailable` (the node or Inngest not answering) is shown and asked again.
-- A published paper whose record the node did not answer for (`recordProblem:
-  "unavailable"`) is asked about again until the record loads; one whose record cannot be
+- A published paper whose record the node did not answer for, or does not show yet after
+  its run minted it (`recordProblem: "unavailable"`), is asked about again until the record loads; one whose record cannot be
   read says so (ADR 0021).
 
 Once published, the page shows the record (title, authors, DOI) and a "Verify it

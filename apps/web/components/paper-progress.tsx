@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowSquareOut, Warning } from "@phosphor-icons/react";
+import { canonicalCid } from "@verisci/core";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ipfsUrl } from "../lib/explorer.ts";
@@ -41,10 +42,11 @@ const NOW: Partial<Record<PaperStage["stage"], string>> = {
 /**
  * Follows a paper from its page: asks `/api/papers/<cid>` every 5 s until a final stage,
  * and keeps asking through a stage that could not be read. Once published, shows the
- * record and how to verify it.
+ * record and how to verify it. Shows and asks by the CID's canonical spelling, the one the
+ * signature covers, whatever spelling the address has.
  */
 export function PaperProgress({
-  cid,
+  cid: given,
   contextGraph,
   eventId,
   resubmitted = false,
@@ -56,6 +58,7 @@ export function PaperProgress({
   /** The visitor just submitted a paper that was already published. */
   resubmitted?: boolean;
 }) {
+  const cid = canonicalCid(given) ?? given;
   const [view, setView] = useState<PaperView | undefined>();
 
   useEffect(() => {

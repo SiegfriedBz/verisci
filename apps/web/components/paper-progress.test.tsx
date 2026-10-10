@@ -71,4 +71,15 @@ describe("PaperProgress", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(screen.getByText(/can't reach the network/)).toBeTruthy();
   });
+
+  it("shows and asks by the canonical CID, whatever spelling the address has", async () => {
+    const urls = serve([{ stage: "minting" }]);
+    const v0 = "QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB";
+
+    render(<PaperProgress cid={v0} contextGraph={GRAPH} eventId={undefined} />);
+    await advance(0);
+
+    expect(urls[0]).toMatch(/^\/api\/papers\/bafy/);
+    expect(screen.queryByText(v0)).toBeNull();
+  });
 });

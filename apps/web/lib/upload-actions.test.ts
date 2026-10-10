@@ -143,6 +143,26 @@ describe("readProgress", () => {
     });
   });
 
+  it("reads a run's mint before the node shows it as a record not loaded yet", async () => {
+    const ual = "did:dkg:base:84532/0xd701/6";
+    const { service } = fakeService({
+      readPaper: async () =>
+        ({
+          asset: { ok: true, state: "stored", reservedUal: ual },
+          run: {
+            ok: true,
+            run: { state: "completed", output: { state: "minted", ual }, endedAt: undefined },
+          },
+        }) as const,
+    });
+
+    expect(await readProgress(CID, undefined, service)).toEqual({
+      stage: "published",
+      ual,
+      recordProblem: "unavailable",
+    });
+  });
+
   it("reads a CID it cannot canonicalize as not-found, without asking", async () => {
     const { service, calls } = fakeService();
 
