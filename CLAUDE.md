@@ -33,7 +33,9 @@ Toolchain: Node 24.21.0 (`.nvmrc`), pnpm 10.34.6 via Corepack, Foundry 1.8.4. If
 - **core does no IO**: no `fetch`, no `node:*`, no `@verisci/*`. IO lives in adapter
   packages. Biome enforces this in `packages/core/biome.json`.
 - Relative imports keep the `.ts` extension (`./shared.ts`); `allowImportingTsExtensions`
-  is on in `tsconfig.base.json` because nothing emits.
+  is on in `tsconfig.base.json` because nothing emits. Scripts run packages' source with
+  plain Node, so `erasableSyntaxOnly` (also in `tsconfig.base.json`) refuses syntax Node
+  cannot strip, such as `enum` (ADR 0002).
 - Environment variables: each workspace declares what it reads in its env module
   (`src/env.ts`) with `defineEnv` from `@verisci/env`, and adds it to `.env.example` in the same PR
   (a dev script in `scripts/` declares the variables only it reads in the script). Programs

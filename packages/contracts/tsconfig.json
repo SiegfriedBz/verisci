@@ -2,8 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "types": ["node"],
-    "resolveJsonModule": true,
-    "erasableSyntaxOnly": true
+    "resolveJsonModule": true
   },
   "include": ["src", "tools"]
 }

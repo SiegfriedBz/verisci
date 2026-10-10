@@ -21,8 +21,8 @@ layout, toolchain versions and commands.
   `src/generated/` are generated; change the source and regenerate. After changing a
   contract's interface, run `pnpm generate:abi` here and commit `src/generated/` (CI checks
   it). `deployments/` changes only through `record-deployment`, after the user deploys.
-- `tools/*.ts` run with Node's type stripping; `erasableSyntaxOnly` in `tsconfig.json`
-  makes `tsc` reject syntax Node cannot strip.
+- `tools/*.ts` run with Node's type stripping; `erasableSyntaxOnly` in the root
+  `tsconfig.base.json` makes `tsc` reject syntax Node cannot strip.
 - Tests deploy `RatingController` through `script/DeployRatingController.s.sol`, so they
   run the deploy path; only constructor tests call `new RatingController` directly.
   Per-environment settings live in `script/HelperConfig.s.sol`.
