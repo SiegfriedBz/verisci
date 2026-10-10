@@ -1,4 +1,4 @@
-import type { PublishFailure, SubmitResult } from "@verisci/agents";
+import type { PublishFailure, SubmitResult } from "@verisci/workflows";
 import type { RefusalReason } from "./progress.ts";
 import type { UploadUrlAnswer } from "./upload-actions.ts";
 

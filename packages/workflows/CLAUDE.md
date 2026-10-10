@@ -1,4 +1,4 @@
-# packages/agents
+# packages/workflows
 
 Inngest workflows that combine `core` logic with the `dkg` and `contracts` adapters. See
 `README.md` here.
@@ -6,10 +6,12 @@ Inngest workflows that combine `core` logic with the `dkg` and `contracts` adapt
 - May import `@verisci/core`, `@verisci/env`, `@verisci/dkg` and `@verisci/contracts`.
 - Orchestrate here; put the rules themselves in `core` so they stay pure and testable.
 - Mock the adapters in tests.
-- ADRs that govern workflows: every write converges (0007), mints are polled with
-  `step.sleep` (0008), retries are spaced with `step.sleep` (0009), oracle transactions
-  go only through the oracle function (0019), one singleton run per request (0020), a
-  publish run is a singleton per CID and keeps a KA's first submitter (0010).
+- ADRs that govern workflows: Inngest functions live here and `web` only serves them
+  (0003), every write converges (0007), mints are polled with `step.sleep` (0008), retries
+  are spaced with `step.sleep` (0009), oracle transactions go only through the oracle
+  function (0019), one singleton run per request (0020), a publish run is a singleton per
+  CID and keeps a KA's first submitter (0010), a refused file is unpinned only if it is not
+  a PDF (0010, 0005).
   See [`docs/adr/`](../../docs/adr/README.md).
 - Workflow logic takes its step tools and adapters as arguments (`PublishSteps`,
   `PublishDeps`), so tests run it with fakes; `src/functions.ts` builds the real adapters

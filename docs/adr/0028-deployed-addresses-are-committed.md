@@ -5,13 +5,13 @@
 
 ## Context
 
-[0023](0023-a-fix-is-a-redeploy-owner-powers-fixed.md) has the app read a list of contract addresses per environment, current and past, and has the backend keep settling requests on past ones. The web app and the agents both need staging's and production's lists. An address in an env variable changes outside the repo's history, has to be set on every host, and holds a past list badly.
+[0023](0023-a-fix-is-a-redeploy-owner-powers-fixed.md) has the app read a list of contract addresses per environment, current and past, and has the backend keep settling requests on past ones. The web app and the workflows both need staging's and production's lists. An address in an env variable changes outside the repo's history, has to be set on every host, and holds a past list badly.
 
 ## Decision
 
 - Staging's and production's deployments live in one file in the contracts package, committed: the current deployment and every past one that took requests, with what each was deployed with. A past deployment that took none, and is paused, has nothing for the backend to settle ([0023](0023-a-fix-is-a-redeploy-owner-powers-fixed.md)) and may be left out.
 - The file changes only after a deploy, through a reviewed PR.
-- The app reads staging's and production's addresses from that file. How a local test run targets a developer's own contract ([0019](0019-oracle-transactions-are-serialized.md)) is for the agents plan.
+- The app reads staging's and production's addresses from that file. How a local test run targets a developer's own contract ([0019](0019-oracle-transactions-are-serialized.md)) is for the rating plan.
 
 ## Consequences
 
@@ -21,3 +21,4 @@
 ## History
 
 - 2026-10-07: corrected links to ADR 0027, folded into 0023.
+- 2026-10-10: corrected: "the agents" is now "the workflows" and "the agents plan" "the rating plan", since the agents package was renamed `workflows`.

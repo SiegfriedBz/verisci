@@ -1,7 +1,7 @@
 # verisci
 
 pnpm + Turborepo monorepo: a Next.js 16 app (`apps/web`), five internal packages
-(`packages/{env,core,dkg,contracts,agents}`) and the DKG node server's RPC proxy
+(`packages/{env,core,dkg,contracts,workflows}`) and the DKG node server's RPC proxy
 (`infra/rpc-proxy`, run with plain Node, imported by nothing). TypeScript 6, strict.
 Packages ship source (`exports` → `./src/index.ts`), no build step; Next compiles them via
 `transpilePackages`.
@@ -27,8 +27,8 @@ Toolchain: Node 24.21.0 (`.nvmrc`), pnpm 10.34.6 via Corepack, Foundry 1.8.4. If
 
 ## Architecture rules
 
-- Dependency direction: env, core → nothing; dkg, contracts → core, env; agents → core,
-  env, dkg, contracts; web → all five; `infra/rpc-proxy` → nothing. Import only
+- Dependency direction: env, core → nothing; dkg, contracts → core, env; workflows →
+  core, env, dkg, contracts; web → all five; `infra/rpc-proxy` → nothing. Import only
   workspaces declared in `package.json`.
 - **core does no IO**: no `fetch`, no `node:*`, no `@verisci/*`. IO lives in adapter
   packages. Biome enforces this in `packages/core/biome.json`.

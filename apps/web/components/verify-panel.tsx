@@ -1,11 +1,11 @@
 import { CheckCircle, Question, XCircle } from "@phosphor-icons/react/dist/ssr";
-import type { PublishedRecord } from "@verisci/agents";
 import {
   knowledgeAssetToken,
   parseUal,
   SUBMISSION_DOMAIN,
   submissionTypedData,
 } from "@verisci/core";
+import type { PublishedRecord } from "@verisci/workflows";
 import { addressUrl, assetTokenUrl, ipfsUrl } from "../lib/explorer.ts";
 import { CopyValue } from "./copy-value.tsx";
 

@@ -1,4 +1,4 @@
-import { getUploadService } from "@verisci/agents";
+import { getUploadService } from "@verisci/workflows";
 import { readProgress } from "../../../../lib/upload-actions.ts";
 
 /**

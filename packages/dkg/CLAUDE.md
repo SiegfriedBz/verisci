@@ -5,7 +5,7 @@ here.
 
 - May import `@verisci/core` and `@verisci/env` only.
 - Network and node access live here, behind functions that return typed results
-  (`src/types.ts`) and `core`'s normalized UALs, so `core` stays pure and `agents` and
+  (`src/types.ts`) and `core`'s normalized UALs, so `core` stays pure and `workflows` and
   `web` never call the DKG directly.
 - Mock the network boundary in tests; never hit a real node from Vitest.
 - Every store and mint reads the asset's state first (ADR 0007); a store includes the

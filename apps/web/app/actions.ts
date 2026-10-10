@@ -1,6 +1,6 @@
 "use server";
 
-import { getUploadService, type SubmitResult } from "@verisci/agents";
+import { getUploadService, type SubmitResult } from "@verisci/workflows";
 import { headers } from "next/headers";
 import { getLimits } from "../lib/server.ts";
 import {

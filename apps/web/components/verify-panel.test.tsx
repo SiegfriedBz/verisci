@@ -1,5 +1,5 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import type { PublishedRecord } from "@verisci/agents";
+import type { PublishedRecord } from "@verisci/workflows";
 import { afterEach, describe, expect, it } from "vitest";
 import { VerifyPanel } from "./verify-panel.tsx";
 

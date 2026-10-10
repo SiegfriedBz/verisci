@@ -1,10 +1,10 @@
 // Dev only: pins a PDF on Pinata's public network, signs it with a throwaway key and sends
 // `verisci/paper.submitted` to the local Inngest dev server. The upload page replaces it.
 //
-//   pnpm --filter @verisci/agents publish-pdf <file.pdf>
+//   pnpm --filter @verisci/workflows publish-pdf <file.pdf>
 //
-// Reads PINATA_JWT (declared by the agents' env module) and DKG_CONTEXT_GRAPH from the root
-// .env.local (packages/agents README).
+// Reads PINATA_JWT (declared by the workflows' env module) and DKG_CONTEXT_GRAPH from the
+// root .env.local (packages/workflows README).
 // A relative path is read from the directory the command was typed in.
 import { readFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";
@@ -13,18 +13,18 @@ import { contextGraphSchema } from "@verisci/dkg";
 import { createSharedEnv, defineEnv } from "@verisci/env";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { z } from "zod";
-import { pinataSchema } from "../src/agents-env.ts";
 import { inngest } from "../src/inngest.ts";
 import { PAPER_SUBMITTED } from "../src/publish/publish-paper.ts";
+import { pinataSchema } from "../src/workflows-env.ts";
 
 /** Pinata's v3 upload; `cid_version` is pinned so one PDF always gets one CID (docs/domain.md → IPFS). */
 const PINATA_UPLOAD = "https://uploads.pinata.cloud/v3/files";
 const SIGNATURE_LIFETIME_S = 3600n;
 
-// pnpm runs the script in packages/agents: resolve the path from where it was typed.
+// pnpm runs the script in packages/workflows: resolve the path from where it was typed.
 const file = process.argv[2] && resolve(process.env.INIT_CWD ?? process.cwd(), process.argv[2]);
 if (!file) {
-  console.error("usage: pnpm --filter @verisci/agents publish-pdf <file.pdf>");
+  console.error("usage: pnpm --filter @verisci/workflows publish-pdf <file.pdf>");
   process.exit(1);
 }
 

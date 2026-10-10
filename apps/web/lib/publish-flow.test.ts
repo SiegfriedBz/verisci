@@ -1,4 +1,4 @@
-import type { SubmitResult } from "@verisci/agents";
+import type { SubmitResult } from "@verisci/workflows";
 import { describe, expect, it } from "vitest";
 import { type FlowDeps, type Phase, publishFile, uploadToSignedUrl } from "./publish-flow.ts";
 

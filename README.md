@@ -161,7 +161,7 @@ first submitter ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md)). Anyone
 wallet may publish, within daily limits ([ADR 0034](docs/adr/0034-users-connect-a-wallet-anyone-may-publish.md),
 [ADR 0035](docs/adr/0035-limits-are-the-apps-only-state.md)). The pages are in
 [`apps/web`](apps/web/README.md); the work behind them, and a dev script that publishes
-without the page, in [`packages/agents`](packages/agents/README.md).
+without the page, in [`packages/workflows`](packages/workflows/README.md).
 
 ### Rating a paper
 
@@ -232,7 +232,7 @@ TypeScript source, with no build step; Next.js compiles them through
 | [`packages/core`](packages/core/README.md) | Domain logic, no IO | none |
 | [`packages/dkg`](packages/dkg/README.md) | DKG adapter | core, env |
 | [`packages/contracts`](packages/contracts/README.md) | Solidity contracts and their TypeScript side | core, env |
-| [`packages/agents`](packages/agents/README.md) | Inngest workflows and the upload page's calls | core, env, dkg, contracts |
+| [`packages/workflows`](packages/workflows/README.md) | Inngest workflows and the upload page's calls | core, env, dkg, contracts |
 | [`infra/rpc-proxy`](infra/rpc-proxy/README.md) | JSON-RPC proxy run on the DKG node server | none |
 
 Each workspace may only import the workspaces it declares. pnpm does not
@@ -258,8 +258,8 @@ pnpm dev         # starts apps/web on http://localhost:3000
 ```
 
 To publish a PDF locally (the RPC proxy, the DKG node, GROBID and the Inngest dev server),
-follow [`packages/agents` → Running a publish locally](packages/agents/README.md#running-a-publish-locally),
-then open http://localhost:3000/publish (it needs the agents' settings and
+follow [`packages/workflows` → Running a publish locally](packages/workflows/README.md#running-a-publish-locally),
+then open http://localhost:3000/publish (it needs the workflows' settings and
 `REOWN_PROJECT_ID`; see [`apps/web`](apps/web/README.md#environment)).
 
 Environment variables are listed in [`.env.example`](.env.example): copy it to

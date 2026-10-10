@@ -1,5 +1,5 @@
 import { Eye, Gauge, PenNib, Repeat } from "@phosphor-icons/react/dist/ssr";
-import { getUploadService, PUBLISH_SETTINGS, UPLOAD_SETTINGS } from "@verisci/agents";
+import { getUploadService, PUBLISH_SETTINGS, UPLOAD_SETTINGS } from "@verisci/workflows";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { PublishForm } from "../../components/publish-form.tsx";

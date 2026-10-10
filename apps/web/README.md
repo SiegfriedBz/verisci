@@ -4,13 +4,13 @@ The Next.js 16 app (App Router).
 
 Status: the home page; the upload pages, where a visitor connects a wallet, publishes a PDF,
 follows it until its Target KA is minted and verifies its record; and `/api/inngest`, which
-serves the agents' Inngest functions
-([ADR 0003](../../docs/adr/0003-inngest-workflows-live-in-agents.md)).
+serves the workflows' Inngest functions
+([ADR 0003](../../docs/adr/0003-inngest-functions-live-in-workflows.md)).
 
 ## Depends on
 
 All five packages: `@verisci/env`, `@verisci/core`, `@verisci/dkg`,
-`@verisci/contracts`, `@verisci/agents`. Each one must be listed in
+`@verisci/contracts`, `@verisci/workflows`. Each one must be listed in
 `transpilePackages` in `next.config.ts`. Also `inngest` (the `/api/inngest` route's `serve`
 handler); Reown AppKit, wagmi, viem and TanStack Query (the wallet); `@upstash/ratelimit`
 and `@upstash/redis` (the limits); Zod (settings and run outputs); `@next/env` (loads the
@@ -37,8 +37,8 @@ signed submission and starts its publish run within the address's daily limit
 picker gives none, by the `%PDF-` it must start with) or is over 30 MB, before spending an
 upload URL. It then uploads the PDF straight to Pinata, canonicalizes the CID it answers,
 and has the wallet sign `{ cid, contextGraph, deadline }` with a deadline 10 minutes ahead.
-The work itself is `@verisci/agents`' `getUploadService()`
-([`packages/agents`](../../packages/agents/README.md#the-upload-pages-calls)).
+The work itself is `@verisci/workflows`' `getUploadService()`
+([`packages/workflows`](../../packages/workflows/README.md#the-upload-pages-calls)).
 
 Limits (`lib/limits.ts`): 10 upload URLs per connection (IP) and 5 submissions per signing
 address, each per rolling day, in Upstash; in memory with `APP_ENV=local` and no Upstash
@@ -145,14 +145,14 @@ unless `APP_ENV` is `local`:
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis's REST address and token, for the limits: one database per environment, previews using staging's ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)). The token is secret |
 | `REOWN_PROJECT_ID` | The Reown project id for the wallet window, from one project shared by every environment, read on the server and handed to the page, so nothing is inlined at build time. Without it the pages say the wallet is not set up |
 
-The pages also need the agents' settings (DKG, Pinata, chain, Inngest;
-[`packages/agents`](../../packages/agents/README.md#environment)). With `APP_ENV=local`,
-`/api/inngest` and the upload page talk to the Inngest dev server. `instrumentation.ts`
-checks the agents' and the web app's settings when a deployed server starts, so a bad one
-stops it there. It checks nothing when `APP_ENV` is `local`, and does not run during
-`next build`. On Vercel, a server starts on a request after the deploy is live, so a
-missing setting makes every route fail: set them in each Vercel environment before its
-first deploy, and allow each deployed domain in the Reown project.
+The pages also need the workflows' settings (DKG, Pinata, chain, Inngest;
+[`packages/workflows`](../../packages/workflows/README.md#environment)). With
+`APP_ENV=local`, `/api/inngest` and the upload page talk to the Inngest dev server.
+`instrumentation.ts` checks the workflows' and the web app's settings when a deployed server
+starts, so a bad one stops it there. It checks nothing when `APP_ENV` is `local`, and does
+not run during `next build`. On Vercel, a server starts on a request after the deploy is
+live, so a missing setting makes every route fail: set them in each Vercel environment
+before its first deploy, and allow each deployed domain in the Reown project.
 
 ## Scripts
 

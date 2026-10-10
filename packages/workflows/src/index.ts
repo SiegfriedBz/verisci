@@ -1,7 +1,6 @@
 /** Package name, imported by the web app's package test (`apps/web/app/packages.test.ts`). */
-export const agentsName = "@verisci/agents";
+export const workflowsName = "@verisci/workflows";
 
-export { type AgentsEnv, createAgentsEnv } from "./agents-env.ts";
 export { functions, publishPaper } from "./functions.ts";
 export { inngest } from "./inngest.ts";
 export type { UploadUrlResult } from "./pinata.ts";
@@ -27,3 +26,4 @@ export {
   UPLOAD_SETTINGS,
   type UploadService,
 } from "./upload.ts";
+export { createWorkflowsEnv, type WorkflowsEnv } from "./workflows-env.ts";

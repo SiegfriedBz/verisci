@@ -1,11 +1,11 @@
 import { createDkgClient } from "@verisci/dkg";
 import { createPublicClient, http } from "viem";
 import { baseSepolia } from "viem/chains";
-import { createAgentsEnv } from "./agents-env.ts";
 import { inngest } from "./inngest.ts";
 import { createPublishPaper, PUBLISH_SETTINGS, type PublishDeps } from "./publish/publish-paper.ts";
 import { readPaper } from "./publish/read-paper.ts";
 import { verifySubmission } from "./publish/verify-submission.ts";
+import { createWorkflowsEnv } from "./workflows-env.ts";
 
 /** How long the gateway and GROBID each get, inside the 300 s a step may take on Vercel. */
 const IO_TIMEOUT_MS = 60_000;
@@ -15,7 +15,7 @@ let publishDeps: PublishDeps | undefined;
 /** The publish run's adapters, built from the validated settings on the first run. */
 function getPublishDeps(): PublishDeps {
   if (publishDeps) return publishDeps;
-  const env = createAgentsEnv();
+  const env = createWorkflowsEnv();
   const client = createPublicClient({ chain: baseSepolia, transport: http(env.CHAIN_RPC_URL) });
   const paperOptions = {
     gatewayUrl: env.PINATA_GATEWAY_URL,

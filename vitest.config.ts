@@ -15,7 +15,7 @@ export default defineConfig({
       // so untested files count too.
       thresholds: {
         "packages/core/**": { branches: 90 },
-        "packages/{env,dkg,contracts,agents}/**": { lines: 70 },
+        "packages/{env,dkg,contracts,workflows}/**": { lines: 70 },
         "apps/web/**": { lines: 70 },
         "infra/**": { lines: 70 },
       },

@@ -1,12 +1,12 @@
 // @vitest-environment node
-import { createAgentsEnv } from "@verisci/agents";
 import { EnvError, type RuntimeEnv } from "@verisci/env";
+import { createWorkflowsEnv } from "@verisci/workflows";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { checkServerSettings as check, register } from "./instrumentation.ts";
 import { createWebEnv } from "./lib/web-env.ts";
 
 const checkServerSettings = (runtimeEnv: RuntimeEnv) =>
-  check(runtimeEnv, [createAgentsEnv, createWebEnv]);
+  check(runtimeEnv, [createWorkflowsEnv, createWebEnv]);
 
 const settings = {
   DKG_URL: "http://127.0.0.1:9200",

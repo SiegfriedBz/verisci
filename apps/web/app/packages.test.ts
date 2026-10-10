@@ -1,19 +1,19 @@
 import { readFileSync } from "node:fs";
-import { agentsName } from "@verisci/agents";
 import { contractsName } from "@verisci/contracts";
 import { coreName } from "@verisci/core";
 import { dkgName } from "@verisci/dkg";
+import { workflowsName } from "@verisci/workflows";
 import { describe, expect, it } from "vitest";
 
 const read = (file: string) => readFileSync(new URL(file, import.meta.url), "utf8");
 
 describe("workspace packages", () => {
   it("each resolves from the web app", () => {
-    expect([agentsName, contractsName, coreName, dkgName]).toEqual([
-      "@verisci/agents",
+    expect([contractsName, coreName, dkgName, workflowsName]).toEqual([
       "@verisci/contracts",
       "@verisci/core",
       "@verisci/dkg",
+      "@verisci/workflows",
     ]);
   });
 
