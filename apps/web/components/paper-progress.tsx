@@ -3,6 +3,7 @@
 import { ArrowSquareOut, Warning } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ipfsUrl } from "../lib/explorer.ts";
 import { refusalMessage } from "../lib/messages.ts";
 import { isFinal, type PaperStage } from "../lib/progress.ts";
 import type { PaperView } from "../lib/upload-actions.ts";
@@ -139,7 +140,7 @@ export function PaperProgress({
             {view.stage === "published" && (
               <CopyValue label="Knowledge Asset (UAL)" value={view.ual} head={22} />
             )}
-            <CopyValue label="PDF (CID)" value={cid} href={`https://ipfs.io/ipfs/${cid}`} />
+            <CopyValue label="PDF (CID)" value={cid} href={ipfsUrl(cid)} />
             <CopyValue label="IPFS link" value={`ipfs://${cid}`} />
           </dl>
         </aside>

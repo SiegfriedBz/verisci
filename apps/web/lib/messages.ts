@@ -48,7 +48,7 @@ export function refusalMessage(reason: RefusalReason): string {
     case "unparseable":
       return "We couldn't read the first page of this PDF.";
     case "no-title":
-      return "We couldn't find a title on the first page of this PDF.";
+      return "We couldn't find a title on the first page of this PDF. If its pages are pictures (a scan, or a PDF saved from a browser's viewer), we can't read them: use the publisher's original PDF.";
     case "expired":
       return "The signature expired before the paper was read. Publish it again.";
     case "bad-signature":

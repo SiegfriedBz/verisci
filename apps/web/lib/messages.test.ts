@@ -47,3 +47,9 @@ describe("messages", () => {
     expect(publishProblemMessage("unavailable")).toMatch(/minute/);
   });
 });
+
+describe("refusalMessage", () => {
+  it("tells a no-title refusal that pages saved as pictures cannot be read", () => {
+    expect(refusalMessage("no-title")).toMatch(/pictures/);
+  });
+});

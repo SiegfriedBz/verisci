@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addressUrl, assetTokenUrl } from "./explorer.ts";
+import { addressUrl, assetTokenUrl, ipfsUrl } from "./explorer.ts";
 
 describe("addressUrl", () => {
   it("links an address on Base Sepolia's Basescan, lowercase", () => {
@@ -21,5 +21,13 @@ describe("assetTokenUrl", () => {
     expect(
       assetTokenUrl("did:dkg:base:8453/0xd701ed157232ad5e14bc4134a8d10d64d86f13b3/8"),
     ).toBeUndefined();
+  });
+});
+
+describe("ipfsUrl", () => {
+  it("downloads a CID through Pinata's public gateway", () => {
+    expect(ipfsUrl("bafybeias652m2pfpmuaeze4dxmtcjvfwvr7dsteumagdd2vwaqrbkjokxu")).toBe(
+      "https://gateway.pinata.cloud/ipfs/bafybeias652m2pfpmuaeze4dxmtcjvfwvr7dsteumagdd2vwaqrbkjokxu",
+    );
   });
 });

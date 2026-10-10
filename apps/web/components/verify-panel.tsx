@@ -1,7 +1,7 @@
 import { CheckCircle, Question, XCircle } from "@phosphor-icons/react/dist/ssr";
 import type { PublishedRecord } from "@verisci/agents";
 import { knowledgeAssetToken, parseUal, SUBMISSION_DOMAIN } from "@verisci/core";
-import { addressUrl, assetTokenUrl } from "../lib/explorer.ts";
+import { addressUrl, assetTokenUrl, ipfsUrl } from "../lib/explorer.ts";
 import { CopyValue } from "./copy-value.tsx";
 
 /** The signature's EIP-712 domain and type, as `@verisci/core`'s `submissionTypedData` builds them. */
@@ -87,7 +87,7 @@ export function VerifyPanel({
           />
         )}
         <CopyValue label="Knowledge Asset (UAL)" value={ual} head={22} />
-        <CopyValue label="PDF (CID)" value={cid} href={`https://ipfs.io/ipfs/${cid}`} />
+        <CopyValue label="PDF (CID)" value={cid} href={ipfsUrl(cid)} />
       </dl>
       <details className="group rounded-xl border border-line px-4 py-3 text-sm">
         <summary className="cursor-pointer font-medium marker:text-muted">
