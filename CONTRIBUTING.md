@@ -14,10 +14,11 @@ other services can target it.
 | `develop` | Staging | testnets | squash-merged feature PRs |
 | `main` | Production | testnets, until a payment plan allows mainnet | release PRs from `develop` |
 
-Each environment has its own contract, context graph, webhook, oracle wallet and
-Inngest environment. The DKG node is shared: its publisher wallets and one admin token
-serve both graphs, so the dkg package's env module refuses the production graph
-outside production and requires it in production
+Each environment has its own contract, context graph, webhook, oracle wallet, Inngest
+environment and Upstash store; the Reown project and the pinning account are shared. The
+DKG node is shared: its publisher wallets and one admin token serve both graphs, so the dkg
+package's env module refuses the production graph outside production and requires it in
+production
 ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)). Mainnet
 waits on a payment plan
 ([ADR 0015](docs/adr/0015-rating-requests-are-free-on-testnet.md)). Both
@@ -65,7 +66,7 @@ contract, so the parser accepts both instead of assuming our node.
 Commit small and often on the branch: each commit should build and pass its
 tests. History on the branch is for you; squash-merge rewrites it for `develop`.
 
-verisci is built with [Claude Code](https://claude.com/claude-code). Commits it
+VeriSci is built with [Claude Code](https://claude.com/claude-code). Commits it
 writes end with `Co-Authored-By: Claude <noreply@anthropic.com>`, and PR
 descriptions end with a "Built with Claude Code" line.
 
@@ -74,16 +75,16 @@ descriptions end with a "Built with Claude Code" line.
 Docs ship with the code: a PR is not ready to push until every doc its diff
 touches is true again.
 
-- **READMEs.** The root `README.md` is the entry point: what verisci is, how
-  to set it up, and a short section per workspace that links to that
+- **READMEs.** The root `README.md` is the entry point: what VeriSci is, how
+  it works, how to set it up, and a table of workspaces that links to each
   workspace's own `README.md` instead of repeating it. Each workspace README
   says what the workspace is for, what it depends on, and how to run, test
   and use it.
 - **Comments.** Comments say *why*, not *what*. A comment the diff made false
   is fixed or deleted in the same PR.
 - **TSDoc.** Every export of a package has a `/** … */` comment.
-- **NatSpec.** Every Solidity contract, interface and library has `@title`
-  and `@notice`. Every public or external function, event and error has
+- **NatSpec.** Every Solidity contract, interface, library and script has
+  `@title` and `@notice`. Every public or external function, event and error has
   `@notice`, `@param` and `@return`, or uses `@inheritdoc`. `pnpm check`
   enforces this.
 - **ADRs.** A branch's code and ADRs agree with the accepted ADRs.

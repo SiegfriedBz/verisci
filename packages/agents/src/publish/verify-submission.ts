@@ -103,6 +103,37 @@ export async function verifySubmission(
 
 type TypedData = ReturnType<typeof submissionTypedData>;
 
+/**
+ * Whether `signature` is `submitter`'s over `{ cid, contextGraph, deadline }`, as a published
+ * record carries them: the same check as {@link verifySubmission} without its deadline and
+ * graph rules, since a record outlives its signature's deadline. `unreachable` when the chain
+ * could not be asked about a smart-contract wallet.
+ */
+export async function signatureMatches(
+  signed: {
+    readonly cid: string;
+    readonly contextGraph: string;
+    readonly deadline: bigint;
+    readonly submitter: string;
+    readonly signature: string;
+  },
+  client: VerifyOptions["client"],
+): Promise<boolean | "unreachable"> {
+  if (!/^0x[0-9a-fA-F]{40}$/.test(signed.submitter) || !/^0x[0-9a-fA-F]*$/.test(signed.signature))
+    return false;
+  const typedData = submissionTypedData({
+    cid: signed.cid,
+    contextGraph: signed.contextGraph,
+    deadline: signed.deadline,
+  });
+  const address = signed.submitter.toLowerCase() as Address;
+  const signature = signed.signature as Hex;
+  return (
+    (await signedBy(address, typedData, signature)) ||
+    askChain(client, address, typedData, signature)
+  );
+}
+
 async function signedBy(address: Address, typedData: TypedData, signature: Hex): Promise<boolean> {
   try {
     return isAddressEqual(address, await recoverTypedDataAddress({ ...typedData, signature }));

@@ -6,6 +6,10 @@ workspaces import: the typed ABI and the deployed addresses of each environment.
 Status: `RatingController` v2 is implemented and tested. Deployed addresses are
 recorded in `deployments/base-sepolia.json`.
 
+## Depends on
+
+`@verisci/core`, `@verisci/env`, and Zod (validates `deployments/base-sepolia.json`).
+
 ## RatingController
 
 Records phase-1 rating requests on chain, and the oracle's answers. The public
@@ -200,13 +204,13 @@ cast send <previous address> "pause()" --rpc-url base_sepolia --account verisci-
 
 ## TypeScript API
 
-| Export | Description |
+| Export | What it does |
 | --- | --- |
 | `ratingControllerAbi` | The contract ABI, typed `as const` so viem infers every function, event and error |
 | `ratingControllerDeployments(appEnv)` | `{ chainId, current, past }` for `staging` or `production`; `local` resolves to staging ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)). `current` accepts new requests; `past` contracts are paused and drained ([ADR 0023](../../docs/adr/0023-a-fix-is-a-redeploy-owner-powers-fixed.md)) |
 | `NoDeploymentError` | Thrown by `ratingControllerDeployments` for an environment with no current deployment |
 | `Deployment`, `DeployEnv`, `RatingControllerDeployments` | The corresponding types |
-| `contractsName` | The package name, listed on the web app's home page |
+| `contractsName` | The package name, imported by the web app's package test |
 
 Each `Deployment` records the contract `address`, the deployment `txHash` and
 `blockNumber`, the `owner`, `oracleAgent` and `maxPendingPerRequester` at
@@ -215,10 +219,6 @@ oracle and the cap afterwards; the contract holds their current values.
 
 `deployments/base-sepolia.json` is validated on import, so a malformed file
 fails every importer with the invalid field named.
-
-## Depends on
-
-`@verisci/core`, `@verisci/env`
 
 ## Layout
 
@@ -239,7 +239,8 @@ remappings.txt  # maintained by hand: one line per dependency → dependencies/<
 ### Generated files
 
 `out/`, `cache/`, `dependencies/` and `broadcast/` are generated and
-gitignored. `src/generated/` and `deployments/` are generated and committed:
+gitignored. `soldeer.lock` is written by `forge soldeer install` and committed: it pins the
+Solidity dependencies. `src/generated/` and `deployments/` are generated and committed:
 Vercel builds without Foundry, and deployed addresses are reviewed in pull
 requests. Both are written by tooling only.
 
@@ -283,7 +284,7 @@ giving the reason.
 
 ## Scripts
 
-| Command | Description |
+| Command | What it does |
 | --- | --- |
 | `forge soldeer install` | Installs the Solidity dependencies from `soldeer.lock` |
 | `pnpm --filter @verisci/contracts check` | `forge fmt --check`, `forge lint --deny notes`, then solhint NatSpec on `src/` and `script/` |

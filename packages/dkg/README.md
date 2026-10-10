@@ -11,7 +11,8 @@ with a credential. The node reads the chain through
 with `authority-resolution-failed` is often a chain-read problem there, not in this
 package (`docs/domain.md` → DKG).
 
-Status: a client to read an asset's state, store it and start its mint.
+Status: a client to read an asset's state, store it, start its mint, and run a SPARQL
+query (`query`), which reads a published paper's record back.
 
 ## Depends on
 
@@ -20,7 +21,8 @@ Status: a client to read an asset's state, store it and start its mint.
 ## Environment
 
 Declared in `src/dkg-env.ts` (`createDkgEnv`) and validated on first import of
-`@verisci/dkg/env` (`src/env.ts`), not of the main entry, so a workspace that only imports the client's types never needs them.
+`@verisci/dkg/env` (`src/env.ts`), not of the main entry, so a workspace that only imports
+the client's types never needs them.
 
 | Variable | Value |
 | --- | --- |
@@ -37,12 +39,14 @@ Declared in `src/dkg-env.ts` (`createDkgEnv`) and validated on first import of
 
 | Export | What it does |
 | --- | --- |
+| `dkgName` | The package name, imported by the web app's package test |
 | `createDkgClient({ url, token, contextGraphId, timeoutMs?, fetch? })` | A `DkgClient` for one context graph on one node; `timeoutMs` (30 s by default) bounds each read, store and share; `fetch` defaults to the global one |
 | `client.readAsset(name)` | Where the asset stands: `missing`, `draft` (sealed, not shared), `stored` (with `reservedUal`) or `minted` (with `ual`); `graph-not-served` when the node does not serve the graph |
 | `client.storeAsset(name, quads)` | Stores and shares the asset, doing only what is left, and returns `stored` or `minted`; a stored or minted asset keeps its first content |
 | `client.startMint(name, { listenMs? })` | Starts the mint of a stored asset; returns `minted` with its UAL, or `minting` when no reply came within `listenMs` (10 s by default) or a mint may be in flight |
+| `client.query(sparql)` | Runs a SPARQL `SELECT` on the graph (`POST /api/query`, with the full graph id) and returns its rows; terms come as the node writes them, IRIs bare and literals quoted |
 | `DkgClient`, `DkgClientConfig` | The client's calls and its settings |
-| `Quad`, `AssetState`, `AssetResult`, `MintResult`, `DkgFailure` | The client's input and result types |
+| `Quad`, `AssetState`, `AssetResult`, `MintResult`, `QueryResult`, `DkgFailure` | The client's input and result types |
 | `env` (from `@verisci/dkg/env`) | The settings, validated from `process.env` on import |
 | `dkgSchema(isProduction)` | The three variables' rules, for a workspace that validates them with its own in one pass |
 | `contextGraphSchema(isProduction)` | The rule for `DKG_CONTEXT_GRAPH` (full id, `-prod` guard), for a script that reads only that variable |
@@ -64,8 +68,9 @@ const mint = await dkg.startMint(name);
 ```
 
 Every call returns a typed result and never throws for an expected failure. A failure's
-`reason` is `unreachable`, `unauthorized`, `graph-not-served`, `not-stored`, `no-content` (a store with no quads found no asset to share: an asset is never created empty), `retry-later` (a quorum failure:
-retry after a pause, [ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md))
+`reason` is `unreachable`, `unauthorized`, `graph-not-served`, `not-stored`, `no-content`
+(a store with no quads found no asset to share: an asset is never created empty),
+`retry-later` (a quorum failure: retry after a pause, [ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md))
 or `unexpected`, with the HTTP status and the node's error code. No result carries the
 token. The node answers 404 both for an asset never stored and for a graph it does not
 serve, so before reading a 404 as `missing` the client checks, on every 404, that the

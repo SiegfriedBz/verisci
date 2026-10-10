@@ -1,7 +1,7 @@
 # Architecture decision records
 
 Each file records one decision already taken: why, what, and what it costs. Plans cite
-them instead of re-arguing them. Facts about the systems verisci runs on (DKG, chain,
+them instead of re-arguing them. Facts about the systems VeriSci runs on (DKG, chain,
 Inngest, Vercel, tooling) live in [`docs/domain.md`](../domain.md).
 
 An ADR states the decision and its reason. The mechanics (timeouts, fee bumps, reading
@@ -25,8 +25,8 @@ taken, so a later ADR can sit in an earlier group.
 
 | ADR | Decision |
 | --- | --- |
-| [0004. Env variables are declared per workspace, in one root file](0004-env-variables-per-workspace-one-root-file.md) | Each workspace validates the variables it reads, a deployed server its workflows' when it starts; a dev script declares those only it reads; forge reads the same root env file; programs on the DKG node server read their own |
-| [0005. Staging and production use separate resources](0005-staging-and-production-are-isolated.md) | Each environment has its own contract, graph, webhook, oracle wallet and Inngest environment; the DKG node is shared, so a `-prod` guard protects production |
+| [0004. Env variables are declared per workspace, in one root file](0004-env-variables-per-workspace-one-root-file.md) | Each workspace validates the variables it reads, a deployed server its workflows' and the web app's when it starts; a dev script declares those only it reads; forge reads the same root env file; programs on the DKG node server read their own |
+| [0005. Staging and production use separate resources](0005-staging-and-production-are-isolated.md) | Each environment has its own contract, graph, webhook, oracle wallet, Inngest environment and Upstash store; the Reown project and the pinning account are shared, and so is the DKG node, so a `-prod` guard protects production |
 | [0006. The DKG node runs on a dedicated host](0006-dkg-node-runs-on-a-dedicated-host.md) | The node, GROBID and an RPC proxy run on their own host, behind authentication, with keys backed up; on a developer's computer until a deployed environment calls the node |
 | [0023. A fix is a redeploy, and the owner's powers are fixed](0023-a-fix-is-a-redeploy-owner-powers-fixed.md) | A fix is a redeploy; old contracts are paused and drained; the owner sets the oracle and cap, pauses and unpauses, and transfers ownership in two steps, never to the oracle, with no renounce |
 | [0028. Deployed addresses are committed](0028-deployed-addresses-are-committed.md) | Every environment's contract addresses live in a committed file, changed by a reviewed PR |
@@ -79,6 +79,8 @@ In the order a request lives: requested, named, ingested, scored, fulfilled, and
 | ADR | Decision |
 | --- | --- |
 | [0021. Server reads and actions return typed results](0021-server-reads-return-typed-results.md) | Expected failures come back as typed results that the caller handles |
+| [0034. Users connect a wallet, and anyone may publish](0034-users-connect-a-wallet-anyone-may-publish.md) | Reown AppKit with wagmi on Base Sepolia; the signature authorizes each submission; no allowlist, no session |
+| [0035. Limits are the app's only state](0035-limits-are-the-apps-only-state.md) | The chain and the DKG hold the truth, IPFS the PDF files; today Upstash Redis counts upload URLs per connection and submissions per address |
 
 ## Folded ADRs
 
@@ -99,12 +101,11 @@ Not decided yet. Each becomes an ADR in the plan that first needs the answer; th
 
 | Question | Leaning | Decided in |
 | --- | --- | --- |
-| How do users authenticate? | Wallet connection (Reown AppKit + wagmi). A submission is authorized by its EIP-712 signature ([0010](0010-pdf-to-target-ka-pipeline.md)), and rate limits key on the signing address; a SIWE session only if sign-in sessions are ever needed. | first web plan with a wallet |
 | Where do alerts go? | One chat-bot channel behind a single `notify()`, fed by a scheduled check (wallet balances, orphans, age of the oldest pending request) and an uptime check on the node's `/api/status`. | agents plan |
-| Where does mutable app state live? | Nowhere authoritative: the chain and the DKG hold the truth. Rate-limit counters go in one small key-value store (Upstash Redis); losing it only resets the limits. | first web plan with a wallet |
 | Who may request phases 2 and 3? | Anyone, not only the phase-1 requester. Whoever requests, our node writes the R-KA update, since it owns the R-KA ([0012](0012-three-phases-settled-by-the-oracle.md)). Also open: whether a later phase's request gets its own id or reuses the rating's. | phase-2 plan |
+| Where does phases 2 and 3's human input wait before the oracle scores it? | None yet: on the DKG, as a draft the node holds, or in a store of the app's own, which would amend [0035](0035-limits-are-the-apps-only-state.md) ([0012](0012-three-phases-settled-by-the-oracle.md)). | phase-2 plan |
 | How does a local test run target a developer's own contract? | One local-only address variable for that contract, read by the agents when `APP_ENV=local`; staging's and production's addresses stay in the committed file ([0028](0028-deployed-addresses-are-committed.md), [0019](0019-oracle-transactions-are-serialized.md)). | agents plan |
-| How does a rating run find the context graph of a target verisci did not publish? | The rating request names it next to the target's UAL, since a UAL alone does not name its graph ([0011](0011-a-rating-is-a-separate-r-ka.md)); check first whether a later DKG release resolves a UAL to its graph. | agents plan |
+| How does a rating run find the context graph of a target VeriSci did not publish? | The rating request names it next to the target's UAL, since a UAL alone does not name its graph ([0011](0011-a-rating-is-a-separate-r-ka.md)); check first whether a later DKG release resolves a UAL to its graph. | agents plan |
 | Who holds the DKG node's credential? | Caddy keeps the daemon's admin token on the host and checks one credential per environment, so each can be revoked alone. The `-prod` guard stays ([0005](0005-staging-and-production-are-isolated.md)). | node server plan |
 
 ## Adding an ADR

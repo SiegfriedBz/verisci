@@ -37,10 +37,11 @@ Toolchain: Node 24.21.0 (`.nvmrc`), pnpm 10.34.6 via Corepack, Foundry 1.8.4. If
   plain Node, so `erasableSyntaxOnly` (also in `tsconfig.base.json`) refuses syntax Node
   cannot strip, such as `enum` (ADR 0002).
 - Environment variables: each workspace declares what it reads in its env module
-  (`src/env.ts`) with `defineEnv` from `@verisci/env`, and adds it to `.env.example` in the same PR
-  (a dev script in `scripts/` declares the variables only it reads in the script). Programs
-  that run on the DKG node server (`infra/*`) read their own settings instead, listed in
-  their README (ADR 0004). Forge's
+  (`src/env.ts`, which may import its schema from a file next to it such as
+  `src/dkg-env.ts`; `lib/web-env.ts` in `apps/web`) with `defineEnv` from `@verisci/env`,
+  and adds it to `.env.example` in the same PR (a dev script in `scripts/` declares the
+  variables only it reads in the script). Programs that run on the DKG node server
+  (`infra/*`) read their own settings instead, listed in their README (ADR 0004). Forge's
   deploy settings go in `.env.example`'s Foundry section instead; per-deploy choices such
   as `DEPLOY_ENV` go on the deploy command (ADR 0004).
 - Pin every dependency exactly (`pnpm add -E`). No ESLint or Prettier: Biome does both.

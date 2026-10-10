@@ -1,4 +1,4 @@
-import { CID } from "multiformats/cid";
+import { canonicalCid } from "./cid.ts";
 
 /** Why an input cannot be named: not a request id, or not a CID. */
 export type AssetNameError = "bad-request-id" | "bad-cid";
@@ -11,11 +11,6 @@ export type AssetNameResult =
 const R_KA_PREFIX = "verisci-rka-";
 const TARGET_KA_PREFIX = "verisci-tka-";
 const REQUEST_ID = /^0x[0-9a-f]{64}$/;
-/** The hash, digest length and codecs of the CIDs an IPFS upload of a file produces. */
-const SHA2_256 = 0x12;
-const SHA2_256_BYTES = 32;
-const RAW = 0x55;
-const DAG_PB = 0x70;
 
 /**
  * The DKG asset name of a rating's R-KA: `verisci-rka-<request id>`, the phase-1 request id
@@ -35,28 +30,16 @@ export function rKaName(requestId: string): AssetNameResult {
  * daemon scopes names per context graph, so the same PDF in staging and production is two
  * assets.
  *
- * Accepts the CIDs an IPFS upload of a file produces: a sha2-256 digest with the raw or
- * dag-pb codec, so every name is 71 characters. Every spelling of one CID (v0 `Qm…`, v1 in
- * base32 `b…`, base58btc `z…` or base36 `k…`) gives one name. The codec is part of the CID:
+ * Accepts the CIDs {@link canonicalCid} accepts, so every name is 71 characters. Every
+ * spelling of one CID (v0 `Qm…`, v1 in base32 `b…`, base58btc `z…` or base36 `k…`) gives
+ * one name. The codec is part of the CID:
  * the same bytes uploaded as a raw block and as a UnixFS file are two CIDs, so two names
  * (`docs/domain.md` → IPFS).
  *
  * Accepts surrounding whitespace. Returns a result for every input.
  */
 export function targetKaName(cid: string): AssetNameResult {
-  let parsed: CID;
-  try {
-    parsed = CID.parse(cid.trim());
-  } catch {
-    return { ok: false, reason: "bad-cid" };
-  }
-  const { code, size } = parsed.multihash;
-  if (
-    code !== SHA2_256 ||
-    size !== SHA2_256_BYTES ||
-    (parsed.code !== RAW && parsed.code !== DAG_PB)
-  ) {
-    return { ok: false, reason: "bad-cid" };
-  }
-  return { ok: true, name: `${TARGET_KA_PREFIX}${parsed.toV1().toString()}` };
+  const canonical = canonicalCid(cid);
+  if (canonical === undefined) return { ok: false, reason: "bad-cid" };
+  return { ok: true, name: `${TARGET_KA_PREFIX}${canonical}` };
 }

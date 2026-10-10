@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+/*
+ * VeriSci's look: a dark lab instrument with a web3 edge. Near-black, two signal colours
+ * with one meaning each: emerald for the off-chain record ("verified"), cyan for the
+ * on-chain asset; they blend only on the main action, live lines and the link between them,
+ * glass panels with hairline borders, a faint grid. Dark only, by design. One radius
+ * scale: rounded-2xl for panels, rounded-xl for buttons and inputs, rounded-lg for small
+ * inline controls.
+ */
+:root {
+  --page: #06090a;
+  --surface: rgb(255 255 255 / 0.035);
+  --surface-strong: rgb(255 255 255 / 0.06);
+  --line: rgb(255 255 255 / 0.09);
+  --line-strong: rgb(255 255 255 / 0.16);
+  --ink: #e7efeb;
+  --muted: #8b9893;
+  --accent: #3ddc97;
+  --accent-2: #2dd4e6;
+  --accent-ink: #03140c;
+  --accent-soft: rgb(61 220 151 / 0.1);
+  --accent-glow: rgb(61 220 151 / 0.25);
+  /* A darker emerald for surfaces with white text, such as the wallet window's accent:
+     white on --accent would fail contrast. */
+  --accent-deep: #0d7a55;
+  /* On-chain things (tokens, mints, contracts) take the cyan; off-chain records the emerald. */
+  --accent-2-soft: rgb(45 212 230 / 0.1);
+  --danger: #ff8a93;
+  --danger-soft: rgb(255 138 147 / 0.1);
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-deep: var(--accent-deep);
+  --shadow-glow: 0 8px 30px var(--accent-glow);
+  --color-accent-2-soft: var(--accent-2-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --font-sans: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-martian), ui-monospace, monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--page);
+  color: var(--ink);
+}
+
+/* Headings break evenly and paragraphs avoid a lone last word. */
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p,
+li {
+  text-wrap: pretty;
+}
+
+/* One focus ring for every control, for keyboard users. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 0.5rem;
+}
+
+/* The lab bench: a hairline grid that fades out from the top of the page. */
+.bench {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 75%);
+}
+
+/* One soft signal glow, behind the hero's instrument panel. */
+.signal-glow {
+  background: radial-gradient(
+    closest-side,
+    rgb(61 220 151 / 0.22),
+    rgb(45 212 230 / 0.06),
+    transparent
+  );
+  filter: blur(24px);
+}
+
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
+}
+
+/* The off-chain to on-chain link: emerald into cyan. */
+.link-gradient {
+  background-image: linear-gradient(to bottom, var(--accent), var(--accent-2));
+}
+
+.signal-gradient {
+  background-image: linear-gradient(110deg, var(--accent), var(--accent-2));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .step-active {
+    animation: step-breathe 1.8s ease-in-out infinite;
+  }
+
+  .enter {
+    animation: enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .enter-late {
+    animation: enter 0.6s 0.12s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .line-live {
+    background-image: linear-gradient(to bottom, var(--accent), var(--accent-2), var(--accent));
+    background-size: 100% 200%;
+    animation: line-flow 1.6s linear infinite;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    background: #101415;
+    backdrop-filter: none;
+  }
+}
+
+@keyframes step-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(61 220 151 / 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgb(61 220 151 / 0);
+  }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes line-flow {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 -200%;
+  }
+}

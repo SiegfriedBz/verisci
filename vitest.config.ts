@@ -8,9 +8,11 @@ export default defineConfig({
     // so per-workspace thresholds are path globs.
     coverage: {
       provider: "v8",
-      // Only files imported by tests count for now: the placeholder exports have
-      // no tests yet. Once every workspace has real code and tests, add
-      // `include: ["apps/web/app/**", "packages/*/src/**", "infra/*/src/**"]` so untested files count too.
+      // Only files imported by tests count: the web app's pages and most of its
+      // components are left to end-to-end tests (Playwright, a later plan), so counting
+      // every file would hold them to unit-test coverage. Once those tests run, add
+      // `include: ["apps/web/{app,lib,components}/**", "packages/*/src/**", "infra/*/src/**"]`
+      // so untested files count too.
       thresholds: {
         "packages/core/**": { branches: 90 },
         "packages/{env,dkg,contracts,agents}/**": { lines: 70 },

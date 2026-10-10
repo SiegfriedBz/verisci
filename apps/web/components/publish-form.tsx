@@ -1,0 +1,176 @@
+"use client";
+
+import { FilePdf, UploadSimple, Warning } from "@phosphor-icons/react";
+import { useAppKit } from "@reown/appkit/react";
+import { type DragEvent, useId, useState } from "react";
+import { BaseError, UserRejectedRequestError } from "viem";
+import { useAccount, useSignTypedData, useSwitchChain } from "wagmi";
+import { requestUpload, submitPaper } from "../app/actions.ts";
+import { type PublishProblem, publishProblemMessage } from "../lib/messages.ts";
+import { type Phase, publishFile, uploadToSignedUrl } from "../lib/publish-flow.ts";
+import { useWalletReady } from "./providers.tsx";
+
+const BASE_SEPOLIA = 84532;
+
+/** What the server tells the form: the graph to sign for and the limits to check early. */
+export interface PublishSettings {
+  readonly contextGraph: string;
+  readonly maxBytes: number;
+  readonly signatureLifetimeS: number;
+}
+
+const PHASE_TEXT: Record<Phase, string> = {
+  uploading: "Uploading your PDF",
+  signing: "Confirm the signature in your wallet",
+  submitting: "Checking your submission",
+};
+
+/** The publish form, or a note when the wallet window is not set up on this server. */
+export function PublishForm(settings: PublishSettings) {
+  if (!useWalletReady()) {
+    return (
+      <p className="glass rounded-2xl p-5 text-sm text-muted">
+        Wallet connection isn't set up on this server yet, so papers can't be published here.
+      </p>
+    );
+  }
+  return <PublishFlow {...settings} />;
+}
+
+function PublishFlow({ contextGraph, maxBytes, signatureLifetimeS }: PublishSettings) {
+  const inputId = useId();
+  const { address, chainId, isConnected } = useAccount();
+  const { open } = useAppKit();
+  const { switchChainAsync } = useSwitchChain();
+  const { signTypedDataAsync } = useSignTypedData();
+  const [phase, setPhase] = useState<Phase | undefined>();
+  const [problem, setProblem] = useState<PublishProblem | undefined>();
+  const [file, setFile] = useState<File | undefined>();
+  const [dragging, setDragging] = useState(false);
+  const busy = phase !== undefined;
+
+  const publish = async (chosen: File) => {
+    setFile(chosen);
+    setProblem(undefined);
+    const result = await publishFile(chosen, {
+      contextGraph,
+      maxBytes,
+      signatureLifetimeS,
+      now: Date.now,
+      requestUpload: () => requestUpload(),
+      upload: (url, pdf) => uploadToSignedUrl(url, pdf),
+      sign: async (typedData) => {
+        if (!address) return { ok: false };
+        try {
+          if (chainId !== BASE_SEPOLIA) await switchChainAsync({ chainId: BASE_SEPOLIA });
+          const signature = await signTypedDataAsync({ ...typedData, account: address });
+          return { ok: true, address, signature };
+        } catch (error) {
+          if (
+            error instanceof BaseError &&
+            error.walk((cause) => cause instanceof UserRejectedRequestError)
+          ) {
+            return { ok: false };
+          }
+          throw error;
+        }
+      },
+      submit: (submission) => submitPaper(submission),
+      onPhase: setPhase,
+    });
+    if (result.ok) {
+      // A full load: a client-side push here fetched the page but never showed it (Next 16.3.8).
+      window.location.assign(
+        "eventId" in result
+          ? `/papers/${result.cid}?event=${result.eventId}`
+          : `/papers/${result.cid}?already=1`,
+      );
+      return;
+    }
+    setPhase(undefined);
+    setProblem(result.problem);
+  };
+
+  const choose = (chosen: File | undefined) => {
+    if (chosen && !busy) void publish(chosen);
+  };
+
+  const onDrop = (event: DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    setDragging(false);
+    choose(event.dataTransfer.files[0]);
+  };
+
+  if (!isConnected) {
+    return (
+      <div className="glass grid gap-4 rounded-2xl p-6 sm:p-8">
+        <p className="text-muted">Connect a wallet to publish.</p>
+        <button
+          type="button"
+          onClick={() => void open()}
+          className="signal-gradient w-fit rounded-xl px-5 py-2.5 font-semibold text-accent-ink transition hover:brightness-110 active:scale-[0.98]"
+        >
+          Connect wallet
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-4">
+      <label
+        htmlFor={inputId}
+        onDragOver={(event) => {
+          event.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={onDrop}
+        aria-busy={busy}
+        className={`glass grid min-h-72 cursor-pointer place-items-center rounded-2xl border-dashed! p-6 text-center transition sm:p-10 ${
+          dragging ? "border-accent! bg-accent-soft" : "hover:border-line-strong!"
+        } ${busy ? "pointer-events-none" : ""}`}
+      >
+        {phase && file ? (
+          <div className="grid justify-items-center gap-3">
+            <span className="grid size-14 place-items-center rounded-2xl bg-accent-soft text-accent">
+              <FilePdf size={30} />
+            </span>
+            <p className="max-w-full truncate font-medium">{file.name}</p>
+            <p className="step-active rounded-xl bg-accent-soft px-3 py-1 text-sm text-accent">
+              {PHASE_TEXT[phase]}
+            </p>
+          </div>
+        ) : (
+          <div className="grid justify-items-center gap-3">
+            <span className="grid size-14 place-items-center rounded-2xl border border-line-strong text-muted">
+              <UploadSimple size={28} />
+            </span>
+            <p className="font-medium">Drop your paper here, or tap to choose a PDF</p>
+            <p className="font-mono text-xs text-muted">application/pdf · max 30 MB</p>
+          </div>
+        )}
+        <input
+          id={inputId}
+          type="file"
+          accept="application/pdf,.pdf"
+          className="sr-only"
+          disabled={busy}
+          onChange={(event) => {
+            choose(event.target.files?.[0]);
+            event.target.value = "";
+          }}
+        />
+      </label>
+      {problem && (
+        <p
+          role="alert"
+          className="flex items-start gap-2 rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger"
+        >
+          <Warning size={18} className="mt-px shrink-0" />
+          {publishProblemMessage(problem)}
+        </p>
+      )}
+    </div>
+  );
+}

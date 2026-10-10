@@ -7,13 +7,21 @@ Domain logic. Core does no IO: no `fetch`, no `node:*` imports and no other
 `pnpm check` enforces this: `packages/core/biome.json` turns `fetch`,
 `node:*` and `@verisci/*` into errors ("core does no IO").
 
-Status: shared constants, UAL parsing, asset names, and a Target KA's content and submission.
+Status: shared constants, UAL parsing, asset names, a Target KA's content and submission,
+reading a paper's record back (`paperRecordQuery`, `parsePaperRecord`), and OriginTrail's
+contracts with the token behind a UAL (`ORIGINTRAIL_CONTRACTS`, `knowledgeAssetToken`).
+
+## Depends on
+
+The `multiformats` library, to parse CIDs, `@xmldom/xmldom`, to read TEI, and no other
+workspace. pnpm does not hoist undeclared workspace packages, so an import of another
+`@verisci/*` package fails to typecheck.
 
 ## API
 
-| Export | Description |
+| Export | What it does |
 | --- | --- |
-| `coreName` | The package name, listed on the web app's home page |
+| `coreName` | The package name, imported by the web app's package test |
 | `BASE_SEPOLIA_CHAIN_ID` | 84532, the chain id of Base Sepolia, where staging and production run and which UALs reference ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)) |
 | `parseUal(input)` | Parses a UAL into a `Ual` (`blockchain`, `chainId`, lowercase `address`, `bigint` `id`), or returns `{ ok: false, reason }` with a `UalError`; never throws |
 | `formatUal(ual)` | Writes a `Ual` from `parseUal` as its canonical string |
@@ -23,13 +31,17 @@ Status: shared constants, UAL parsing, asset names, and a Target KA's content an
 | `UalError` | Why a string is not a UAL: `empty`, `not-a-dkg-did`, `bad-chain`, `bad-address`, `bad-id`, `bad-shape` |
 | `ParseUalResult`, `NormalizeUalResult` | The results of `parseUal` and `normalizeUal` |
 | `rKaName(requestId)` | The R-KA's asset name, `verisci-rka-<request id>`, or `{ ok: false, reason: "bad-request-id" }`; returns a result for every input |
+| `canonicalCid(cid)` | A PDF's CID as CIDv1 base32, the spelling a submission signs, or `undefined` for anything an IPFS file upload would not produce; the browser runs it before asking for a signature |
 | `targetKaName(cid)` | The Target KA's asset name, `verisci-tka-<CIDv1 base32>`, or `{ ok: false, reason: "bad-cid" }`; returns a result for every input |
 | `AssetNameResult`, `AssetNameError` | The result of both, and why an input cannot be named |
 | `submissionTypedData(message)` | The EIP-712 typed data a submitter signs to publish a PDF, in the shape viem takes |
 | `canonicalContextGraph(id)` | A context graph id with its address in lowercase and its name unchanged: the one spelling a submission signs |
-| `SUBMISSION_DOMAIN`, `SubmissionMessage` | verisci's EIP-712 domain, and the signed `{ cid, contextGraph, deadline }` |
+| `SUBMISSION_DOMAIN`, `SubmissionMessage` | VeriSci's EIP-712 domain, and the signed `{ cid, contextGraph, deadline }` |
 | `parseTeiHeader(xml)` | A paper's `PaperMetadata` (title, authors, abstract, DOI) from GROBID's TEI header, or `not-tei` or `no-title`; returns a result for every input |
 | `PaperMetadata`, `TeiResult` | The metadata read from a TEI header, and the result of `parseTeiHeader` |
+| `ORIGINTRAIL_CONTRACTS`, `OriginTrailContracts`, `knowledgeAssetToken(ual)` | OriginTrail's `DKGKnowledgeAssets` (the ERC-721 holding every asset's token) and `KnowledgeAssetsLifecycle` addresses by chain id, and the contract and token id behind a UAL: the id itself when the UAL names the contract, else the author's address above the asset number in the low 96 bits; `undefined` for a chain with no recorded contracts |
+| `paperRecordQuery(cid)`, `parsePaperRecord(cid, bindings)` | The SPARQL that reads a paper's Target KA back, and the `PaperRecord` (title, authors in order, abstract, DOI, PDF link, submitter, signature, deadline) from its rows, or `undefined` when a required field is missing |
+| `PaperRecord`, `QueryBinding` | A record read back, and one row of a SPARQL answer |
 | `targetKaQuads(metadata, submission)` | The `Triple`s of a paper's Target KA: its description and who submitted it |
 | `Triple`, `PaperSubmission`, `VERISCI_NS` | One triple as the DKG node takes it, the submitter's address, signature and deadline, and the `urn:verisci:` prefix |
 
@@ -101,13 +113,6 @@ A Target KA describes a paper and who submitted it
   submission signs; and
   verify the signature against the submitter's address with any EIP-712 library (viem's
   `verifyTypedData` also checks smart-contract wallets).
-
-## Depends on
-
-The `multiformats` library, to parse CIDs, `@xmldom/xmldom`, to read TEI, and no other
-workspace. pnpm does not hoist
-undeclared workspace packages, so an import of another `@verisci/*` package fails to
-typecheck.
 
 ## Scripts
 

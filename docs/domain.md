@@ -1,10 +1,10 @@
 # Domain facts
 
-Hard-won facts about the systems verisci runs on, each written once so plans cite them
+Hard-won facts about the systems VeriSci runs on, each written once so plans cite them
 instead of rediscovering them. Decisions built on them are in [`docs/adr/`](adr/README.md).
 
-Many facts were observed in the previous verisci repo; the DKG facts marked 10.0.22 were
-re-checked on this repo's own node. Each section names the versions they were seen on:
+Many facts were observed in the earlier prototype, `desci-rating-dapp`; the DKG facts marked
+10.0.22 were re-checked on this repo's own node. Each section names the versions they were seen on:
 when a version moves, re-check the facts before relying on them. Add a fact when you learn
 one the hard way.
 
@@ -16,8 +16,8 @@ edge`, testnet), Base Sepolia.
 - **A UAL has two shapes on V10,** chosen by the on-chain id (OriginTrail/dkg
   `packages/core/src/ka-ual-identity.ts`, checked at `abfd785`, 2026-09):
   - `did:dkg:base:{chainId}/{authorAddress}/{kaNumber}`: the V10 form. The author is the
-    publishing agent's wallet, packed into the id's high 160 bits. Ours look like this: the
-    previous repo's middle segment equals the node's agent address and has no contract code.
+    publishing agent's wallet, packed into the id's high 160 bits. The prototype's UALs
+    had the node's agent address, which has no contract code, as their middle segment.
   - `did:dkg:base:{chainId}/{DKGKnowledgeAssets address}/{kaId}`: the older form, for ids
     with no author bits. OriginTrail's docs still show only this one.
 
@@ -103,7 +103,7 @@ edge`, testnet), Base Sepolia.
     answers 404 ("does not exist or is not subscribed locally");
   - after `POST /api/context-graph/subscribe` with `syncMode: "on-demand"`, the same call
     with the graph id and the UALs (1 to 10 per call, per the daemon source) fetched the
-    old verisci node's KAs 0 to 3, in 22 to 24 s per call, with that node off (so other
+    previous VeriSci node's KAs 0 to 3, in 22 to 24 s per call, with that node off (so other
     peers presumably hold copies);
   - `/api/query` then read their triples.
 
@@ -143,6 +143,20 @@ edge`, testnet), Base Sepolia.
 
   The UAL and the KA id stayed the same and `assertionVersion` went to 2. A query then
   returns the latest version only ([ADR 0012](adr/0012-three-phases-settled-by-the-oracle.md)).
+- **OriginTrail's contracts on Base Sepolia** (read from our node's mint of asset 8, tx
+  `0x37d315a0…0896`, 2026-10-10, by its receipt and each contract's `name()`):
+  `DKGKnowledgeAssets` (symbol DKA, ERC-721) `0x2b2e1bcb7c52a1587264e01f6b53782d791e6fa0`, whose
+  `Transfer` minted the token to the node's agent address; `KnowledgeAssetsLifecycle`
+  `0x835f921a0fc8d6365c34a0bb9b37d10c98c1b8c3`, the contract the node's transaction calls; and
+  the fee token "V9 Test TRAC" `0x2a58bdd13176d85906d804cdbffa0d9119282dc8`. A V10 UAL's token
+  id is the author's address shifted left 96 bits, OR the asset number (asset 8's id equals the
+  `batchId` the daemon logs). Basescan shows a token at `/nft/<contract>/<token id>`. Recorded
+  in `@verisci/core` as `ORIGINTRAIL_CONTRACTS`; re-check after an OriginTrail upgrade.
+- **A KA's content is committed on chain by a merkle root** (OriginTrail's `dkg` repository
+  README, 2026-10-10: "a set of RDF statements committed by a Merkle root anchored to the
+  blockchain"; each published version is bound to its on-chain commitment). The ERC-721 is
+  minted to the author, and the UAL stays the same across updates
+  (docs.origintrail.io → Knowledge Assets).
 - **KA numbers are counted per author** and reserved at store time (the `reservedUal`).
   Both our graphs publish as one author, and a stored asset that is never minted keeps
   its number, so each environment sees gaps in its numbering. Expected, not a bug.
@@ -180,8 +194,29 @@ docs, current at 2026-10-07; Pinata's from its v3 API docs, current at 2026-10-0
   to 174 links per node; `v0` a CIDv0 with dag-pb leaves; `unixfs-v1-2025` a CIDv1 with
   1 MiB chunks and 1,024 links. `network` is `private` unless set to `public`. The
   `publish-pdf` dev script sets `v1` and `public`: a 2.2 MB PDF got a `bafybei…` CID, the
-  same on a second upload (2026-10-10). Whether a signed-URL upload can pin the same
-  setting is still to check
+  same on a second upload (2026-10-10). A signed-URL upload pins the same setting and gives
+  the same CID (below).
+- **Public gateways for links** (2026-10-10): `ipfs.io/ipfs/<cid>` answers 200 with a text
+  notice that it is "switching to a service worker gateway only", not the file;
+  `dweb.link` and `w3s.link` answered 429; `gateway.pinata.cloud/ipfs/<cid>` served a 9 MB
+  PDF (`application/pdf`). The pages link PDFs through Pinata's public gateway; the publish
+  run reads through our dedicated gateway.
+- **A PDF whose pages are pictures has no text for GROBID** (2026-10-10): a *Science* article
+  saved from Chrome's viewer gave one embedded font (the download stamp) and one
+  2475×3150 image per page; GROBID found no title and the run refused it `no-title`.
+  GROBID reads the text layer and does no OCR.
+- **Signed upload URLs** (`POST https://uploads.pinata.cloud/v3/files/sign`, 2026-10-10)
+  take `date`, `expires` (seconds), `max_file_size`, `allow_mime_types` and `cid_version`,
+  and answer `{ data: "<url>" }`. The browser POSTs `file` and `network` to that URL, so the
+  uploader chooses the network. Pinata checks the type it detects from the bytes: a text
+  file is refused (400 "does not grant permissions to upload detected MIME type"), as is a
+  file over the size (400). With `cid_version: "v1"`, the 2.2 MB PDF got the same
+  `bafybei…` CID as the `publish-pdf` upload.
+- **Pinata keeps one file per CID in an account** (2026-10-10): uploading bytes already
+  pinned answers with the existing file, and `GET https://api.pinata.cloud/v3/files/public?cid=…`
+  lists one entry (`id`, `cid`, `size`, `mime_type`). So `DELETE /v3/files/public/{id}`
+  removes every upload of those bytes, earlier ones included; a second delete answers 404.
+  An unknown CID lists no files (200), and a bad key answers 401
   ([ADR 0010](adr/0010-pdf-to-target-ka-pipeline.md)).
 
 ## GROBID
@@ -230,7 +265,16 @@ Observed on Vercel Hobby with Inngest Cloud, except where a fact cites the vendo
 - **Inngest keys:** Production has its own pair; all branch environments share one other
   pair, and the SDK picks the branch from `VERCEL_GIT_COMMIT_REF`.
 - **REST reads (run status) must send `x-inngest-env`** with the branch name, or they match
-  nothing.
+  nothing. `GET /v1/events/{event id}/runs` lists an event's runs (`status`: `Running`,
+  `Completed`, `Failed`, `Cancelled`; `output`), with the signing key as bearer token
+  (Inngest docs).
+- **The local dev server's REST run read gives an empty `output`** (inngest-cli 1.46.0,
+  2026-10-10): `/v1/events/{id}/runs` answered `status: "Completed"` with `output: ""` for a
+  run that returned a refusal, and caches each answer for 15 s. Only its internal GraphQL
+  API carried the output: `POST /v0/gql` with
+  `query ($id: String!) { run(runID: $id) { output } }` (the type is `String!`, not
+  `ULID!`) answers the ops as JSON text, the return value under the `RunComplete` op's
+  `data`. `readRun` reads it there locally (`devServer`).
 - **Preview deployments need Vercel's deployment-protection bypass** configured, or Inngest
   cannot reach `/api/inngest`. The stable `develop` deployment is a preview too, so the
   staging webhook needs the same bypass; a caller that cannot set headers passes it as the
@@ -250,6 +294,10 @@ Observed on Vercel Hobby with Inngest Cloud, except where a fact cites the vendo
   a key is active, new runs for that key are skipped (Inngest docs) ([ADR 0020](adr/0020-stuck-requests-recovered-only-oracle-cancels.md)).
 - **Inngest deduplicates event ids for 24 hours only:** an event re-sent later with the
   same id starts a new run ([ADR 0017](adr/0017-chain-events-are-ingested-at-least-once.md)).
+  Within the 24 hours the dev server still logs "initializing fn" but starts no run, and
+  `GET /v1/events/{id}/runs` answers an empty list (2026-10-10): an id that a user can repeat
+  (the same PDF published again by the same wallet) must carry something new per attempt,
+  as the submission's deadline does.
 - **Inngest caps sizes:** an event payload at 256 KB, a step's output at 4 MB, a run's
   state at 32 MB and a function at 1,000 steps (Inngest docs, to verify on our plan).
   Payloads carry ids, never file bytes ([ADR 0010](adr/0010-pdf-to-target-ka-pipeline.md)).
@@ -262,7 +310,7 @@ Observed on Vercel Hobby with Inngest Cloud, except where a fact cites the vendo
   holds one of the 5 (whether branch environments share them is to verify), so a long
   step such as waiting for a receipt delays every other workflow ([ADR 0019](adr/0019-oracle-transactions-are-serialized.md)).
 - **Vercel caps a function's request body at 4.5 MB** (Vercel docs, to verify on our
-  plan). The previous repo raised the server-action limit to 5 MB, so uploads between 4.5
+  plan). The prototype raised the server-action limit to 5 MB, so uploads between 4.5
   and 5 MB likely failed with a 413 in production ([ADR 0010](adr/0010-pdf-to-target-ka-pipeline.md)).
 
 ## Next.js
@@ -275,6 +323,10 @@ Observed on Next.js 16.3.8.
   loads the repo-root files instead (see Tooling for why it needs `forceReload`).
 - **Next watches only `apps/web` for env changes:** editing a root env file needs a dev
   server restart, and an env file left in `apps/web` can be reapplied on a dev reload.
+- **Turbopack resolves lazy imports of optional packages at build** (16.3.8, 2026-10-10):
+  wagmi's connectors reach Coinbase's SDK, whose lazily imported `@x402/*` packages are
+  optional peers; `next build` fails on them until `turbopack.resolveAlias` points them at a
+  module declaring the imported names (`apps/web/next.config.ts`).
 
 ## Tooling
 

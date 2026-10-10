@@ -3,7 +3,7 @@ import { createPublicClient, custom } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { baseSepolia } from "viem/chains";
 import { describe, expect, it } from "vitest";
-import { verifySubmission } from "./verify-submission.ts";
+import { signatureMatches, verifySubmission } from "./verify-submission.ts";
 
 const CID = "bafkreigh2akiscaildcqabsyg3dfr6chu3fgpregiymsck7e7aqa4s52zy";
 const GRAPH = "0xd701ed157232ad5e14bc4134a8d10d64d86f13b3/verisci-staging";
@@ -188,5 +188,40 @@ describe("verifySubmission", () => {
     ],
   ])("refuses %s as malformed", async (_, data) => {
     expect(await verify(data)).toEqual({ ok: false, reason: "malformed" });
+  });
+});
+
+describe("signatureMatches", () => {
+  const record = async () => {
+    const data = await signed();
+    return { ...data, deadline: BigInt(data.deadline) };
+  };
+
+  it("accepts the submitter's signature, whatever the deadline", async () => {
+    expect(await signatureMatches(await record(), client().publicClient)).toBe(true);
+  });
+
+  it("refuses another address's signature when the chain says no", async () => {
+    const other = { ...(await record()), submitter: SMART_WALLET };
+
+    expect(await signatureMatches(other, client(false).publicClient)).toBe(false);
+  });
+
+  it("reports unreachable when the chain cannot be asked", async () => {
+    const other = { ...(await record()), submitter: SMART_WALLET };
+
+    expect(await signatureMatches(other, client().publicClient)).toBe("unreachable");
+  });
+
+  it("refuses a malformed address or signature without asking", async () => {
+    const { publicClient, calls } = client(true);
+
+    expect(await signatureMatches({ ...(await record()), submitter: "nope" }, publicClient)).toBe(
+      false,
+    );
+    expect(await signatureMatches({ ...(await record()), signature: "zz" }, publicClient)).toBe(
+      false,
+    );
+    expect(calls).toEqual([]);
   });
 });
