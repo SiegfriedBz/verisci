@@ -10,7 +10,7 @@ const BEFORE = [
   {
     icon: Eye,
     title: "Your PDF becomes public",
-    body: "It's stored on IPFS, where anyone can download it. Publish only papers you're allowed to share, such as open-access ones.",
+    body: "It's stored on IPFS, where anyone can download it. Publish your own work, or a paper you're allowed to share, such as an open-access one.",
   },
   {
     icon: PenNib,

@@ -44,7 +44,7 @@ const RATE = [
   {
     icon: Flask,
     title: "Wet-lab replication",
-    body: "A lab repeats the experiments, and the result becomes the last score.",
+    body: "A lab repeats the experiments, then reviewers check its results before they become the last score.",
   },
 ] as const;
 
