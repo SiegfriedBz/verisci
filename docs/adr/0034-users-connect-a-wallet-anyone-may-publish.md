@@ -16,5 +16,5 @@ The upload page needs to know who submits a paper. A submission is already autho
 ## Consequences
 
 - Browser, phone and email wallets all work, through one window.
-- Reown is a dependency: the page needs a Reown project id, and each deployed domain must be allowed in the Reown project.
+- Reown is a dependency: the page needs a Reown project id, from one project shared by every environment, and each deployed domain must be allowed in that project ([0005](0005-staging-and-production-are-isolated.md)).
 - With no account to check, cost is bounded by limits per connection and per signing address ([0035](0035-limits-are-the-apps-only-state.md)).

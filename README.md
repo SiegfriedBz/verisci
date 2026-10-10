@@ -40,8 +40,9 @@ Everything runs on testnets.
 - **A cron job restarts anything stuck**, from the contract's own list of
   pending requests, and that request's run finishes or cancels it
   ([ADR 0020](docs/adr/0020-stuck-requests-recovered-only-oracle-cancels.md)).
-- **Staging and production are kept apart**, with their own contracts, graphs
-  and oracle wallets; only the DKG node is shared ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)).
+- **Staging and production are kept apart**, with their own contracts, graphs,
+  oracle wallets and limit stores; the DKG node and the Reown project are shared
+  ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)).
 
 Terms: a **KA** (Knowledge Asset) is a record on the DKG; the ones VeriSci
 publishes (Target KAs and every R-KA) are minted and owned by its DKG node. The
@@ -69,9 +70,9 @@ Base Sepolia only through that proxy, [`infra/rpc-proxy`](infra/rpc-proxy/README
 which asks free public endpoints first and keeps Alchemy within a daily budget.
 [`docs/node-host.md`](docs/node-host.md) is how to build the node and back it up; it
 also shows how the parts connect: on a server, Caddy is the only public entry.
-Each environment also has its own oracle wallet, Alchemy webhook and Inngest
-environment. Only `develop` holds staging's oracle key and runs its ratings;
-previews and local development share staging's contract and graph, and a
+Each environment also has its own oracle wallet, Alchemy webhook, Inngest
+environment and Upstash store. Only `develop` holds staging's oracle key and runs
+its ratings; previews and local development share staging's contract and graph, and a
 developer running the rating functions locally uses their own contract and
 oracle key ([ADR 0019](docs/adr/0019-oracle-transactions-are-serialized.md)).
 

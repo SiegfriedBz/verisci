@@ -133,8 +133,8 @@ unless `APP_ENV` is `local`:
 
 | Variable | Value |
 | --- | --- |
-| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis's REST address and token, for the limits. The token is secret |
-| `REOWN_PROJECT_ID` | The Reown project id for the wallet window, read on the server and handed to the page, so nothing is inlined at build time. Without it the pages say the wallet is not set up |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis's REST address and token, for the limits: one database per environment, previews using staging's ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)). The token is secret |
+| `REOWN_PROJECT_ID` | The Reown project id for the wallet window, from one project shared by every environment, read on the server and handed to the page, so nothing is inlined at build time. Without it the pages say the wallet is not set up |
 
 The pages also need the agents' settings (DKG, Pinata, chain, Inngest;
 [`packages/agents`](../../packages/agents/README.md#environment)). With `APP_ENV=local`,
