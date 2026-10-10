@@ -5,7 +5,8 @@ import { z } from "zod";
 export type RefusalReason = Extract<PublishOutcome, { state: "refused" }>["reason"];
 
 /**
- * Where a paper stands, as its page shows it: on the way (`reading`, `saving`, `minting`),
+ * Where a paper stands, as its page shows it: on the way (`reading`, `saving`, `minting`, or
+ * `following` another run that holds the PDF),
  * done (`published`, `refused`, `failed`, `not-found`, `not-published`), or not readable now
  * (`unavailable`, asked again on the next poll). `not-published` is a run that ended over a
  * minute ago with an output that cannot be read, as the local dev server answers, and
