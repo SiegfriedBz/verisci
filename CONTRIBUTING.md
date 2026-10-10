@@ -15,9 +15,10 @@ other services can target it.
 | `main` | Production | testnets, until a payment plan allows mainnet | release PRs from `develop` |
 
 Each environment has its own contract, context graph, webhook, oracle wallet, Inngest
-environment and Upstash store; the Reown project is shared. The DKG node is shared: its
-publisher wallets and one admin token serve both graphs, so the dkg package's env module refuses the production graph
-outside production and requires it in production
+environment and Upstash store; the Reown project and the pinning account are shared. The
+DKG node is shared: its publisher wallets and one admin token serve both graphs, so the dkg
+package's env module refuses the production graph outside production and requires it in
+production
 ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)). Mainnet
 waits on a payment plan
 ([ADR 0015](docs/adr/0015-rating-requests-are-free-on-testnet.md)). Both

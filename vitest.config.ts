@@ -10,7 +10,8 @@ export default defineConfig({
       provider: "v8",
       // Only files imported by tests count for now: the placeholder exports have
       // no tests yet. Once every workspace has real code and tests, add
-      // `include: ["apps/web/app/**", "packages/*/src/**", "infra/*/src/**"]` so untested files count too.
+      // `include: ["apps/web/{app,lib,components}/**", "packages/*/src/**", "infra/*/src/**"]`
+      // so untested files count too.
       thresholds: {
         "packages/core/**": { branches: 90 },
         "packages/{env,dkg,contracts,agents}/**": { lines: 70 },

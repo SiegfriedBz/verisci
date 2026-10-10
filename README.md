@@ -41,8 +41,8 @@ Everything runs on testnets.
   pending requests, and that request's run finishes or cancels it
   ([ADR 0020](docs/adr/0020-stuck-requests-recovered-only-oracle-cancels.md)).
 - **Staging and production are kept apart**, with their own contracts, graphs,
-  oracle wallets and limit stores; the DKG node and the Reown project are shared
-  ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)).
+  oracle wallets and limit stores; the DKG node, the Reown project and the pinning
+  account are shared ([ADR 0005](docs/adr/0005-staging-and-production-are-isolated.md)).
 
 Terms: a **KA** (Knowledge Asset) is a record on the DKG; the ones VeriSci
 publishes (Target KAs and every R-KA) are minted and owned by its DKG node. The
@@ -217,13 +217,14 @@ pnpm dev         # starts apps/web on http://localhost:3000
 
 To publish a PDF locally (the DKG node, GROBID and the Inngest dev server), follow
 [`packages/agents` → Running a publish locally](packages/agents/README.md#running-a-publish-locally),
-then open http://localhost:3000/publish (it needs `REOWN_PROJECT_ID`; see
-[`apps/web`](apps/web/README.md#environment)).
+then open http://localhost:3000/publish (it needs the agents' settings and
+`REOWN_PROJECT_ID`; see [`apps/web`](apps/web/README.md#environment)).
 
 Environment variables are listed in [`.env.example`](.env.example): copy it to
 `.env.local` at the repo root (gitignored), where `apps/web` loads it from.
-`pnpm dev` and `pnpm test` run without it; `pnpm build` needs `APP_ENV`
-(`APP_ENV=local`). How workspaces declare and validate them is in the
+`pnpm test` runs without it, and `pnpm build` needs only `APP_ENV` (`APP_ENV=local`).
+`pnpm dev` starts without it, but the publish and paper pages need the DKG node and
+publish run settings, and the wallet window `REOWN_PROJECT_ID`. How workspaces declare and validate them is in the
 [`@verisci/env` README](packages/env/README.md).
 
 ## Commands
