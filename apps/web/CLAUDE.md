@@ -14,7 +14,7 @@ Next.js 16 App Router app. See `README.md` here for scripts and status.
 - Server reads and actions return typed results: never throw an expected failure to the
   client, never swallow it into empty data
   ([ADR 0021](../../docs/adr/0021-server-reads-return-typed-results.md)).
-- Inngest functions live in `@verisci/agents`; `web` only serves them
+- Inngest functions live in `@verisci/workflows`; `web` only serves them
   ([ADR 0003](../../docs/adr/0003-inngest-functions-live-in-workflows.md)).
 - Playwright end-to-end tests come in a later plan; until then, cover logic in unit tests.
   Put a flow's logic in `lib/` with its IO passed in (`publishFile`, `paperProgress`,
@@ -27,7 +27,8 @@ Next.js 16 App Router app. See `README.md` here for scripts and status.
   `design-taste-frontend` and humanizer skills: plain words, no em dashes.
 - Wallet hooks (wagmi, AppKit) run only under `Providers` with a project id: render them
   behind `useWalletReady()`. Never pass server-only values to a client component except
-  as plain props; client components never import `@verisci/agents` at runtime (types only).
+  as plain props; client components never import `@verisci/workflows` at runtime (types
+  only).
 - Reads the page polls are route handlers, not server actions: Next runs server actions
   one at a time per client.
 

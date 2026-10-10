@@ -1,4 +1,4 @@
-# @verisci/agents
+# @verisci/workflows
 
 Inngest workflows that combine `core` logic with the `dkg` and `contracts` adapters;
 `apps/web` only serves them ([ADR 0003](../../docs/adr/0003-inngest-functions-live-in-workflows.md)).
@@ -13,9 +13,9 @@ the upload page makes to start and follow it.
 
 ## Environment
 
-Declared in `src/agents-env.ts`, extending the DKG node's settings
+Declared in `src/workflows-env.ts`, extending the DKG node's settings
 ([`packages/dkg`](../dkg/README.md#environment)), and validated on first import of
-`@verisci/agents/env`, not of the main entry, which exports `createAgentsEnv` (it
+`@verisci/workflows/env`, not of the main entry, which exports `createWorkflowsEnv` (it
 validates only when called). The functions build their adapters on their first run, so
 `web` serves them, and `next build` imports them, without any of these set. A deployed
 server (`APP_ENV` other than `local`) checks them when it starts, through
@@ -37,7 +37,7 @@ upload page reads runs there, with no keys.
 
 | Export | What it does |
 | --- | --- |
-| `agentsName` | The package name, imported by the web app's package test |
+| `workflowsName` | The package name, imported by the web app's package test |
 | `inngest` | VeriSci's Inngest client, in dev mode when `APP_ENV` is `local` |
 | `functions` | Every Inngest function, for `web`'s `/api/inngest` route |
 | `publishPaper` | The `publish-paper` function, run by `verisci/paper.submitted` |
@@ -49,7 +49,7 @@ upload page reads runs there, with no keys.
 | `UploadService`, `PaperStatus`, `PublishedRecord`, `UPLOAD_SETTINGS` | Their type, what `readPaper` returns (the Target KA's state and the run), and the upload URL's and signature's lifetimes |
 | `SubmitResult`, `SubmitRefusal`, `SubmitLimiter` | What `submitPaper` returns, why it refuses, and the per-submitter limit the web app passes it |
 | `UploadUrlResult`, `ReadRunResult`, `RunState` | What `createUploadUrl` and the run read return |
-| `env` (from `@verisci/agents/env`); `createAgentsEnv(runtimeEnv)`, `AgentsEnv` (from either entry) | The validated settings, the function that builds them from a given object, and their type |
+| `env` (from `@verisci/workflows/env`); `createWorkflowsEnv(runtimeEnv)`, `WorkflowsEnv` (from either entry) | The validated settings, the function that builds them from a given object, and their type |
 
 ## Publishing a paper
 
@@ -130,7 +130,7 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
 2. Fill the DKG and publish sections of the root `.env.local` ([`.env.example`](../../.env.example)).
 3. `pnpm dev`, then, in another terminal, `pnpm --filter @verisci/web inngest` (the
    Inngest dev server, at http://localhost:8288).
-4. `pnpm --filter @verisci/agents publish-pdf <file.pdf>` pins the PDF on Pinata's public
+4. `pnpm --filter @verisci/workflows publish-pdf <file.pdf>` pins the PDF on Pinata's public
    network with CIDv1 import settings, signs it with a throwaway key and sends the event. A
    relative path is read from the directory you type the command in.
    The run's steps and result show in the dev server.
@@ -141,8 +141,8 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
 
 | Command | What it does |
 | --- | --- |
-| `pnpm --filter @verisci/agents typecheck` | Typechecks the package and its scripts |
-| `pnpm --filter @verisci/agents test` | Runs its Vitest project (`vitest run`) with mocked adapters |
-| `pnpm --filter @verisci/agents publish-pdf <file.pdf>` | Dev only: pins a PDF, signs it and sends `verisci/paper.submitted` to the local dev server |
+| `pnpm --filter @verisci/workflows typecheck` | Typechecks the package and its scripts |
+| `pnpm --filter @verisci/workflows test` | Runs its Vitest project (`vitest run`) with mocked adapters |
+| `pnpm --filter @verisci/workflows publish-pdf <file.pdf>` | Dev only: pins a PDF, signs it and sends `verisci/paper.submitted` to the local dev server |
 
 Ships TypeScript source (`src/index.ts`, `src/env.ts`), with no build step.

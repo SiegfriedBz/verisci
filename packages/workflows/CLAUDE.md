@@ -1,4 +1,4 @@
-# packages/agents
+# packages/workflows
 
 Inngest workflows that combine `core` logic with the `dkg` and `contracts` adapters. See
 `README.md` here.
