@@ -8,8 +8,14 @@ export type UploadUrlAnswer =
   | { readonly ok: true; readonly url: string }
   | { readonly ok: false; readonly reason: "rate-limited" | "unavailable" };
 
-/** What a paper's page shows: its stage, and its record once published and readable. */
-export type PaperView = PaperStage & { readonly record?: PublishedRecord };
+/**
+ * What a paper's page shows: its stage, and once published its record, or why it could not
+ * be read (ADR 0021).
+ */
+export type PaperView = PaperStage & {
+  readonly record?: PublishedRecord;
+  readonly recordProblem?: "unavailable" | "unreadable";
+};
 
 /** Inngest's event ids are ULIDs. */
 const EVENT_ID = /^[0-9A-Z]{26}$/;
@@ -52,7 +58,9 @@ export async function readProgress(
     Date.now(),
     event === undefined ? undefined : eventTime(event),
   );
-  return stage.stage === "published" && status.record ? { ...stage, record: status.record } : stage;
+  if (stage.stage !== "published") return stage;
+  if (status.record) return { ...stage, record: status.record };
+  return status.recordProblem ? { ...stage, recordProblem: status.recordProblem } : stage;
 }
 
 /** The visitor's address as the host forwards it (Vercel sets both headers). */

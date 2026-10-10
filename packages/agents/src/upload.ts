@@ -57,6 +57,11 @@ export interface PaperStatus {
   readonly run: ReadRunResult | undefined;
   /** The record, once minted and readable. */
   readonly record?: PublishedRecord;
+  /**
+   * Why a minted paper has no record: the node did not answer the query (`unavailable`,
+   * worth asking again) or answered none that parses (`unreadable`) (ADR 0021).
+   */
+  readonly recordProblem?: "unavailable" | "unreadable";
   /** Why the run stopped, when it failed with a reason it names. */
   readonly failure?: PublishFailure;
 }
@@ -102,23 +107,33 @@ export function createUploadService(env: AgentsEnv, io: UploadIo): UploadService
     timeoutMs: PAGE_TIMEOUT_MS,
   };
 
-  /** The record of a minted paper and its signature check; undefined when it cannot be read. */
-  async function readRecord(cid: string, ual: string): Promise<PublishedRecord | undefined> {
+  /** The record of a minted paper and its signature check, or why it cannot be shown. */
+  async function readRecord(
+    cid: string,
+    ual: string,
+  ): Promise<
+    | { readonly ok: true; readonly record: PublishedRecord }
+    | { readonly ok: false; readonly reason: "unavailable" | "unreadable" }
+  > {
     const sparql = paperRecordQuery(cid);
-    if (!sparql) return undefined;
+    if (!sparql) return { ok: false, reason: "unreadable" };
     const answer = await dkg.query(sparql);
-    const record = answer.ok ? parsePaperRecord(cid, answer.bindings) : undefined;
-    if (!record) return undefined;
+    if (!answer.ok) return { ok: false, reason: "unavailable" };
+    const record = parsePaperRecord(cid, answer.bindings);
+    if (!record) return { ok: false, reason: "unreadable" };
     const matches = await signatureMatches(
       { ...record, cid, contextGraph: canonicalContextGraph(env.DKG_CONTEXT_GRAPH) },
       chain,
     );
     const parsed = parseUal(ual);
     return {
-      ...record,
-      deadline: record.deadline.toString(),
-      signatureCheck: matches === "unreachable" ? "unknown" : matches ? "valid" : "invalid",
-      publisher: parsed.ok ? parsed.ual.address : undefined,
+      ok: true,
+      record: {
+        ...record,
+        deadline: record.deadline.toString(),
+        signatureCheck: matches === "unreachable" ? "unknown" : matches ? "valid" : "invalid",
+        publisher: parsed.ok ? parsed.ual.address : undefined,
+      },
     };
   }
 
@@ -163,8 +178,10 @@ export function createUploadService(env: AgentsEnv, io: UploadIo): UploadService
       const failure = failed === undefined ? undefined : publishFailureReason(failed);
       if (!asset.ok || asset.state !== "minted")
         return failure ? { asset, run, failure } : { asset, run };
-      const record = await readRecord(cid, asset.ual);
-      return record ? { asset, run, record } : { asset, run };
+      const read = await readRecord(cid, asset.ual);
+      return read.ok
+        ? { asset, run, record: read.record }
+        : { asset, run, recordProblem: read.reason };
     },
   };
 }

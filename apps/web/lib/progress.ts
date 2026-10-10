@@ -86,8 +86,15 @@ export function paperProgress(
   return waited > SETTLE_MS ? { stage: "following" } : { stage: "reading" };
 }
 
-/** Whether the page stops polling at this stage. */
-export function isFinal(paperStage: PaperStage): boolean {
+/**
+ * Whether the page stops polling at this stage. A published paper whose record the node did
+ * not answer for is asked about again, so its record appears once the node answers.
+ */
+export function isFinal(
+  paperStage: PaperStage & { readonly recordProblem?: "unavailable" | "unreadable" },
+): boolean {
+  if (paperStage.stage === "published" && paperStage.recordProblem === "unavailable")
+    return false;
   return ["published", "refused", "failed", "not-found", "not-published"].includes(
     paperStage.stage,
   );

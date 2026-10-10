@@ -137,7 +137,15 @@ describe("isFinal", () => {
     [{ stage: "saving" }, false],
     [{ stage: "minting" }, false],
     [{ stage: "unavailable" }, false],
+    [{ stage: "following" }, false],
   ])("%o → %s", (paperStage, final) => {
     expect(isFinal(paperStage)).toBe(final);
+  });
+
+  it("keeps asking about a published paper whose record could not be loaded yet", () => {
+    const published = { stage: "published", ual: UAL } as const;
+
+    expect(isFinal({ ...published, recordProblem: "unavailable" })).toBe(false);
+    expect(isFinal({ ...published, recordProblem: "unreadable" })).toBe(true);
   });
 });

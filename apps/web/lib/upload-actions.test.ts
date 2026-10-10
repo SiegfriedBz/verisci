@@ -127,6 +127,22 @@ describe("readProgress", () => {
     });
   });
 
+  it("passes on why a minted paper's record could not be read", async () => {
+    const { service } = fakeService({
+      readPaper: async () => ({
+        asset: { ok: true, state: "minted", ual: "did:dkg:base:84532/0xd701/6" },
+        run: undefined,
+        recordProblem: "unavailable",
+      }),
+    });
+
+    expect(await readProgress(CID, undefined, service)).toEqual({
+      stage: "published",
+      ual: "did:dkg:base:84532/0xd701/6",
+      recordProblem: "unavailable",
+    });
+  });
+
   it("reads a CID it cannot canonicalize as not-found, without asking", async () => {
     const { service, calls } = fakeService();
 

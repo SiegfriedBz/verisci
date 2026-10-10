@@ -204,6 +204,37 @@ describe("readPaper on a minted paper", () => {
     });
   });
 
+  it("says the record is unavailable when the node does not answer the query", async () => {
+    const minted = (async (input: string | URL | Request) =>
+      String(input).includes("/api/query")
+        ? new Response("down", { status: 503 })
+        : Response.json({
+            state: "published",
+            publishedUal: MINTED,
+            reservedUal: MINTED,
+          })) as typeof globalThis.fetch;
+    const service = createUploadService(env(), { ...io().uploadIo, fetch: minted });
+
+    const status = await service.readPaper(CID);
+
+    expect(status.record).toBeUndefined();
+    expect(status.recordProblem).toBe("unavailable");
+  });
+
+  it("says the record is unreadable when the node answers no usable record", async () => {
+    const empty = (async (input: string | URL | Request) =>
+      String(input).includes("/api/query")
+        ? Response.json({ result: { bindings: [] } })
+        : Response.json({
+            state: "published",
+            publishedUal: MINTED,
+            reservedUal: MINTED,
+          })) as typeof globalThis.fetch;
+    const service = createUploadService(env(), { ...io().uploadIo, fetch: empty });
+
+    expect((await service.readPaper(CID)).recordProblem).toBe("unreadable");
+  });
+
   it("gives no record for a paper that is not minted", async () => {
     const { uploadIo } = io();
 

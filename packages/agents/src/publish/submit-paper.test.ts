@@ -174,13 +174,16 @@ describe("submitPaper", () => {
     ["cannot be read", { ok: false, reason: "unreachable" }],
     ["is stored", { ok: true, state: "stored", reservedUal: UAL }],
     ["is a draft", { ok: true, state: "draft" }],
-  ])("refuses a file that fails its checks without unpinning it when its asset %s", async (_, asset) => {
-    const file = { id: "file-1", size: 1000, mimeType: "text/plain" };
-    const { submitDeps, calls } = deps({ asset, file: { ok: true, file } });
+  ])(
+    "refuses a file that fails its checks without unpinning it when its asset %s",
+    async (_, asset) => {
+      const file = { id: "file-1", size: 1000, mimeType: "text/plain" };
+      const { submitDeps, calls } = deps({ asset, file: { ok: true, file } });
 
-    expect(await submitPaper(INPUT, submitDeps)).toEqual({ ok: false, reason: "not-a-pdf" });
-    expect(calls.deleted).toEqual([]);
-  });
+      expect(await submitPaper(INPUT, submitDeps)).toEqual({ ok: false, reason: "not-a-pdf" });
+      expect(calls.deleted).toEqual([]);
+    },
+  );
 
   it.each<[string, Fakes]>([
     ["the chain cannot be asked", { verify: { ok: false, reason: "unreachable" } }],

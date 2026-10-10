@@ -168,6 +168,17 @@ function Authors({ names }: { names: readonly string[] }) {
 function StageNote({ stage, resubmitted }: { stage: PaperView; resubmitted: boolean }) {
   switch (stage.stage) {
     case "published":
+      if (stage.recordProblem === "unavailable")
+        return (
+          <p className="max-w-[60ch] leading-relaxed text-muted">
+            Published. We couldn't load its record from the DKG node right now and are asking again
+            every few seconds.
+          </p>
+        );
+      if (stage.recordProblem === "unreadable")
+        return (
+          <Problem text="Published, but its record on the DKG can't be read, so it can't be shown here. Its UAL and CID are below." />
+        );
       return resubmitted ? (
         <p className="max-w-[60ch] leading-relaxed text-muted">
           This PDF was already published, so nothing new was recorded. The record keeps its first
