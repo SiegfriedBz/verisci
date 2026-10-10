@@ -4,7 +4,7 @@ import type { PaperStage } from "../lib/progress.ts";
 const STEPS = [
   { label: "Read", detail: "Title, authors and abstract taken from the PDF" },
   { label: "Saved", detail: "The record is written to the knowledge graph" },
-  { label: "Minted", detail: "The record is anchored on Base" },
+  { label: "Minted", detail: "The asset is minted on Base, with its merkle root" },
   { label: "Published", detail: "Anyone can look it up and check who submitted it" },
 ] as const;
 

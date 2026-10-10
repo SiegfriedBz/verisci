@@ -105,8 +105,9 @@ export default function Home() {
             Two layers, one record
           </h2>
           <p className="leading-relaxed text-muted">
-            verisci publishes on the OriginTrail Decentralized Knowledge Graph (DKG). Each record
-            lives in two places that check each other.
+            verisci publishes each paper on the OriginTrail Decentralized Knowledge Graph (DKG) as a
+            Knowledge Asset: a set of linked statements about the paper, with an owner and a proof
+            on chain. Its content and its proof live in two places that check each other.
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
@@ -115,11 +116,11 @@ export default function Home() {
               <Graph size={22} />
             </span>
             <div className="grid gap-2">
-              <h3 className="font-semibold">The knowledge graph, off chain</h3>
+              <h3 className="font-semibold">The content, off chain</h3>
               <p className="text-sm leading-relaxed text-muted">
-                DKG nodes hold the record itself: title, authors, the PDF's link, the submitter and
-                their signature. Several nodes keep a copy, and anyone can query it by its UAL, the
-                record's permanent address.
+                DKG nodes store the asset's statements: title, authors, the PDF's link, the
+                submitter and their signature. Several nodes keep a copy, and anyone can query it by
+                its UAL, the asset's permanent address.
               </p>
             </div>
           </article>
@@ -128,18 +129,33 @@ export default function Home() {
               <Cube size={22} />
             </span>
             <div className="grid gap-2">
-              <h3 className="font-semibold">The blockchain, on chain</h3>
+              <h3 className="font-semibold">The owner and the proof, on chain</h3>
               <p className="text-sm leading-relaxed text-muted">
-                The record's fingerprint is minted on Base as a token. That proves the record
-                existed at that moment, and any later change to it would no longer match.
+                Publishing mints the asset on Base as an ERC-721 token and anchors the merkle root
+                of its statements, one hash computed from all of them. Any node can check that the
+                content still matches that root. Only the token's holder can update the asset, and
+                each update anchors a new root under the same UAL.
               </p>
             </div>
           </article>
         </div>
-        <p className="max-w-[62ch] text-sm leading-relaxed text-muted">
-          The graph makes the record readable and searchable. The chain makes it tamper-evident. The
-          PDF itself sits on IPFS, addressed by a hash of its bytes.
-        </p>
+        <div className="grid max-w-[62ch] gap-3 text-sm leading-relaxed text-muted">
+          <p>
+            The UAL is the link between the two: it names the chain, the publisher's address and the
+            asset's number, so the same address leads to the content on the graph and to its token
+            on Base. The graph makes the record readable and searchable; the chain makes it
+            tamper-evident.
+          </p>
+          <p>
+            The token is held by verisci's node, which publishes and pays for it. Your claim to the
+            paper is your signature inside the asset, covered by the merkle root. The PDF itself
+            sits on IPFS, addressed by its CID, a hash of its bytes.
+          </p>
+          <p>
+            Ratings will be assets too: each rating is its own Knowledge Asset pointing at the
+            paper, and its scores are recorded on verisci's rating contract.
+          </p>
+        </div>
       </section>
 
       <section className="grid gap-10">
@@ -154,7 +170,7 @@ export default function Home() {
           <Track
             label="Rate"
             badge="coming soon"
-            intro="Anyone will be able to ask for a rating of a published paper. It grows in three phases, and each score is recorded on chain. A rating is its own record pointing at the paper, which never changes."
+            intro="Anyone will be able to ask for a rating of a published paper. It grows in three phases, and each score is recorded on chain. A rating is its own Knowledge Asset pointing at the paper, which never changes."
             steps={RATE}
             muted
           />

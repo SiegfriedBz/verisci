@@ -61,12 +61,12 @@ export function VerifyPanel({
         <CopyValue label="Submitter's signature" value={record.signature} />
         {record.publisher && (
           <CopyValue
-            label="Minted by verisci's node"
+            label="Asset owner: verisci's node"
             value={record.publisher}
             href={addressUrl(record.publisher)}
           />
         )}
-        <CopyValue label="Record (UAL)" value={ual} head={22} />
+        <CopyValue label="Knowledge Asset (UAL)" value={ual} head={22} />
         <CopyValue label="PDF (CID)" value={cid} href={`https://ipfs.io/ipfs/${cid}`} />
       </dl>
       <details className="group rounded-xl border border-line px-4 py-3 text-sm">
@@ -87,8 +87,10 @@ export function VerifyPanel({
             changed file can't pass.
           </li>
           <li>
-            The record's fingerprint is anchored on Base. The node's Basescan page lists the mint
-            transactions, so you can see when it was recorded.
+            The record is a Knowledge Asset on Base: its token is held by verisci's node, and the
+            merkle root of its statements is anchored on chain, so any node can check that the
+            content still matches. The node's Basescan page lists the mint transactions, so you can
+            see when it was recorded.
           </li>
         </ol>
       </details>

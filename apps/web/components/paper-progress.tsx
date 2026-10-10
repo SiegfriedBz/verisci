@@ -31,7 +31,7 @@ const NOW: Partial<Record<PaperStage["stage"], string>> = {
   saving:
     "The record is written to verisci's DKG node and shared with other nodes of the network, so they hold a copy.",
   minting:
-    "The node anchors the record on Base: its fingerprint and number are written on chain, so it can't be changed silently.",
+    "The node mints the record on Base as a Knowledge Asset: a token, and the merkle root of its statements, so any change to the content would no longer match.",
 };
 
 /**
@@ -134,7 +134,7 @@ export function PaperProgress({
           )}
           <dl className="grid gap-5">
             {view.stage === "published" && (
-              <CopyValue label="Record (UAL)" value={view.ual} head={22} />
+              <CopyValue label="Knowledge Asset (UAL)" value={view.ual} head={22} />
             )}
             <CopyValue label="PDF (CID)" value={cid} href={`https://ipfs.io/ipfs/${cid}`} />
             <CopyValue label="IPFS link" value={`ipfs://${cid}`} />
