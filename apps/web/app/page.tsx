@@ -34,7 +34,7 @@ const RATE = [
   {
     icon: Robot,
     title: "Phase 1 · Machine score",
-    body: "An AI model scores the paper's record (title, authors, abstract) from 0 to 100. The score goes on chain, its reasons into the rating's asset.",
+    body: "An AI model scores the paper's record (title, authors, abstract) from 0 to 100. The score goes on-chain, its reasons into the rating's asset.",
   },
   {
     icon: UsersThree,
@@ -131,7 +131,7 @@ export default function Home() {
           <p className="leading-relaxed text-muted">
             VeriSci publishes each paper on the OriginTrail Decentralized Knowledge Graph (DKG) as a
             Knowledge Asset: a set of linked statements about the paper, with an owner and a proof
-            on chain. Its content and its proof live in two places that check each other.
+            on-chain. Its content and its proof live in two places that check each other.
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
@@ -140,7 +140,7 @@ export default function Home() {
               <Graph size={22} />
             </span>
             <div className="grid gap-2">
-              <h3 className="font-semibold">The content, off chain</h3>
+              <h3 className="font-semibold">The content, off-chain</h3>
               <p className="text-sm leading-relaxed text-muted">
                 DKG nodes store the asset's statements: title, authors, the PDF's link, the
                 submitter, their signature and its deadline. Several nodes keep a copy, and any node
@@ -150,11 +150,11 @@ export default function Home() {
             </div>
           </article>
           <article className="glass grid content-start gap-4 rounded-2xl p-6">
-            <span className="grid size-11 place-items-center rounded-xl bg-accent-soft text-accent">
+            <span className="grid size-11 place-items-center rounded-xl bg-accent-2-soft text-accent-2">
               <Cube size={22} />
             </span>
             <div className="grid gap-2">
-              <h3 className="font-semibold">The owner and the proof, on chain</h3>
+              <h3 className="font-semibold">The owner and the proof, on-chain</h3>
               <p className="text-sm leading-relaxed text-muted">
                 Publishing mints the asset on Base as an ERC-721 token and anchors the merkle root
                 of its statements, one hash computed from all of them. Any node can check that the
@@ -193,7 +193,7 @@ export default function Home() {
                   returns its statements
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Cube size={14} className="shrink-0 text-accent" />
+                  <Cube size={14} className="shrink-0 text-accent-2" />
                   It also gives the ERC-721 token's id on Base
                 </span>
               </div>
@@ -222,7 +222,7 @@ export default function Home() {
           <Track
             label="Rate"
             badge="coming soon"
-            intro="Anyone will be able to ask for a rating of a published paper. Each phase records its own score on chain, so earlier scores stay as they were."
+            intro="Anyone will be able to ask for a rating of a published paper. Each phase records its own score on-chain, so earlier scores stay as they were."
             steps={RATE}
             muted
           />
@@ -232,7 +232,7 @@ export default function Home() {
       <section className="grid items-center gap-10 md:grid-cols-[1.6fr_1fr] md:gap-16">
         <div className="glass order-2 overflow-hidden rounded-2xl md:order-1">
           <div className="flex items-center justify-between border-b border-line px-5 py-3 text-xs text-muted">
-            <span>Paper asset · stored off chain</span>
+            <span>Paper asset · stored off-chain</span>
             <span>Example</span>
           </div>
           <dl className="grid gap-3 p-5 font-mono text-xs sm:text-sm">

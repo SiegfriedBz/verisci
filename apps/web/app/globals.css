@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 /*
- * VeriSci's look: a dark lab instrument with a web3 edge. Near-black, one signal colour
- * (emerald, "verified") that shades to cyan only on the main action and on live lines,
+ * VeriSci's look: a dark lab instrument with a web3 edge. Near-black, two signal colours
+ * with one meaning each: emerald for the off-chain record ("verified"), cyan for the
+ * on-chain asset; they blend only on the main action, live lines and the link between them,
  * glass panels with hairline borders, a faint grid. Dark only, by design. One radius
  * scale: rounded-2xl for panels, rounded-xl for buttons and inputs, rounded-lg for small
  * inline controls.
@@ -19,6 +20,8 @@
   --accent-2: #2dd4e6;
   --accent-ink: #03140c;
   --accent-soft: rgb(61 220 151 / 0.1);
+  /* On-chain things (tokens, mints, contracts) take the cyan; off-chain records the emerald. */
+  --accent-2-soft: rgb(45 212 230 / 0.1);
   --danger: #ff8a93;
   --danger-soft: rgb(255 138 147 / 0.1);
 }
@@ -35,6 +38,7 @@
   --color-accent-2: var(--accent-2);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-2-soft: var(--accent-2-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --font-sans: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
@@ -94,6 +98,11 @@ li {
   border: 1px solid var(--line);
   backdrop-filter: blur(12px);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
+}
+
+/* The off-chain to on-chain link: emerald into cyan. */
+.link-gradient {
+  background-image: linear-gradient(to bottom, var(--accent), var(--accent-2));
 }
 
 .signal-gradient {

@@ -35,7 +35,9 @@ rather than letting requests through.
 ## Design
 
 A dark lab instrument with a web3 edge, in Tailwind CSS v4 (`app/globals.css`): near-black,
-one signal colour (emerald, shading to cyan only on the main action and live lines), glass
+two signal colours with one meaning each (emerald for the off-chain record, cyan for the
+on-chain asset, blended on the main action, live lines and the line linking a save to its
+mint), glass
 panels, a faint grid, one glow behind the hero. Dark only. Sora for text, Martian Mono for
 on-chain values (`next/font`), Phosphor icons, one radius scale. Motion: the home page plays
 the publish chain on a loop, the step being worked on breathes, and all of it stops for
