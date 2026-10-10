@@ -87,7 +87,7 @@ describe("submitPaper", () => {
     expect(calls.found).toEqual([CID]);
     expect(calls.sent).toEqual([
       {
-        id: `paper:${CID}:${SUBMISSION.submitter}`,
+        id: `paper:${CID}:${SUBMISSION.submitter}:${SUBMISSION.deadline}`,
         name: PAPER_SUBMITTED,
         data: SUBMISSION,
       },

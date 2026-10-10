@@ -100,7 +100,9 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
   checks the submitter's limit, then the file pinned
   under that CID on Pinata's public network. A file over 30 MB or not a PDF is unpinned and
   refused. It then sends `verisci/paper.submitted` with no time of its own, so Inngest
-  stamps it, and returns Inngest's event id. Only a sent submission is counted. A chain,
+  stamps it, under the id `paper:<cid>:<submitter>:<deadline>`: Inngest drops a repeat of
+  one signed submission for 24 hours, and a new signature always starts a run. It returns
+  Inngest's event id. Only a sent submission is counted. A chain,
   Pinata, limit store or Inngest that does not answer gives `unavailable`.
 - **`readPaper(cid, eventId?)`** reads the Target KA's state on the node and, given the
   event id, the run Inngest started for it (REST, from the dev server locally). Once the KA

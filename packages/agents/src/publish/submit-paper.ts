@@ -96,7 +96,10 @@ export async function submitPaper(input: unknown, deps: SubmitDeps): Promise<Sub
   let eventId: string;
   try {
     eventId = await deps.send({
-      id: `paper:${submission.cid}:${submission.submitter}`,
+      // One run per signed submission: a retry of the same one is deduplicated for 24 hours,
+      // while a new signature (a new deadline) always starts a run, so publishing a refused
+      // or stopped paper again is never skipped.
+      id: `paper:${submission.cid}:${submission.submitter}:${submission.deadline}`,
       name: PAPER_SUBMITTED,
       data: submission,
     });

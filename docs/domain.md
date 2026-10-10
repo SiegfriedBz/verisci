@@ -191,6 +191,15 @@ docs, current at 2026-10-07; Pinata's from its v3 API docs, current at 2026-10-0
   `publish-pdf` dev script sets `v1` and `public`: a 2.2 MB PDF got a `bafybei…` CID, the
   same on a second upload (2026-10-10). A signed-URL upload pins the same setting and gives
   the same CID (below).
+- **Public gateways for links** (2026-10-10): `ipfs.io/ipfs/<cid>` answers 200 with a text
+  notice that it is "switching to a service worker gateway only", not the file;
+  `dweb.link` and `w3s.link` answered 429; `gateway.pinata.cloud/ipfs/<cid>` served a 9 MB
+  PDF (`application/pdf`). The pages link PDFs through Pinata's public gateway; the publish
+  run reads through our dedicated gateway.
+- **A PDF whose pages are pictures has no text for GROBID** (2026-10-10): a *Science* article
+  saved from Chrome's viewer gave one embedded font (the download stamp) and one
+  2475×3150 image per page; GROBID found no title and the run refused it `no-title`.
+  GROBID reads the text layer and does no OCR.
 - **Signed upload URLs** (`POST https://uploads.pinata.cloud/v3/files/sign`, 2026-10-10)
   take `date`, `expires` (seconds), `max_file_size`, `allow_mime_types` and `cid_version`,
   and answer `{ data: "<url>" }`. The browser POSTs `file` and `network` to that URL, so the
@@ -277,6 +286,10 @@ Observed on Vercel Hobby with Inngest Cloud, except where a fact cites the vendo
   a key is active, new runs for that key are skipped (Inngest docs) ([ADR 0020](adr/0020-stuck-requests-recovered-only-oracle-cancels.md)).
 - **Inngest deduplicates event ids for 24 hours only:** an event re-sent later with the
   same id starts a new run ([ADR 0017](adr/0017-chain-events-are-ingested-at-least-once.md)).
+  Within the 24 hours the dev server still logs "initializing fn" but starts no run, and
+  `GET /v1/events/{id}/runs` answers an empty list (2026-10-10): an id that a user can repeat
+  (the same PDF published again by the same wallet) must carry something new per attempt,
+  as the submission's deadline does.
 - **Inngest caps sizes:** an event payload at 256 KB, a step's output at 4 MB, a run's
   state at 32 MB and a function at 1,000 steps (Inngest docs, to verify on our plan).
   Payloads carry ids, never file bytes ([ADR 0010](adr/0010-pdf-to-target-ka-pipeline.md)).
