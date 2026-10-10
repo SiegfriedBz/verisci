@@ -10,6 +10,11 @@ export {
 export { BASE_SEPOLIA_CHAIN_ID } from "./chains.ts";
 export { canonicalCid } from "./cid.ts";
 export {
+  knowledgeAssetToken,
+  ORIGINTRAIL_CONTRACTS,
+  type OriginTrailContracts,
+} from "./origintrail.ts";
+export {
   type PaperRecord,
   paperRecordQuery,
   parsePaperRecord,

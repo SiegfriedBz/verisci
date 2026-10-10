@@ -2,11 +2,7 @@
 
 import { ArrowSquareOut, Check, Copy } from "@phosphor-icons/react";
 import { useState } from "react";
-
-/** The first and last characters of a long on-chain value, joined by an ellipsis. */
-export function shorten(value: string, head = 14, tail = 8): string {
-  return value.length <= head + tail + 1 ? value : `${value.slice(0, head)}…${value.slice(-tail)}`;
-}
+import { shorten } from "../lib/shorten.ts";
 
 /** A labelled on-chain value in short form, with a button that copies it in full. */
 export function CopyValue({

@@ -1,3 +1,4 @@
+import { NoDeploymentError, ratingControllerDeployments } from "@verisci/contracts";
 import type { Metadata } from "next";
 import { Martian_Mono, Sora } from "next/font/google";
 import Link from "next/link";
@@ -6,6 +7,7 @@ import type { ReactNode } from "react";
 import { Logo } from "../components/logo.tsx";
 import { NavLink } from "../components/nav-link.tsx";
 import { Providers } from "../components/providers.tsx";
+import { SiteFooter } from "../components/site-footer.tsx";
 import { WalletButton } from "../components/wallet-button.tsx";
 import { createWebEnv } from "../lib/web-env.ts";
 import "./globals.css";
@@ -29,7 +31,8 @@ export const metadata: Metadata = {
  */
 export default async function RootLayout({ children }: { children: ReactNode }) {
   await connection();
-  const { REOWN_PROJECT_ID } = createWebEnv();
+  const { APP_ENV, REOWN_PROJECT_ID } = createWebEnv();
+  const ratingController = currentRatingController(APP_ENV);
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable} overflow-x-clip`}>
       <body className="relative min-h-[100dvh] overflow-x-hidden font-sans antialiased">
@@ -55,8 +58,19 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <main id="main" className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
             {children}
           </main>
+          <SiteFooter ratingController={ratingController} />
         </Providers>
       </body>
     </html>
   );
+}
+
+/** This environment's current RatingController address, or none while it has no deployment. */
+function currentRatingController(appEnv: "local" | "staging" | "production"): string | undefined {
+  try {
+    return ratingControllerDeployments(appEnv).current.address;
+  } catch (error) {
+    if (error instanceof NoDeploymentError) return undefined;
+    throw error;
+  }
 }

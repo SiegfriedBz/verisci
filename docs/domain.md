@@ -143,6 +143,15 @@ edge`, testnet), Base Sepolia.
 
   The UAL and the KA id stayed the same and `assertionVersion` went to 2. A query then
   returns the latest version only ([ADR 0012](adr/0012-three-phases-settled-by-the-oracle.md)).
+- **OriginTrail's contracts on Base Sepolia** (read from our node's mint of asset 8, tx
+  `0x37d315a0…0896`, 2026-10-10, by its receipt and each contract's `name()`):
+  `DKGKnowledgeAssets` (symbol DKA, ERC-721) `0x2b2e1bcb7c52a1587264e01f6b53782d791e6fa0`, whose
+  `Transfer` minted the token to the node's agent address; `KnowledgeAssetsLifecycle`
+  `0x835f921a0fc8d6365c34a0bb9b37d10c98c1b8c3`, the contract the node's transaction calls; and
+  the fee token "V9 Test TRAC" `0x2a58bdd13176d85906d804cdbffa0d9119282dc8`. A V10 UAL's token
+  id is the author's address shifted left 96 bits, OR the asset number (asset 8's id equals the
+  `batchId` the daemon logs). Basescan shows a token at `/nft/<contract>/<token id>`. Recorded
+  in `@verisci/core` as `ORIGINTRAIL_CONTRACTS`; re-check after an OriginTrail upgrade.
 - **KA numbers are counted per author** and reserved at store time (the `reservedUal`).
   Both our graphs publish as one author, and a stored asset that is never minted keeps
   its number, so each environment sees gaps in its numbering. Expected, not a bug.

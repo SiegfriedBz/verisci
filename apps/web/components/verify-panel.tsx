@@ -1,6 +1,7 @@
 import { CheckCircle, Question, XCircle } from "@phosphor-icons/react/dist/ssr";
 import type { PublishedRecord } from "@verisci/agents";
-import { addressUrl } from "../lib/explorer.ts";
+import { knowledgeAssetToken, parseUal } from "@verisci/core";
+import { addressUrl, assetTokenUrl } from "../lib/explorer.ts";
 import { CopyValue } from "./copy-value.tsx";
 
 const CHECK = {
@@ -23,7 +24,8 @@ const CHECK = {
 
 /**
  * Everything anyone needs to check a published paper without trusting VeriSci: who
- * submitted it and their signature (checked when read), who minted it, the record's UAL
+ * submitted it and their signature (checked when read), who minted it, its ERC-721 token, the
+ * record's UAL
  * and the PDF's CID, with how to check them.
  */
 export function VerifyPanel({
@@ -36,6 +38,8 @@ export function VerifyPanel({
   cid: string;
 }) {
   const check = CHECK[record.signatureCheck];
+  const parsed = parseUal(ual);
+  const token = parsed.ok ? knowledgeAssetToken(parsed.ual) : undefined;
   return (
     <section className="glass grid gap-6 rounded-2xl p-5 sm:p-6" aria-labelledby="verify-title">
       <div className="grid gap-1">
@@ -66,6 +70,13 @@ export function VerifyPanel({
             href={addressUrl(record.publisher)}
           />
         )}
+        {token && (
+          <CopyValue
+            label="Asset token (ERC-721, OriginTrail's DKGKnowledgeAssets)"
+            value={token.tokenId.toString()}
+            href={assetTokenUrl(ual)}
+          />
+        )}
         <CopyValue label="Knowledge Asset (UAL)" value={ual} head={22} />
         <CopyValue label="PDF (CID)" value={cid} href={`https://ipfs.io/ipfs/${cid}`} />
       </dl>
@@ -87,10 +98,10 @@ export function VerifyPanel({
             changed file can't pass.
           </li>
           <li>
-            The record is a Knowledge Asset on Base: its token is held by VeriSci's node, and the
-            merkle root of its statements is anchored on chain, so any node can check that the
-            content still matches. The node's Basescan page lists the mint transactions, so you can
-            see when it was recorded.
+            Open the asset token on Basescan. It's an ERC-721 token in OriginTrail's
+            DKGKnowledgeAssets contract, held by VeriSci's node, and its page shows when it was
+            minted. The merkle root of the asset's statements is anchored with it, so any node can
+            check that the content still matches.
           </li>
         </ol>
       </details>
