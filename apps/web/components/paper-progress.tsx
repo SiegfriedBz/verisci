@@ -64,8 +64,8 @@ export function PaperProgress({
   if (!stage) {
     return (
       <div aria-busy className="grid gap-4">
-        <div className="h-9 w-56 animate-pulse rounded-xl bg-sunken" />
-        <div className="h-64 animate-pulse rounded-xl bg-sunken" />
+        <div className="h-9 w-56 animate-pulse rounded-xl bg-surface-strong" />
+        <div className="h-64 animate-pulse rounded-2xl bg-surface-strong" />
       </div>
     );
   }
@@ -79,7 +79,7 @@ export function PaperProgress({
         <StageNote stage={stage} resubmitted={resubmitted} />
         <ProgressChain stage={stage.stage} />
       </div>
-      <dl className="grid content-start gap-5 rounded-xl border border-line bg-surface p-5 sm:p-6">
+      <dl className="glass grid content-start gap-5 rounded-2xl p-5 sm:p-6">
         {stage.stage === "published" && (
           <CopyValue label="Record (UAL)" value={stage.ual} head={22} />
         )}

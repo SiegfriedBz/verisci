@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Martian_Mono, Sora } from "next/font/google";
 import Link from "next/link";
 import { connection } from "next/server";
 import type { ReactNode } from "react";
@@ -8,8 +8,8 @@ import { WalletButton } from "../components/wallet-button.tsx";
 import { createWebEnv } from "../lib/web-env.ts";
 import "./globals.css";
 
-const sans = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
-const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
+const sans = Sora({ subsets: ["latin"], variable: "--font-sora" });
+const mono = Martian_Mono({ subsets: ["latin"], variable: "--font-martian" });
 
 export const metadata: Metadata = {
   title: "verisci",
@@ -25,12 +25,16 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const { REOWN_PROJECT_ID } = createWebEnv();
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable}`}>
-      <body className="min-h-[100dvh] font-sans antialiased">
+      <body className="relative min-h-[100dvh] overflow-x-hidden font-sans antialiased">
+        <div aria-hidden className="bench pointer-events-none absolute inset-x-0 top-0 h-[720px]" />
         <Providers projectId={REOWN_PROJECT_ID}>
-          <header className="border-b border-line">
+          <header className="sticky top-0 z-20 border-b border-line bg-page/70 backdrop-blur-xl">
             <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-              <Link href="/" className="font-mono text-lg font-semibold tracking-tight">
-                verisci
+              <Link href="/" className="flex items-center gap-2.5">
+                <span className="signal-gradient grid size-7 place-items-center rounded-lg font-mono text-xs font-bold text-accent-ink">
+                  v
+                </span>
+                <span className="text-lg font-semibold tracking-tight">verisci</span>
               </Link>
               <nav className="flex items-center gap-3 sm:gap-6">
                 <Link href="/publish" className="text-sm font-medium text-muted hover:text-ink">
@@ -40,7 +44,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
               </nav>
             </div>
           </header>
-          <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">{children}</main>
+          <main className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">{children}</main>
         </Providers>
       </body>
     </html>

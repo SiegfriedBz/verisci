@@ -19,8 +19,9 @@ Next.js 16 App Router app. See `README.md` here for scripts and status.
 - Playwright end-to-end tests arrive in M7; until then, cover logic in unit tests. Put a
   flow's logic in `lib/` with its IO passed in (`publishFile`, `paperProgress`,
   `requestUploadUrl`), and keep components and `app/actions.ts` thin.
-- Styling is Tailwind v4 with the tokens in `app/globals.css` (`bg-surface`, `text-muted`,
-  `text-accent`…): one accent, no raw colours, `rounded-xl` for panels, buttons and inputs.
+- Styling is Tailwind v4 with the tokens and classes in `app/globals.css` (`glass`,
+  `signal-gradient`, `text-muted`, `text-accent`…): dark only, one signal colour, no raw
+  colours; `rounded-2xl` panels, `rounded-xl` buttons and inputs, `rounded-lg` small controls.
   Check every page at 360, 768 and 1280 px with no horizontal scroll. Page copy follows the
   `design-taste-frontend` and humanizer skills: plain words, no em dashes.
 - Wallet hooks (wagmi, AppKit) run only under `Providers` with a project id: render them

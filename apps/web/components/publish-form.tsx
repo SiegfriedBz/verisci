@@ -29,7 +29,7 @@ const PHASE_TEXT: Record<Phase, string> = {
 export function PublishForm(settings: PublishSettings) {
   if (!useWalletReady()) {
     return (
-      <p className="rounded-xl border border-line bg-surface p-5 text-sm text-muted">
+      <p className="glass rounded-2xl p-5 text-sm text-muted">
         Wallet connection isn't set up on this server yet, so papers can't be published here.
       </p>
     );
@@ -103,12 +103,12 @@ function PublishFlow({ contextGraph, maxBytes, signatureLifetimeS }: PublishSett
 
   if (!isConnected) {
     return (
-      <div className="grid gap-4 rounded-xl border border-line bg-surface p-6 sm:p-8">
+      <div className="glass grid gap-4 rounded-2xl p-6 sm:p-8">
         <p className="text-muted">Connect a wallet to publish.</p>
         <button
           type="button"
           onClick={() => void open()}
-          className="w-fit rounded-xl bg-accent px-5 py-2.5 font-medium text-accent-ink transition active:scale-[0.98]"
+          className="signal-gradient w-fit rounded-xl px-5 py-2.5 font-semibold text-accent-ink transition hover:brightness-110 active:scale-[0.98]"
         >
           Connect wallet
         </button>
@@ -127,13 +127,15 @@ function PublishFlow({ contextGraph, maxBytes, signatureLifetimeS }: PublishSett
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
         aria-busy={busy}
-        className={`grid min-h-64 cursor-pointer place-items-center rounded-xl border-2 border-dashed p-6 text-center transition sm:p-10 ${
-          dragging ? "border-accent bg-accent-soft" : "border-line bg-surface hover:border-muted"
+        className={`glass grid min-h-72 cursor-pointer place-items-center rounded-2xl border-dashed! p-6 text-center transition sm:p-10 ${
+          dragging ? "border-accent! bg-accent-soft" : "hover:border-line-strong!"
         } ${busy ? "pointer-events-none" : ""}`}
       >
         {phase && file ? (
           <div className="grid justify-items-center gap-3">
-            <FilePdf size={36} className="text-accent" />
+            <span className="grid size-14 place-items-center rounded-2xl bg-accent-soft text-accent">
+              <FilePdf size={30} />
+            </span>
             <p className="max-w-full truncate font-medium">{file.name}</p>
             <p className="step-active rounded-xl bg-accent-soft px-3 py-1 text-sm text-accent">
               {PHASE_TEXT[phase]}
@@ -141,9 +143,11 @@ function PublishFlow({ contextGraph, maxBytes, signatureLifetimeS }: PublishSett
           </div>
         ) : (
           <div className="grid justify-items-center gap-3">
-            <UploadSimple size={36} className="text-muted" />
+            <span className="grid size-14 place-items-center rounded-2xl border border-line-strong text-muted">
+              <UploadSimple size={28} />
+            </span>
             <p className="font-medium">Drop your paper here, or tap to choose a PDF</p>
-            <p className="text-sm text-muted">One PDF, up to 30 MB</p>
+            <p className="font-mono text-xs text-muted">application/pdf · max 30 MB</p>
           </div>
         )}
         <input

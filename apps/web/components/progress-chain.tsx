@@ -1,4 +1,4 @@
-import { Check, Circle, X } from "@phosphor-icons/react/dist/ssr";
+import { Check, X } from "@phosphor-icons/react/dist/ssr";
 import type { PaperStage } from "../lib/progress.ts";
 
 const STEPS = [
@@ -25,34 +25,38 @@ function position(stage: PaperStage["stage"]): { done: number; active: number | 
 }
 
 /**
- * A paper's publish steps as a vertical chain: done steps carry a check, the current one
- * breathes, and a refused paper is marked at Read, where every refusal happens.
+ * A paper's publish steps as a vertical chain: done steps carry a check, the line into the
+ * current step runs live and its node breathes, and a refused paper is marked at Read,
+ * where every refusal happens.
  */
 export function ProgressChain({ stage }: { stage: PaperStage["stage"] }) {
   const { done, active } = position(stage);
   return (
-    <ol className="relative grid gap-5">
+    <ol className="relative grid gap-6">
       {STEPS.map((step, index) => {
         const isDone = index < done;
         const isActive = index === active;
         const isStop = stage === "refused" && index === 0;
+        const lineLive = index + 1 === active;
         return (
-          <li key={step.label} className="relative grid grid-cols-[2rem_1fr] gap-3">
+          <li key={step.label} className="relative grid grid-cols-[2rem_1fr] gap-4">
             {index < STEPS.length - 1 && (
               <span
                 aria-hidden
-                className={`absolute top-8 bottom-[-1.25rem] left-4 w-px ${isDone ? "bg-accent" : "bg-line"}`}
+                className={`absolute top-8 bottom-[-1.5rem] left-[15px] w-0.5 rounded-full ${
+                  lineLive ? "line-live" : isDone ? "bg-accent" : "bg-line-strong"
+                }`}
               />
             )}
             <span
-              className={`relative grid size-8 place-items-center rounded-full border ${
+              className={`relative grid size-8 place-items-center rounded-full border transition-colors duration-500 ${
                 isStop
-                  ? "border-danger bg-danger-soft text-danger"
+                  ? "border-danger/50 bg-danger-soft text-danger"
                   : isDone
-                    ? "border-accent bg-accent text-accent-ink"
+                    ? "border-transparent bg-accent text-accent-ink"
                     : isActive
                       ? "step-active border-accent bg-accent-soft text-accent"
-                      : "border-line bg-surface text-muted"
+                      : "border-line-strong bg-page text-muted"
               }`}
             >
               {isStop ? (
@@ -60,15 +64,19 @@ export function ProgressChain({ stage }: { stage: PaperStage["stage"] }) {
               ) : isDone ? (
                 <Check size={14} weight="bold" />
               ) : (
-                <Circle size={8} weight={isActive ? "fill" : "regular"} />
+                <span
+                  className={`size-2 rounded-full ${isActive ? "bg-accent" : "bg-line-strong"}`}
+                />
               )}
             </span>
-            <div className="pt-1">
-              <p className={`font-medium ${isDone || isActive ? "text-ink" : "text-muted"}`}>
+            <div className="pt-0.5">
+              <p
+                className={`font-medium transition-colors duration-500 ${isDone || isActive ? "text-ink" : "text-muted"}`}
+              >
                 {step.label}
                 {isActive && <span className="sr-only"> (in progress)</span>}
               </p>
-              <p className="mt-0.5 text-sm text-muted">{step.detail}</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted">{step.detail}</p>
             </div>
           </li>
         );

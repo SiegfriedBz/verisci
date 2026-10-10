@@ -1,6 +1,6 @@
 import { ArrowRight, FilePdf, PenNib, Wallet } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
-import { ProgressChain } from "../components/progress-chain.tsx";
+import { ChainDemo } from "../components/chain-demo.tsx";
 
 const HOW = [
   {
@@ -20,48 +20,95 @@ const HOW = [
   },
 ] as const;
 
+const RECORD = [
+  ["title", "Attention Is All You Need"],
+  ["authors", "Vaswani, Shazeer, Parmar, …"],
+  ["pdf", "ipfs://bafybeicrwkcuh…ats642m"],
+  ["submitter", "0x7a31…c9f2"],
+  ["signature", "0x4be0…1c (EIP-712)"],
+  ["ual", "did:dkg:base:84532/0xd701…/5"],
+] as const;
+
 /** Home: what verisci does, and the way to publish. */
 export default function Home() {
   return (
-    <div className="grid gap-20 sm:gap-28">
-      <section className="grid items-center gap-12 md:grid-cols-[1.15fr_1fr] md:gap-16">
-        <div className="grid gap-6">
-          <h1 className="text-4xl font-semibold leading-[1.08] tracking-tight md:text-5xl">
-            Publish your paper as a record anyone can verify
+    <div className="grid gap-24 sm:gap-32">
+      <section className="grid items-center gap-14 md:grid-cols-[1.3fr_1fr] md:gap-14">
+        <div className="enter grid gap-7">
+          <h1 className="text-4xl font-semibold leading-[1.08] tracking-tight md:text-[2.75rem] lg:text-5xl">
+            Publish your paper as a record anyone can <span className="text-accent">verify</span>
           </h1>
-          <p className="max-w-[48ch] text-lg text-muted">
+          <p className="max-w-[46ch] text-lg leading-relaxed text-muted">
             Drop a PDF and sign with your wallet. verisci records it on the knowledge graph, with
             you as its submitter.
           </p>
           <Link
             href="/publish"
-            className="inline-flex w-fit items-center gap-2 rounded-xl bg-accent px-5 py-3 font-medium text-accent-ink transition active:scale-[0.98]"
+            className="signal-gradient inline-flex w-fit items-center gap-2 rounded-xl px-5 py-3 font-semibold text-accent-ink shadow-[0_8px_30px_rgb(61_220_151/0.25)] transition hover:brightness-110 active:scale-[0.98]"
           >
             Publish a paper
-            <ArrowRight size={18} />
+            <ArrowRight size={18} weight="bold" />
           </Link>
         </div>
-        <figure className="grid gap-4 rounded-xl border border-line bg-surface p-6 sm:p-8">
-          <figcaption className="text-sm text-muted">Example: a paper being published</figcaption>
-          <ProgressChain stage="minting" />
-        </figure>
+        <div className="enter-late relative">
+          <div aria-hidden className="signal-glow absolute -inset-10" />
+          <figure className="glass relative grid gap-6 rounded-2xl p-6 sm:p-8">
+            <figcaption className="flex items-center justify-between gap-3 text-sm text-muted">
+              <span>Example: a paper being published</span>
+              <span className="font-mono text-xs text-accent">live</span>
+            </figcaption>
+            <ChainDemo />
+          </figure>
+        </div>
       </section>
 
-      <section className="grid gap-10 md:grid-cols-[1fr_2fr]">
-        <h2 className="text-2xl font-semibold tracking-tight">How it works</h2>
-        <ol className="grid gap-8">
+      <section className="grid gap-10 md:grid-cols-[1fr_1.6fr] md:gap-16">
+        <div className="grid content-start gap-3">
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">How it works</h2>
+          <p className="max-w-[40ch] text-muted">Three steps, about two minutes, no gas.</p>
+        </div>
+        <ol className="grid gap-4">
           {HOW.map(({ icon: Icon, title, body }) => (
-            <li key={title} className="grid grid-cols-[2.5rem_1fr] gap-4">
-              <span className="grid size-10 place-items-center rounded-xl bg-accent-soft text-accent">
-                <Icon size={20} />
+            <li
+              key={title}
+              className="glass grid grid-cols-[2.75rem_1fr] items-start gap-4 rounded-2xl p-5"
+            >
+              <span className="grid size-11 place-items-center rounded-xl bg-accent-soft text-accent">
+                <Icon size={22} />
               </span>
               <div>
                 <h3 className="font-medium">{title}</h3>
-                <p className="mt-1 max-w-[52ch] text-muted">{body}</p>
+                <p className="mt-1 max-w-[52ch] text-sm leading-relaxed text-muted">{body}</p>
               </div>
             </li>
           ))}
         </ol>
+      </section>
+
+      <section className="grid items-center gap-10 md:grid-cols-[1.6fr_1fr] md:gap-16">
+        <div className="glass order-2 overflow-hidden rounded-2xl md:order-1">
+          <div className="flex items-center justify-between border-b border-line px-5 py-3 text-xs text-muted">
+            <span className="font-mono">target-ka.json</span>
+            <span>Example record</span>
+          </div>
+          <dl className="grid gap-3 p-5 font-mono text-xs sm:text-sm">
+            {RECORD.map(([key, value]) => (
+              <div key={key} className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-3">
+                <dt className="text-muted">{key}</dt>
+                <dd className="truncate text-ink">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+        <div className="order-1 grid content-start gap-3 md:order-2">
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            What the record holds
+          </h2>
+          <p className="max-w-[40ch] leading-relaxed text-muted">
+            The paper's details, a permanent link to the PDF, and your signature. Anyone can check
+            who submitted it without trusting us.
+          </p>
+        </div>
       </section>
     </div>
   );

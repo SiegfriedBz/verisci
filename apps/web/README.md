@@ -33,11 +33,13 @@ rather than letting requests through.
 
 ## Design
 
-Tailwind CSS v4 (`app/globals.css`): cool greys and one emerald accent as CSS variables, light
-and dark from the system setting, Geist and Geist Mono (`next/font`), Phosphor icons, one
-radius scale, motion only on the step being worked on and respecting reduced motion. Every
-page works from 360 px wide, one column on phones. On-chain values show in Geist Mono, in
-short form with a copy button.
+A dark lab instrument with a web3 edge, in Tailwind CSS v4 (`app/globals.css`): near-black,
+one signal colour (emerald, shading to cyan only on the main action and live lines), glass
+panels, a faint grid, one glow behind the hero. Dark only. Sora for text, Martian Mono for
+on-chain values (`next/font`), Phosphor icons, one radius scale. Motion: the home page plays
+the publish chain on a loop, the step being worked on breathes, and all of it stops for
+visitors who ask for reduced motion. Every page works from 360 px wide, one column on
+phones. On-chain values show in short form with a copy button.
 
 ## Depends on
 
