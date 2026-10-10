@@ -43,7 +43,7 @@ describe("messages", () => {
   });
 
   it("tells the limit apart from a service that is down", () => {
-    expect(publishProblemMessage("rate-limited")).toMatch(/tomorrow/);
+    expect(publishProblemMessage("rate-limited")).toMatch(/24 hours/);
     expect(publishProblemMessage("unavailable")).toMatch(/minute/);
   });
 });

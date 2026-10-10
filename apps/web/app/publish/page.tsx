@@ -1,8 +1,9 @@
-import { Eye, PenNib, Repeat } from "@phosphor-icons/react/dist/ssr";
+import { Eye, Gauge, PenNib, Repeat } from "@phosphor-icons/react/dist/ssr";
 import { getUploadService, PUBLISH_SETTINGS, UPLOAD_SETTINGS } from "@verisci/agents";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { PublishForm } from "../../components/publish-form.tsx";
+import { UPLOAD_LIMITS } from "../../lib/limits.ts";
 
 export const metadata: Metadata = { title: "Publish a paper · VeriSci" };
 
@@ -21,6 +22,11 @@ const BEFORE = [
     icon: Repeat,
     title: "One PDF, one record",
     body: "The same file always gives the same record. Publishing it again changes nothing, and the first submitter stays.",
+  },
+  {
+    icon: Gauge,
+    title: "Daily limits",
+    body: `Each wallet can publish ${UPLOAD_LIMITS.submissionsPerAddressPerDay} papers and each connection can upload ${UPLOAD_LIMITS.urlsPerIpPerDay} PDFs in any 24 hours. Sending a paper that's already published doesn't count toward the ${UPLOAD_LIMITS.submissionsPerAddressPerDay}.`,
   },
 ] as const;
 

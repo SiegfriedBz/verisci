@@ -14,7 +14,7 @@ export type PublishProblem =
 export function publishProblemMessage(problem: PublishProblem): string {
   switch (problem) {
     case "rate-limited":
-      return "You've reached today's limit. You can publish again tomorrow.";
+      return "You've reached the limit for the last 24 hours. Try again later.";
     case "unavailable":
       return "A service we rely on didn't answer. Try again in a minute.";
     case "upload-failed":
