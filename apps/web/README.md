@@ -12,11 +12,12 @@ build validates the shared variables: `build` needs `APP_ENV` (see the
 
 | Path | What it is |
 | --- | --- |
-| `/` | Home: what verisci does, and the way to publish |
+| `/` | Home: what VeriSci does, the DKG's two layers (content off chain, token and merkle root on chain), how publishing works and the rating flow to come, and what a paper asset holds |
 | `/publish` | Connect a wallet, drop a PDF, sign once ([ADR 0010](../../docs/adr/0010-pdf-to-target-ka-pipeline.md), [ADR 0034](../../docs/adr/0034-users-connect-a-wallet-anyone-may-publish.md)) |
 | `/papers/<cid>?event=<id>` | Where a paper stands, polled every 5 s until published, refused or stopped. Once published: the record's title, authors and DOI, and a "Verify it yourself" panel (submitter and publisher linked on Basescan, the signature checked when read, the UAL and the CID, and how to check them). `?already=1` says a re-submitted PDF was already published |
 | `/api/papers/<cid>?event=<id>` | The same as JSON (`PaperView`: the stage, and the record once published), never cached: a read, so a route rather than a server action |
 | `/api/inngest` | Serves the Inngest functions |
+| any other path | `app/not-found.tsx`; a page that fails to render shows `app/error.tsx` with a retry |
 
 The publish form calls two server actions (`app/actions.ts`): `requestUpload()` signs a
 Pinata upload URL within the connection's daily limit, and `submitPaper(input)` checks the
@@ -39,7 +40,10 @@ panels, a faint grid, one glow behind the hero. Dark only. Sora for text, Martia
 on-chain values (`next/font`), Phosphor icons, one radius scale. Motion: the home page plays
 the publish chain on a loop, the step being worked on breathes, and all of it stops for
 visitors who ask for reduced motion. Every page works from 360 px wide, one column on
-phones. On-chain values show in short form with a copy button.
+phones, and the page clips any overflow. On-chain values show in short form with a copy
+button. The product name is VeriSci; its mark (`components/logo.tsx`, and `app/icon.svg` for
+the tab) is a check drawn as three linked graph nodes. Keyboard users get a skip link and one
+accent focus ring; the header marks the current page.
 
 ## Depends on
 
