@@ -5,10 +5,11 @@ declares the variables it reads as Zod schemas; a missing or invalid variable fa
 on first import with one `EnvError` that names every bad variable and never shows
 its value.
 
-Workflows (`@verisci/agents`) are the exception, since `next build` imports them with only
-`APP_ENV` set: a deployed server checks their settings when it starts
-(`apps/web/instrumentation.ts`) and refuses to start on a bad one; locally (`APP_ENV=local`)
-a workflow checks them on its first run and stops at once
+Workflows (`@verisci/agents`) and the web app's own settings (`apps/web/lib/web-env.ts`) are
+the exception, since `next build` imports them with only `APP_ENV` set: a deployed server
+checks them when it starts (`apps/web/instrumentation.ts`) and refuses to start on a bad one;
+locally (`APP_ENV=local`) a workflow checks its settings on its first run and stops at once,
+and the web app on the request that reads them
 ([ADR 0004](../../docs/adr/0004-env-variables-per-workspace-one-root-file.md)).
 
 Built on [`@t3-oss/env-core`](https://env.t3.gg) and [Zod](https://zod.dev).
@@ -40,8 +41,8 @@ declares its own variables and why `APP_ENV` is required in production builds is
 
 ## Declaring a workspace's variables
 
-Each workspace declares its variables in its env module (`src/env.ts`, which may
-import the schema from a file next to it) and extends the shared env. A workspace
+Each workspace declares its variables in its env module (`src/env.ts` in a package,
+`lib/web-env.ts` in `apps/web`; it may import the schema from a file next to it) and extends the shared env. A workspace
 declares only what it reads, so no workspace requires (or sees) a secret it does not use.
 A dev script (`scripts/*.ts`) declares the variables only it reads with `defineEnv`, in the
 script itself, such as the agents' `publish-pdf` and its `PINATA_JWT`.
