@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <title>VeriSci</title>
   <!-- VeriSci's mark, as components/logo.tsx draws it, with the theme's colours written out. -->
   <defs>
     <linearGradient id="g" x1="6" y1="24" x2="26" y2="8" gradientUnits="userSpaceOnUse">

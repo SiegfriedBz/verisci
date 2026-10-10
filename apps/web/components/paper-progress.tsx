@@ -95,7 +95,7 @@ export function PaperProgress({
       <div className="grid content-start gap-6">
         <div className="grid gap-3">
           <p
-            className={`w-fit rounded-full px-3 py-1 text-xs font-medium ${
+            className={`w-fit rounded-md px-2.5 py-1 text-xs font-medium ${
               view.stage === "published"
                 ? "bg-accent-soft text-accent"
                 : "bg-surface-strong text-muted"

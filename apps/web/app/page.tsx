@@ -82,7 +82,9 @@ export default function Home() {
               className="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-xl border border-line px-5 py-3 font-medium text-muted"
             >
               Rate a paper
-              <span className="rounded-full bg-surface-strong px-2 py-0.5 text-xs">soon</span>
+              <span className="rounded-md bg-surface-strong px-1.5 py-0.5 font-mono text-[11px]">
+                soon
+              </span>
             </span>
           </div>
         </div>
@@ -229,7 +231,7 @@ function Track({
       <div className="grid gap-2">
         <h3 className="flex items-center gap-3 text-lg font-semibold">
           {label}
-          <span className="rounded-full bg-surface-strong px-2.5 py-0.5 font-mono text-xs font-normal text-muted">
+          <span className="rounded-md bg-surface-strong px-2 py-0.5 font-mono text-xs font-normal text-muted">
             {badge}
           </span>
         </h3>

@@ -50,6 +50,25 @@ body {
   color: var(--ink);
 }
 
+/* Headings break evenly and paragraphs avoid a lone last word. */
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p,
+li {
+  text-wrap: pretty;
+}
+
+/* One focus ring for every control, for keyboard users. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 0.5rem;
+}
+
 /* The lab bench: a hairline grid that fades out from the top of the page. */
 .bench {
   background-image:

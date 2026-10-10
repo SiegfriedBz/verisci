@@ -5,7 +5,10 @@ import { connection } from "next/server";
 import { PublishForm } from "../../components/publish-form.tsx";
 import { UPLOAD_LIMITS } from "../../lib/limits.ts";
 
-export const metadata: Metadata = { title: "Publish a paper · VeriSci" };
+export const metadata: Metadata = {
+  title: "Publish a paper · VeriSci",
+  description: "Drop a PDF and sign with your wallet to publish it as a verifiable record.",
+};
 
 const BEFORE = [
   {
