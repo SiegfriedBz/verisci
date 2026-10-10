@@ -9,7 +9,7 @@ Papers enter verisci as PDFs and must become Target KAs. Parsing and the DKG wri
 
 ## Decision
 
-- The browser uploads the PDF straight to IPFS pinning with a short-lived signed URL from the server, so the file never passes through a Vercel function. The server checks the pinned file before starting the pipeline.
+- The browser uploads the PDF straight to IPFS pinning with a short-lived signed URL from the server, so the file never passes through a Vercel function. The server checks the pinned file before starting the pipeline; a file that fails the check is unpinned when no asset points at it. Every environment applies the same check, since they share one pinning account ([0005](0005-staging-and-production-are-isolated.md)).
 - The submitter signs an EIP-712 statement of the PDF's CID with their wallet. The server verifies it before publishing, and the Target KA records the submitter's address and signature, so anyone can check who submitted it without trusting verisci. No contract call: rating stays open to any KA ([0011](0011-a-rating-is-a-separate-r-ka.md)).
 - Events and step outputs carry the PDF's CID, never its bytes.
 - The pipeline runs each stage as its own step: parse with GROBID, store, then mint ([0007](0007-all-writes-converge.md), [0008](0008-mints-are-async-polled-in-short-steps.md)). The metadata is read from GROBID's structured output by code, with no LLM, so the same PDF always gives the same KA at no cost per paper.
@@ -31,3 +31,4 @@ Papers enter verisci as PDFs and must become Target KAs. Parsing and the DKG wri
 - 2026-10-10: corrected: the second pin of each PDF is no longer tied to the publish plan, which did not add it; a later plan does.
 - 2026-10-10: corrected: the list of metadata fields moved to `packages/core` (README → Target KAs), a mechanic rather than the decision (ADR sweep).
 - 2026-10-10: a retry starts again from what the node holds, so a paper is read and parsed again when its store failed before anything was stored, rather than no earlier stage being redone; the code always worked this way, and a re-read costs seconds on a rare retry (README audit, user's choice).
+- 2026-10-10: a file that fails the server's check is unpinned when no asset points at it, a rule only 0005 stated (ADR sweep, user's choice).

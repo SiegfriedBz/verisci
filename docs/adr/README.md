@@ -19,17 +19,17 @@ taken, so a later ADR can sit in an earlier group.
 | [0001. Toolchain: Biome, TypeScript 6, Soldeer, exact pins](0001-toolchain-biome-ts6-soldeer-exact-pins.md) | Biome, TypeScript 6, Soldeer and solc 0.8.37; every dependency pinned exactly |
 | [0002. Internal packages ship TypeScript source](0002-internal-packages-ship-typescript-source.md) | Packages export their `.ts` source, with no build step; scripts and programs on the DKG node server run it with plain Node |
 | [0003. Inngest functions live in the workflows package](0003-inngest-functions-live-in-workflows.md) | Inngest functions live in `workflows`; `web` only serves them |
-| [0025. Reviews gate on ADR consistency and Foundry lint](0025-reviews-gate-on-adrs-and-lint.md) | A review blocks on an ADR conflict until the user decides; every Foundry lint warning fails |
+| [0025. Reviews gate on ADR consistency and Foundry lint](0025-reviews-gate-on-adrs-and-lint.md) | A review blocks on an ADR conflict until the user decides; every Foundry lint finding fails, except lints excluded by name with a reason |
 
 ## Environments and infrastructure
 
 | ADR | Decision |
 | --- | --- |
 | [0004. Env variables are declared per workspace, in one root file](0004-env-variables-per-workspace-one-root-file.md) | Each workspace validates the variables it reads, a deployed server its workflows' and the web app's when it starts; a dev script declares those only it reads; forge reads the same root env file; programs on the DKG node server read their own |
-| [0005. Staging and production use separate resources](0005-staging-and-production-are-isolated.md) | Each environment has its own contract, graph, webhook, oracle wallet, Inngest environment and Upstash store; the Reown project and the pinning account are shared, and so is the DKG node, so a `-prod` guard protects production |
+| [0005. Staging and production use separate resources](0005-staging-and-production-are-isolated.md) | Staging and production each have their own contract, graph, webhook, oracle wallet, Inngest environment and Upstash store; the Reown project and the pinning account are shared, and so is the DKG node, so a `-prod` guard protects production |
 | [0006. The DKG node runs on a dedicated host](0006-dkg-node-runs-on-a-dedicated-host.md) | The node, GROBID and an RPC proxy run on their own host, behind authentication, with keys backed up; on a developer's computer until a deployed environment calls the node |
 | [0023. A fix is a redeploy, and the owner's powers are fixed](0023-a-fix-is-a-redeploy-owner-powers-fixed.md) | A fix is a redeploy; old contracts are paused and drained; the owner sets the oracle and cap, pauses and unpauses, and transfers ownership in two steps, never to the oracle, with no renounce |
-| [0028. Deployed addresses are committed](0028-deployed-addresses-are-committed.md) | Every environment's contract addresses live in a committed file, changed by a reviewed PR |
+| [0028. Deployed addresses are committed](0028-deployed-addresses-are-committed.md) | Staging's and production's contract addresses live in a committed file, changed by a reviewed PR |
 | [0030. The owner and the oracle are different addresses](0030-owner-and-oracle-are-different-addresses.md) | The owner's key stays offline; the oracle's key is on the deployment; the contract keeps them apart |
 
 ## Writing to the DKG
