@@ -16,7 +16,7 @@ const BEFORE = [
   {
     icon: PenNib,
     title: "You sign, you don't pay",
-    body: "Your wallet signs the PDF's fingerprint (its CID), VeriSci's graph and a 10-minute deadline. No transaction, no gas.",
+    body: "Your wallet signs the PDF's fingerprint (its CID), VeriSci's graph and a 10-minute deadline. Signing sends no transaction, so it costs no gas.",
   },
   {
     icon: Repeat,

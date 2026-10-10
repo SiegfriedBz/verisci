@@ -87,7 +87,7 @@ export default function Home() {
           </div>
         </div>
         <div className="enter-late relative">
-          <div aria-hidden className="signal-glow absolute -inset-10" />
+          <div aria-hidden className="signal-glow absolute -inset-x-4 -inset-y-10 sm:-inset-10" />
           <figure className="glass relative grid gap-6 rounded-2xl p-6 sm:p-8">
             <figcaption className="flex items-center justify-between gap-3 text-sm text-muted">
               <span>Publish flow</span>
@@ -150,10 +150,6 @@ export default function Home() {
             paper is your signature inside the asset, covered by the merkle root. The PDF itself
             sits on IPFS, addressed by its CID, a hash of its bytes.
           </p>
-          <p>
-            Ratings will be assets too: each rating is its own Knowledge Asset pointing at the
-            paper, and its scores are recorded on VeriSci's rating contract.
-          </p>
         </div>
       </section>
 
@@ -169,7 +165,7 @@ export default function Home() {
           <Track
             label="Rate"
             badge="coming soon"
-            intro="Anyone will be able to ask for a rating of a published paper. It grows in three phases, and each phase records its own score on chain: a later phase never overwrites an earlier one, so you see how the paper held up at each step. A rating is its own Knowledge Asset pointing at the paper, which never changes."
+            intro="Anyone will be able to ask for a rating of a published paper. Each phase records its own score on chain, so earlier scores stay as they were."
             steps={RATE}
             muted
           />

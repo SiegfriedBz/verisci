@@ -25,7 +25,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   await connection();
   const { REOWN_PROJECT_ID } = createWebEnv();
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
+    <html lang="en" className={`${sans.variable} ${mono.variable} overflow-x-clip`}>
       <body className="relative min-h-[100dvh] overflow-x-hidden font-sans antialiased">
         <div aria-hidden className="bench pointer-events-none absolute inset-x-0 top-0 h-[720px]" />
         <Providers projectId={REOWN_PROJECT_ID}>
