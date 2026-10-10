@@ -26,8 +26,10 @@ so restart `pnpm dev` after editing a root env file. Variables already set in th
 environment (CI, the host) take precedence.
 
 `/api/inngest` needs nothing locally: with `APP_ENV=local` it talks to the Inngest dev
-server. Deployed, it needs Inngest's event and signing keys, and the publish run reads its
-own settings on its first run ([`packages/agents`](../../packages/agents/README.md#environment)).
+server. Deployed, it needs Inngest's event and signing keys, and `instrumentation.ts`
+checks the workflows' settings when the server starts, so a bad one stops it there
+([`packages/agents`](../../packages/agents/README.md#environment)). It checks nothing when
+`APP_ENV` is `local`, and does not run during `next build`.
 
 ## Scripts
 

@@ -14,8 +14,11 @@ Status: the publish run, which turns a pinned PDF into a minted Target KA.
 
 Declared in `src/agents-env.ts`, extending the DKG node's settings
 ([`packages/dkg`](../dkg/README.md#environment)), and validated on first import of
-`@verisci/agents/env`, not of the main entry. The functions build their adapters on their
-first run, so `web` serves them, and `next build` imports them, without any of these set.
+`@verisci/agents/env`, not of the main entry, which exports `createAgentsEnv` (it
+validates only when called). The functions build their adapters on their first run, so
+`web` serves them, and `next build` imports them, without any of these set. A deployed
+server (`APP_ENV` other than `local`) checks them when it starts, through
+`apps/web/instrumentation.ts`, and refuses to start on a bad one.
 
 | Variable | Value |
 | --- | --- |
@@ -38,7 +41,7 @@ the local dev server; deployed, it needs Inngest's event and signing keys.
 | `PAPER_SUBMITTED` | The event's name, `verisci/paper.submitted` |
 | `PUBLISH_SETTINGS` | The publish run's limits (below) |
 | `PublishOutcome`, `PaperRefusal`, `SubmissionRefusal` | How a run ends: `minted` with its UAL, or `refused` with why |
-| `env`, `createAgentsEnv(runtimeEnv)`, `AgentsEnv` (from `@verisci/agents/env`) | The validated settings, the function that builds them from a given object, and their type |
+| `env` (from `@verisci/agents/env`); `createAgentsEnv(runtimeEnv)`, `AgentsEnv` (from either entry) | The validated settings, the function that builds them from a given object, and their type |
 
 ## Publishing a paper
 

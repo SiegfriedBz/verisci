@@ -1,6 +1,7 @@
 /** Package name, listed on the web app's home page. */
 export const agentsName = "@verisci/agents";
 
+export { type AgentsEnv, createAgentsEnv } from "./agents-env.ts";
 export { functions, publishPaper } from "./functions.ts";
 export { inngest } from "./inngest.ts";
 export {
