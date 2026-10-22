@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-/** What the share images draw with: Sora's two weights, and VeriSci's mark as a data URL. */
+/** What the share images draw with: Sora's two weights, and LabsTrail's mark as a data URL. */
 export interface ShareAssets {
   readonly fonts: {
     name: string;

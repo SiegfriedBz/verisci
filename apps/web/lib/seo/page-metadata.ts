@@ -1,5 +1,5 @@
-import { canonicalCid } from "@verisci/core";
-import type { PublishedRecord, RatingView } from "@verisci/workflows";
+import { canonicalCid } from "@labstrail/core";
+import type { PublishedRecord, RatingView } from "@labstrail/workflows";
 import type { Metadata } from "next";
 import type { PaperView } from "../publish/upload-actions.ts";
 import { SITE } from "../site.ts";

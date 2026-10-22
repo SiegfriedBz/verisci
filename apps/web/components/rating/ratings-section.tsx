@@ -1,10 +1,10 @@
-import { Flask, Robot, UsersThree } from "@phosphor-icons/react/dist/ssr";
 import {
   getRatingService,
   type PaperRatingSummary,
   type RatingSummary,
   summariseRatings,
-} from "@verisci/workflows";
+} from "@labstrail/workflows";
+import { Flask, Robot, UsersThree } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { formatPublished } from "../../lib/papers/papers.ts";
 import { ratingChainConfig } from "../../lib/rating/chain.ts";

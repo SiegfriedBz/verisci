@@ -2,19 +2,19 @@
 
 Next.js 16 App Router app. See `README.md` here for scripts and status.
 
-- May import all five `@verisci/*` packages; each must be listed in `transpilePackages`
+- May import all five `@labstrail/*` packages; each must be listed in `transpilePackages`
   in `next.config.ts`, or the import fails at build time.
-- Server-only code (secrets, `@verisci/env`, adapters) stays in server components, route
+- Server-only code (secrets, `@labstrail/env`, adapters) stays in server components, route
   handlers or server actions, never in a `"use client"` file.
 - Env files live at the repo root, never in `apps/web`; `next.config.ts` loads them,
   and editing one needs a dev server restart. Never read them (see the root
   `CLAUDE.md` hooks).
-- Vitest runs in `jsdom` here. `pnpm --filter @verisci/web typecheck` runs `next typegen`
+- Vitest runs in `jsdom` here. `pnpm --filter @labstrail/web typecheck` runs `next typegen`
   first; `next-env.d.ts` is generated, never edit it.
 - Server reads and actions return typed results: never throw an expected failure to the
   client, never swallow it into empty data
   ([ADR 0021](../../docs/adr/0021-server-reads-return-typed-results.md)).
-- Inngest functions live in `@verisci/workflows`; `web` only serves them
+- Inngest functions live in `@labstrail/workflows`; `web` only serves them
   ([ADR 0003](../../docs/adr/0003-inngest-functions-live-in-workflows.md)).
 - Components are grouped by area: `components/site` (the shell every page shares: logo,
   header links, theme button, footer, breadcrumbs, the structured data's script), `wallet`
@@ -48,7 +48,7 @@ Next.js 16 App Router app. See `README.md` here for scripts and status.
   wagmi's or AppKit's hooks. Only `components/wallet/wallet-runtime.ts` imports `@reown/*` or
   `wagmi` at runtime, reached through `import()`; `components/wallet/imports.test.ts` fails on
   any other. Never pass server-only values to a client component except as plain props;
-  client components never import `@verisci/workflows` at runtime (types only).
+  client components never import `@labstrail/workflows` at runtime (types only).
 - Measure performance on a production build (`build`, then `start`) in a fresh private
   window, never on `dev`.
 - Reads the page polls are route handlers, not server actions: Next runs server actions

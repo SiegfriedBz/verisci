@@ -6,7 +6,7 @@ import {
   type ScorerOutput,
   scoreChecks,
   scorerPrompt,
-} from "@verisci/core";
+} from "@labstrail/core";
 import { type GeminiFailureResult, type GeminiOptions, generate } from "../gemini/gemini.ts";
 
 /** The result of {@link askScorer}: Gemini's answer, checked, its quotes not yet checked. */

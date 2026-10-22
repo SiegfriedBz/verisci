@@ -1,5 +1,5 @@
-import { type PaperMetadata, targetKaQuads } from "@verisci/core";
-import type { AssetResult, DkgClient, MintResult } from "@verisci/dkg";
+import { type PaperMetadata, targetKaQuads } from "@labstrail/core";
+import type { AssetResult, DkgClient, MintResult } from "@labstrail/dkg";
 import { Inngest, NonRetriableError } from "inngest";
 import { describe, expect, it, vi } from "vitest";
 import type { Notice } from "../alerts/notify.ts";
@@ -27,7 +27,7 @@ const SUBMISSION = {
 };
 /** When Inngest received the event, in milliseconds. */
 const RECEIVED_AT = 1_800_000_000_000;
-const SITE = "https://verisci.example";
+const SITE = "https://labstrail.example";
 const METADATA: PaperMetadata = {
   title: "A Title",
   authors: ["Ada Lovelace"],
@@ -554,10 +554,10 @@ describe("runPublish", () => {
 });
 
 describe("createPublishPaper", () => {
-  const fn = createPublishPaper(new Inngest({ id: "verisci-test" }), () => fakeDeps({}).deps);
+  const fn = createPublishPaper(new Inngest({ id: "labstrail-test" }), () => fakeDeps({}).deps);
 
-  it("runs on verisci/paper.submitted as a singleton per CID, skipping new runs", () => {
-    expect(fn.opts.triggers).toEqual([{ event: "verisci/paper.submitted" }]);
+  it("runs on labstrail/paper.submitted as a singleton per CID, skipping new runs", () => {
+    expect(fn.opts.triggers).toEqual([{ event: "labstrail/paper.submitted" }]);
     expect(fn.opts.singleton).toEqual({ key: "event.data.cid", mode: "skip" });
   });
 

@@ -1,4 +1,4 @@
-# @verisci/workflows
+# @labstrail/workflows
 
 Inngest workflows that combine `core` logic with the `dkg` and `contracts` adapters;
 `apps/web` only serves them ([ADR 0003](../../docs/adr/0003-inngest-functions-live-in-workflows.md)).
@@ -15,7 +15,7 @@ Architecture views: [`.omm/overall-architecture/workflows/`](../../.omm/overall-
 
 ## Depends on
 
-`@verisci/core`, `@verisci/env`, `@verisci/dkg`, `@verisci/contracts`; Inngest, viem
+`@labstrail/core`, `@labstrail/env`, `@labstrail/dkg`, `@labstrail/contracts`; Inngest, viem
 (signature checks, the rating contract, the oracle's transactions), Zod and unpdf (a PDF's
 text, for the scorer and the field check). The scorer and the field check, which both the
 publish and the rating runs make, call the Gemini API over `fetch` (`src/gemini/`), with no SDK.
@@ -24,7 +24,7 @@ publish and the rating runs make, call the Gemini API over `fetch` (`src/gemini/
 
 Declared in `src/workflows-env.ts`, extending the DKG node's settings
 ([`packages/dkg`](../dkg/README.md#environment)), and validated on first import of
-`@verisci/workflows/env`, not of the main entry, which exports `createWorkflowsEnv` (it
+`@labstrail/workflows/env`, not of the main entry, which exports `createWorkflowsEnv` (it
 validates only when called). The functions build their adapters on their first run, so
 `web` serves them, and `next build` imports them, without any of these set. A deployed
 server (`APP_ENV` other than `local`) checks them when it starts, through
@@ -36,7 +36,7 @@ server (`APP_ENV` other than `local`) checks them when it starts, through
 | `PINATA_GATEWAY_URL` | The Pinata account's dedicated gateway, `https://<name>.mypinata.cloud`, through which the publish and rating runs read PDFs; one account serves every environment ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)) |
 | `CHAIN_RPC_URL` | A Base Sepolia RPC URL, to check smart-contract wallets' signatures and, on staging and production, for the rating functions to read and write the rating contracts and the pages to read their ratings. Deployed, the Alchemy RPC URL: Base's public endpoint refused the pages' bursts (`docs/domain.md` → Chain) |
 | `PINATA_JWT` | A Pinata API key (JWT) allowed to upload, list and delete files; the `publish-pdf` dev script reads it too. Secret |
-| `GEMINI_API_KEY` | A Gemini API key from Google AI Studio, for the field check both runs make ([ADR 0037](../../docs/adr/0037-verisci-rates-life-science-and-health-papers.md)) and the rating functions' scorer ([ADR 0018](../../docs/adr/0018-phase-1-scorer-output-contract.md)); the `score-papers` dev script reads it too. Every deployment checks it at start, previews included. Secret |
+| `GEMINI_API_KEY` | A Gemini API key from Google AI Studio, for the field check both runs make ([ADR 0037](../../docs/adr/0037-labstrail-rates-life-science-and-health-papers.md)) and the rating functions' scorer ([ADR 0018](../../docs/adr/0018-phase-1-scorer-output-contract.md)); the `score-papers` dev script reads it too. Every deployment checks it at start, previews included. Secret |
 | `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY` | Inngest's keys, required unless `APP_ENV` is `local`: the SDK reads them itself, and the signing key also reads runs for the upload page. Secret |
 | `VERCEL_GIT_COMMIT_REF` | Set by Vercel: on staging, the branch, which names the Inngest branch environment runs are read from |
 | `VERCEL_PROJECT_PRODUCTION_URL`, `VERCEL_BRANCH_URL` | Set by Vercel: production's domain and the branch's URL, which notifications link to (`siteUrlOf`); locally, `http://localhost:3000` |
@@ -57,7 +57,7 @@ production, which refuses to start without the key, and on staging when the key 
 | `LOCAL_CHAIN_RPC_URL`, `LOCAL_RATING_CONTRACT` | Required only when `APP_ENV=local`: Anvil's URL (`http://127.0.0.1:8546`) and the RatingController deployed there ([ADR 0036](../../docs/adr/0036-local-rating-runs-use-anvil.md)). The pages' rating calls (`getRatingService`), the `rate-paper`, `fund-local` and `post-webhook` scripts read them too (`post-webhook` only the URL), and the webhook's intake reads the contract, locally only (`webhookSchema`). Elsewhere the contracts come from the committed deployments file, current and past ([ADR 0028](../../docs/adr/0028-deployed-addresses-are-committed.md)) |
 
 `DKG_CONTEXT_GRAPH` must spell its address in EIP-55 checksum case, as the node lists it
-(`@verisci/dkg`'s rule): a query with the address in another case reads another, empty
+(`@labstrail/dkg`'s rule): a query with the address in another case reads another, empty
 graph, so the papers list would show none (`docs/domain.md` → DKG).
 
 With `APP_ENV=local` the Inngest client sends events to the local dev server and the
@@ -68,17 +68,17 @@ upload page reads runs there, with no keys.
 | Export | What it does |
 | --- | --- |
 | `workflowsName` | The package name, imported by the web app's package test |
-| `inngest` | VeriSci's Inngest client, in dev mode when `APP_ENV` is `local` |
+| `inngest` | LabsTrail's Inngest client, in dev mode when `APP_ENV` is `local` |
 | `functions`, `servedFunctions(runtimeEnv)` | The Inngest functions this deployment serves, for `web`'s `/api/inngest` route: the publish function and the failure alerts, plus the rating, oracle, reconciler and health functions when `ORACLE_PRIVATE_KEY` is set |
 | `reconcileRatings`, `failureAlerts`, `healthCheck` | The `reconcile-ratings` cron, the `alert-on-failure` function and the `check-health` cron (below) |
-| `publishPaper` | The `publish-paper` function, run by `verisci/paper.submitted` |
-| `ratePaper`, `oracleTransaction` | The `rate-paper` function, run by `verisci/rating.requested`, and the `oracle-transaction` function it invokes (below) |
-| `RATING_REQUESTED`, `RatingRequested`, `ratingRequestedEvent(log)` | The rating event's name, `verisci/rating.requested`, its data `{ contract, requestId }`, and the event for a `Phase1Requested` log (id `rating:<request id>`), or `undefined` for any other log |
+| `publishPaper` | The `publish-paper` function, run by `labstrail/paper.submitted` |
+| `ratePaper`, `oracleTransaction` | The `rate-paper` function, run by `labstrail/rating.requested`, and the `oracle-transaction` function it invokes (below) |
+| `RATING_REQUESTED`, `RatingRequested`, `ratingRequestedEvent(log)` | The rating event's name, `labstrail/rating.requested`, its data `{ contract, requestId }`, and the event for a `Phase1Requested` log (id `rating:<request id>`), or `undefined` for any other log |
 | `RATING_SETTINGS`, `ORACLE_SETTINGS` | The rating run's and the oracle function's limits (below) |
 | `RatingOutcome`, `RatingFailure`, `ratingFailureReason(output)` | How a rating run ends (`fulfilled`, `cancelled` with an optional orphan R-KA, `skipped`, with an orphan R-KA when the oracle found the request gone, or the R-KA an oracle move may leave unrecorded), and why one stopped instead: each error it throws starts `rating-failed:<reason>:` |
 | `OracleAction`, `OracleInput`, `OracleResult`, `OracleFailure` | What the oracle function is asked, what it answers, and why it stops (`oracle-failed:<reason>:`) |
 | `createRatingEnv(runtimeEnv)`, `RatingEnv`, `checkRatingSettings(runtimeEnv)`, `ratingSettingsRequired(runtimeEnv)`, `servesRating(runtimeEnv)` | The rating settings and their type, the start check `apps/web/instrumentation.ts` runs, when it requires them, and whether a deployment serves the rating functions |
-| `PAPER_SUBMITTED` | The event's name, `verisci/paper.submitted` |
+| `PAPER_SUBMITTED` | The event's name, `labstrail/paper.submitted` |
 | `PUBLISH_SETTINGS` | The publish run's limits (below) |
 | `PublishOutcome`, `PaperRefusal`, `SubmissionRefusal` | How a run ends: `minted` with its UAL, or `refused` with why |
 | `PublishFailure`, `publishFailureReason(output)` | Why a run stopped instead (`chain-unreachable`, `paper-unreachable`, `node-unreachable`, `network-refused`, `mint-not-confirmed`, `setup`): each error it throws starts `publish-failed:<reason>:`, and the reader finds it in a failed run's output however Inngest nests it |
@@ -93,11 +93,11 @@ upload page reads runs there, with no keys.
 | `PaperRatingSummary`, `summariseRatings(ratings)` | A paper's rating as the pages show it (`scored` with the latest score, `pending`, `cannot-rate`, `unrated`, or `unknown` when the chain did not answer), and the one rule, shared by the papers list and the paper page, that sums a paper's requests into it |
 | `getWebhookIntake()`, `WebhookIntake`, `WebhookStatus` | The Alchemy Notify webhook's intake for `apps/web`'s route, built on first use: `receive(rawBody, signature)` answers the status to send back (below) |
 | `PaperListResult`, `PaperSummary`, `SignatureCheck`, `QueryProblem` | What `listPapers` returns: a page of papers with the total, or why not (`unavailable`, `unreadable`); one listed paper; a signature check (`valid`, `invalid`, `unknown`) |
-| `env` (from `@verisci/workflows/env`); `createWorkflowsEnv(runtimeEnv)`, `WorkflowsEnv` (from either entry) | The validated settings, the function that builds them from a given object, and their type |
+| `env` (from `@labstrail/workflows/env`); `createWorkflowsEnv(runtimeEnv)`, `WorkflowsEnv` (from either entry) | The validated settings, the function that builds them from a given object, and their type |
 
 ## Publishing a paper
 
-`verisci/paper.submitted` carries `{ cid, contextGraph, deadline, submitter, signature }`:
+`labstrail/paper.submitted` carries `{ cid, contextGraph, deadline, submitter, signature }`:
 the PDF's CID (canonical CIDv1 base32), the context graph, a deadline in Unix seconds as a
 decimal string, and the submitter's EIP-712 signature over the first three
 ([`packages/core`](../core/README.md#target-kas), [ADR 0010](../../docs/adr/0010-pdf-to-target-ka-pipeline.md)).
@@ -125,8 +125,8 @@ starts nothing. Its steps:
    `completeTitle` takes the stored one only when it ends with GROBID's, after words that are
    not a journal's name (`packages/core` → Target KAs).
 4. **check-field**: asks `gemini-3.5-flash-lite` (`fieldModel`, free tier) whether the paper
-   is in VeriSci's field, from its title, abstract and opening (`checkField`, with core's
-   `fieldCheckPrompt`; [ADR 0037](../../docs/adr/0037-verisci-rates-life-science-and-health-papers.md)).
+   is in LabsTrail's field, from its title, abstract and opening (`checkField`, with core's
+   `fieldCheckPrompt`; [ADR 0037](../../docs/adr/0037-labstrail-rates-life-science-and-health-papers.md)).
    A paper `outside` ends the run `refused: outside-field` before anything is stored, and the
    run logs Gemini's reason with the CID. A check that gets no answer (a rate limit, an outage,
    an answer that does not parse) waits 30 s (`fieldRetryWait`, `check-field-wait-<n>`) and
@@ -167,7 +167,7 @@ Retries ([ADR 0009](../../docs/adr/0009-retries-are-spaced-with-step-sleep.md)):
 
 ## Rating a paper
 
-`verisci/rating.requested` carries `{ contract, requestId }`: a RatingController's lowercase
+`labstrail/rating.requested` carries `{ contract, requestId }`: a RatingController's lowercase
 address and a phase-1 request id. The `rate-paper` run is a singleton per request id in mode
 `skip` ([ADR 0020](../../docs/adr/0020-stuck-requests-recovered-only-oracle-cancels.md)),
 has 300 minutes, enough for every attempt, their waits and the oracle, and outside `APP_ENV=local` is
@@ -180,7 +180,7 @@ is left ([ADR 0007](../../docs/adr/0007-all-writes-converge.md)):
    `LOCAL_RATING_CONTRACT`. **read-request** reads the request and the contract's oracle; a
    request no longer pending, or a contract whose oracle is not this deployment's key, ends
    the run before anything is spent.
-2. **The target:** only papers verisci published are rated
+2. **The target:** only papers LabsTrail published are rated
    ([ADR 0011](../../docs/adr/0011-a-rating-is-a-separate-r-ka.md)). A UAL that does not
    parse, is not canonical
    ([ADR 0031](../../docs/adr/0031-uals-are-normalized-before-the-contract.md)), names another
@@ -216,7 +216,7 @@ is left ([ADR 0007](../../docs/adr/0007-all-writes-converge.md)):
      publish run does (`checkField`, from its title, abstract and first 6,000 characters), once
      a run: a paper `outside` cancels `invalid-target` before Flash is asked, even while Flash is
      down; a check that does not answer leaves the field to the scorer
-     ([ADR 0037](../../docs/adr/0037-verisci-rates-life-science-and-health-papers.md)).
+     ([ADR 0037](../../docs/adr/0037-labstrail-rates-life-science-and-health-papers.md)).
    - **score-paper** asks Gemini, in one request, for the paper's field and study type and the
      answer to each of that type's checks, with quotes; `scoreChecks` checks the quotes and
      computes the score. A paper outside the life sciences and health cancels
@@ -284,14 +284,14 @@ and a score range 10 points either side of the score those answers give; a test 
 consistent with the checklists. The expectations were written before the scorer first read
 the papers, and change only on purpose.
 
-`pnpm --filter @verisci/workflows score-papers [id…]` scores them as a rating run would:
+`pnpm --filter @labstrail/workflows score-papers [id…]` scores them as a rating run would:
 the PDF's text, then one request to Gemini, asked again as a rating run would. It prints,
 for each paper, the study type found, the score against its range and, when the type is the
 expected one, each check answered otherwise than expected, with why an answer lost its point:
 its quote is not in the paper, it has none, or it says a check that always applies does not.
 Run it whenever a prompt, a checklist or the model changes, and keep the change only if the
 results improve. It needs `GEMINI_API_KEY` and `APP_ENV=local`, downloads each PDF once into
-`node_modules/.cache/verisci-reference/` (a file that is not a PDF, such as a publisher's
+`node_modules/.cache/labstrail-reference/` (a file that is not a PDF, such as a publisher's
 robot check, is not kept: save the PDF there by hand), and writes the run's answers there
 after each paper. It never publishes, stores or rates anything.
 
@@ -351,7 +351,7 @@ Deployed, the rating run starts from the Alchemy Notify webhook
   before parsing, and answers 401 when it is missing or wrong;
 - answers 400, logged `webhook-unreadable: <field>`, for a body that is not a Custom Webhook
   (GraphQL) delivery;
-- sends one `verisci/rating.requested` event per `Phase1Requested` log of an environment
+- sends one `labstrail/rating.requested` event per `Phase1Requested` log of an environment
   contract, built with `ratingRequestedEvent` (id `rating:<request id>`, so a repeated delivery
   makes no second run); a log marked `removed`, of another contract or of another event sends
   nothing. After a reorg, Alchemy Notify delivers the new block; the run's read of the request
@@ -472,7 +472,7 @@ papers list:
   Target KA is known missing; a PDF stays pinned, since every environment shares Pinata's
   one file per CID and their size limits may differ
   ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)). It then sends
-  `verisci/paper.submitted` with no time of its own, so Inngest stamps it, under the id
+  `labstrail/paper.submitted` with no time of its own, so Inngest stamps it, under the id
   `paper:<cid>:<submitter>:<deadline>`: Inngest drops a repeat of one signed submission for
   24 hours. A new signature starts a run unless one for that CID is active (the singleton),
   and the paper's page then follows the paper on the node. It returns Inngest's event id.
@@ -559,9 +559,9 @@ wallet's signature check, an `eth_call` with no contract address, is sent on its
    the node server's URLs and the `local` credential
    ([`docs/node-host.md`](../../docs/node-host.md) → The developer's computer).
 2. Nothing to start for the node or GROBID: both run on the node server.
-3. `pnpm dev`, then, in another terminal, `pnpm --filter @verisci/web inngest` (the
+3. `pnpm dev`, then, in another terminal, `pnpm --filter @labstrail/web inngest` (the
    Inngest dev server, at http://localhost:8288).
-4. `pnpm --filter @verisci/workflows publish-pdf <file.pdf>` pins the PDF on Pinata's public
+4. `pnpm --filter @labstrail/workflows publish-pdf <file.pdf>` pins the PDF on Pinata's public
    network with CIDv1 import settings, signs it with a throwaway key and sends the event. A
    relative path is read from the directory you type the command in.
    The run's steps and result show in the dev server.
@@ -586,8 +586,8 @@ R-KAs still go to the staging graph.
 3. In the root `.env.local`, set `ORACLE_PRIVATE_KEY` to the key of Anvil's second account,
    `GEMINI_API_KEY`, `LOCAL_CHAIN_RPC_URL=http://127.0.0.1:8546` and `LOCAL_RATING_CONTRACT`
    ([`.env.example`](../../.env.example)), with the DKG and publish settings.
-4. `pnpm dev`, then, in another terminal, `pnpm --filter @verisci/web inngest`.
-5. `pnpm --filter @verisci/workflows rate-paper <target UAL>` requests a rating of a paper
+4. `pnpm dev`, then, in another terminal, `pnpm --filter @labstrail/web inngest`.
+5. `pnpm --filter @labstrail/workflows rate-paper <target UAL>` requests a rating of a paper
    from the staging graph, from a throwaway requester it funds on Anvil, and sends the event.
    It prints the request id; the run shows in the dev server. `--raw` sends the UAL as typed,
    to see an invalid one cancelled.
@@ -600,7 +600,7 @@ Or rate through the pages, after steps 1 to 4:
    ([`apps/web`](../../apps/web/README.md#environment)), and add Anvil to your wallet as a
    network (chain id 31337, RPC `http://127.0.0.1:8546`); the wallet window offers it only
    with `APP_ENV=local`.
-2. `pnpm --filter @verisci/workflows fund-local <your address>` gives that address 1 ETH on
+2. `pnpm --filter @labstrail/workflows fund-local <your address>` gives that address 1 ETH on
    Anvil, for the request's gas.
 3. Open a published paper's page, click **Rate this paper** and confirm in the wallet. The page
    waits for the receipt, then has the server announce the request (`announceLocalRating`),
@@ -612,9 +612,9 @@ To check the webhook route and the reconciler locally:
 
 1. Set `ALCHEMY_WEBHOOK_SIGNING_KEY` to any value in the root `.env.local`, and restart
    `pnpm dev`.
-2. `pnpm --filter @verisci/workflows rate-paper <target UAL> --no-event` requests a rating
+2. `pnpm --filter @labstrail/workflows rate-paper <target UAL> --no-event` requests a rating
    without sending its event, and prints the transaction.
-3. `pnpm --filter @verisci/workflows post-webhook <transaction>` posts that transaction's logs
+3. `pnpm --filter @labstrail/workflows post-webhook <transaction>` posts that transaction's logs
    to the route as a signed Alchemy Notify delivery; it prints the route's answer, and the run
    starts in the dev server.
 4. Or leave the request unannounced: the reconciler starts its run once it is 4 hours old, if
@@ -639,13 +639,13 @@ stuck transaction are checked on `develop`; the unit tests cover every branch wi
 
 | Command | What it does |
 | --- | --- |
-| `pnpm --filter @verisci/workflows typecheck` | Typechecks the package and its scripts |
-| `pnpm --filter @verisci/workflows test` | Runs its Vitest project (`vitest run`) with mocked adapters |
-| `pnpm --filter @verisci/workflows publish-pdf <file.pdf>` | Dev only: pins a PDF, signs it and sends `verisci/paper.submitted` to the local dev server |
-| `pnpm --filter @verisci/workflows rate-paper <target UAL> [--raw] [--no-event]` | Dev only, `APP_ENV=local`: requests a rating on the Anvil contract from a throwaway requester and sends `verisci/rating.requested` to the local dev server; `--no-event` sends nothing and prints the transaction |
-| `pnpm --filter @verisci/workflows post-webhook <tx hash> [--url <route>]` | Dev only, `APP_ENV=local`: posts a transaction's logs on Anvil to the webhook route as an Alchemy Notify delivery signed with `ALCHEMY_WEBHOOK_SIGNING_KEY` |
-| `pnpm --filter @verisci/workflows fund-local <address>` | Dev only, `APP_ENV=local`: gives the address 1 ETH on Anvil, so its wallet can request a rating from the paper page |
-| `pnpm --filter @verisci/workflows score-papers [--field] [id…]` | Dev only, `APP_ENV=local`: scores the reference papers with Gemini and compares each with what is expected, or with `--field` runs only the publish run's field check on them (Measuring the scorer above) |
+| `pnpm --filter @labstrail/workflows typecheck` | Typechecks the package and its scripts |
+| `pnpm --filter @labstrail/workflows test` | Runs its Vitest project (`vitest run`) with mocked adapters |
+| `pnpm --filter @labstrail/workflows publish-pdf <file.pdf>` | Dev only: pins a PDF, signs it and sends `labstrail/paper.submitted` to the local dev server |
+| `pnpm --filter @labstrail/workflows rate-paper <target UAL> [--raw] [--no-event]` | Dev only, `APP_ENV=local`: requests a rating on the Anvil contract from a throwaway requester and sends `labstrail/rating.requested` to the local dev server; `--no-event` sends nothing and prints the transaction |
+| `pnpm --filter @labstrail/workflows post-webhook <tx hash> [--url <route>]` | Dev only, `APP_ENV=local`: posts a transaction's logs on Anvil to the webhook route as an Alchemy Notify delivery signed with `ALCHEMY_WEBHOOK_SIGNING_KEY` |
+| `pnpm --filter @labstrail/workflows fund-local <address>` | Dev only, `APP_ENV=local`: gives the address 1 ETH on Anvil, so its wallet can request a rating from the paper page |
+| `pnpm --filter @labstrail/workflows score-papers [--field] [id…]` | Dev only, `APP_ENV=local`: scores the reference papers with Gemini and compares each with what is expected, or with `--field` runs only the publish run's field check on them (Measuring the scorer above) |
 
 Ships TypeScript source (`src/index.ts`, `src/env.ts`), with no build step. The source is
 grouped by feature: `src/publish/`, `src/rating/`, `src/pdf/`, `src/gemini/`, `src/site/` and

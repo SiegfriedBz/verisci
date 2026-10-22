@@ -1,1 +1,1 @@
-Cancelled by the oracle: "This paper can't be rated" (outside the field, a PDF whose text can't be read, not one of VeriSci's papers, or no usable answer from the scoring model) or "The rating couldn't finish within a day"; the page stops polling.
+Cancelled by the oracle: "This paper can't be rated" (outside the field, a PDF whose text can't be read, not one of LabsTrail's papers, or no usable answer from the scoring model) or "The rating couldn't finish within a day"; the page stops polling.

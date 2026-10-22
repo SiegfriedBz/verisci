@@ -1,5 +1,5 @@
+import { getUploadService, type PaperListResult } from "@labstrail/workflows";
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
-import { getUploadService, type PaperListResult } from "@verisci/workflows";
 import Link from "next/link";
 import { LATEST_PAPERS } from "../../lib/papers/papers.ts";
 import { ratingSummaries, withRatings } from "../../lib/papers/ratings.ts";

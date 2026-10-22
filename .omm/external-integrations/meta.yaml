@@ -20,20 +20,20 @@ children:
   - upstash
   - vercel
   - vercel-analytics
-  - verisci
+  - LabsTrail
 prev_diagram: >
   graph LR
-      verisci["VeriSci\napps/web/, packages/workflows/"] -->|"store, mint, SPARQL, status"| dkg-node["DKG Node\npackages/dkg/src/client.ts"]
-      verisci -->|"paper header TEI"| grobid["GROBID\nworkflows/src/publish/grobid.ts"]
-      verisci -->|"signed upload URLs, gateway reads"| pinata["Pinata\nworkflows/src/publish/pinata.ts, pdf/fetch-pdf.ts"]
-      verisci -->|"signatures, requests, oracle transactions, balances"| base-rpc["Base Sepolia RPC\nviem in workflows and web"]
-      verisci -->|"a field check per new paper and per rating, a scoring request per attempt until answered"| gemini["Gemini API\nworkflows/src/gemini/gemini.ts"]
-      verisci -->|"events, steps, run state"| inngest["Inngest\nworkflows/src/inngest.ts, site/runs.ts"]
-      verisci -->|"rate-limit counters"| upstash["Upstash Redis\napps/web/lib/publish/limits.ts"]
-      verisci -->|"wallet connection"| reown["Reown AppKit\napps/web/components/wallet/"]
-      verisci -->|"activity and alerts"| telegram["Telegram\nworkflows/src/alerts/notify.ts"]
-      alchemy-notify["Alchemy Notify\nwebhook"] -->|"signed contract events, requests among them"| verisci
-      vercel["Vercel\nhosting"] -->|"hosts the site and its functions"| verisci
+      labstrail["LabsTrail\napps/web/, packages/workflows/"] -->|"store, mint, SPARQL, status"| dkg-node["DKG Node\npackages/dkg/src/client.ts"]
+      labstrail -->|"paper header TEI"| grobid["GROBID\nworkflows/src/publish/grobid.ts"]
+      labstrail -->|"signed upload URLs, gateway reads"| pinata["Pinata\nworkflows/src/publish/pinata.ts, pdf/fetch-pdf.ts"]
+      labstrail -->|"signatures, requests, oracle transactions, balances"| base-rpc["Base Sepolia RPC\nviem in workflows and web"]
+      labstrail -->|"a field check per new paper and per rating, a scoring request per attempt until answered"| gemini["Gemini API\nworkflows/src/gemini/gemini.ts"]
+      labstrail -->|"events, steps, run state"| inngest["Inngest\nworkflows/src/inngest.ts, site/runs.ts"]
+      labstrail -->|"rate-limit counters"| upstash["Upstash Redis\napps/web/lib/publish/limits.ts"]
+      labstrail -->|"wallet connection"| reown["Reown AppKit\napps/web/components/wallet/"]
+      labstrail -->|"activity and alerts"| telegram["Telegram\nworkflows/src/alerts/notify.ts"]
+      alchemy-notify["Alchemy Notify\nwebhook"] -->|"signed contract events, requests among them"| LabsTrail
+      vercel["Vercel\nhosting"] -->|"hosts the site and its functions"| LabsTrail
       oracle-cloud["Oracle Cloud\nnode server VM"] -->|"hosts the daemon"| dkg-node
       oracle-cloud -->|"hosts GROBID"| grobid
       duckdns["DuckDNS\nthe server's two names"] -->|"points both names at the server"| oracle-cloud

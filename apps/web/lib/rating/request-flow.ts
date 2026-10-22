@@ -1,5 +1,5 @@
-import { ratingControllerAbi } from "@verisci/contracts";
-import type { AnnounceResult } from "@verisci/workflows";
+import { ratingControllerAbi } from "@labstrail/contracts";
+import type { AnnounceResult } from "@labstrail/workflows";
 import { decodeEventLog, type Hex } from "viem";
 import type { RequestProblem } from "./messages.ts";
 

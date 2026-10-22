@@ -1,4 +1,4 @@
-# @verisci/rpc-proxy
+# @labstrail/rpc-proxy
 
 A small JSON-RPC proxy that runs beside the DKG daemon, on `127.0.0.1:8545`. The DKG
 daemon takes a single `chain.rpcUrl`; this proxy is that URL. It spreads the daemon's Base
@@ -74,7 +74,7 @@ and used up the free tier after a few weeks (`docs/domain.md` → DKG).
 
 Read from the environment: by hand, from a file passed with `node --env-file` (below); on
 a server, from the systemd unit's `EnvironmentFile`. It runs with plain Node, so it reads
-them itself rather than through `@verisci/env` ([ADR 0004](../../docs/adr/0004-env-variables-per-workspace-one-root-file.md)).
+them itself rather than through `@labstrail/env` ([ADR 0004](../../docs/adr/0004-env-variables-per-workspace-one-root-file.md)).
 
 | Variable | Required | Default | Meaning |
 | --- | --- | --- | --- |
@@ -112,6 +112,6 @@ node --env-file="$HOME/.config/verisci/rpc-proxy.env" infra/rpc-proxy/src/main.t
 
 | Command | What it does |
 | --- | --- |
-| `pnpm --filter @verisci/rpc-proxy test` | Vitest; upstreams and clock are faked |
-| `pnpm --filter @verisci/rpc-proxy typecheck` | Typechecks the package |
-| `pnpm --filter @verisci/rpc-proxy start` | Runs it locally (needs `UPSTREAM_RPC`) |
+| `pnpm --filter @labstrail/rpc-proxy test` | Vitest; upstreams and clock are faked |
+| `pnpm --filter @labstrail/rpc-proxy typecheck` | Typechecks the package |
+| `pnpm --filter @labstrail/rpc-proxy start` | Runs it locally (needs `UPSTREAM_RPC`) |

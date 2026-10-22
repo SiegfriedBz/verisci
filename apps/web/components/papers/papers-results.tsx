@@ -1,4 +1,4 @@
-import { getUploadService } from "@verisci/workflows";
+import { getUploadService } from "@labstrail/workflows";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PAPERS_PER_PAGE, pageHref, papersView } from "../../lib/papers/papers.ts";

@@ -1,4 +1,4 @@
-import type { PaperListResult, PublishLogger } from "@verisci/workflows";
+import type { PaperListResult, PublishLogger } from "@labstrail/workflows";
 import type { MetadataRoute } from "next";
 import type { WebEnv } from "../web-env.ts";
 import { siteUrl } from "./site-metadata.ts";

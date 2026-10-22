@@ -1,15 +1,15 @@
-# 0037. VeriSci publishes and rates life-science and health papers
+# 0037. LabsTrail publishes and rates life-science and health papers
 
 - Status: Accepted
 - Date: 2026-10-11
 
 ## Context
 
-A rating checks how completely a paper reports its work, against the reporting checklists written for its kind of study ([0018](0018-phase-1-scorer-output-contract.md)). Those checklists (CONSORT for trials, ARRIVE for animal research, MDAR for laboratory work, PRISMA for systematic reviews) exist for biology and medicine. A physics or computer-science paper answers none of their checks, so a score for it would say nothing. VeriSci is a DeSci app for the life sciences.
+A rating checks how completely a paper reports its work, against the reporting checklists written for its kind of study ([0018](0018-phase-1-scorer-output-contract.md)). Those checklists (CONSORT for trials, ARRIVE for animal research, MDAR for laboratory work, PRISMA for systematic reviews) exist for biology and medicine. A physics or computer-science paper answers none of their checks, so a score for it would say nothing. LabsTrail is a DeSci app for the life sciences.
 
 ## Decision
 
-- VeriSci publishes and rates papers in the life sciences and health: biology, medicine, health, neuroscience, pharmacology, public health and bioinformatics, and psychology when the study is about health.
+- LabsTrail publishes and rates papers in the life sciences and health: biology, medicine, health, neuroscience, pharmacology, public health and bioinformatics, and psychology when the study is about health.
 - Publishing checks the field: a small Gemini model reads a new paper's title, abstract and the start of its text before anything is stored. A paper it places outside the field is refused. When it gives no answer (an outage, a rate limit, the free tier's daily limit used up), publishing asks once more; with still no answer, the paper is published and its rating checks the field. When Gemini refuses the request (a bad key, a retired model), it is a setup error: publishing stops until it is fixed.
 - Rating checks the field again, twice: first with the same small model, from the paper's title, abstract and opening, so a paper outside it is cancelled even while the scorer's model is unavailable; then with the phase-1 scorer, which reads the whole paper and has the last word. The small model's "in the field" lets the paper go on to the scorer; either check's "outside" cancels the request with reason "invalid target" ([0011](0011-a-rating-is-a-separate-r-ka.md)).
 
@@ -28,3 +28,4 @@ A rating checks how completely a paper reports its work, against the reporting c
 - 2026-10-13: publishing asks Gemini a second time before it treats the check as unanswered, as [0010](0010-pdf-to-target-ka-pipeline.md) records (ADR sweep, user's choice).
 - 2026-10-16: the rating run checks the field with the small model before the scorer, so a paper outside it is cancelled while the scorer's model is down: paper /5 waited through five of its outages before its cancel (intake and recovery, user's choice).
 - 2026-10-16: corrected: at rating, either check's "outside" cancels the request; the small model's "in the field" lets the paper go on to the scorer, which reads the whole paper and has the last word (ADR sweep, user's choice).
+- 2026-10-22: the project renamed LabsTrail, and this file with it ([0042](0042-the-project-is-named-labstrail.md), user's choice).

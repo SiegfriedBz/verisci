@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const receive = vi.fn<(rawBody: string, signature: string | null) => Promise<number>>();
-vi.mock("@verisci/workflows", () => ({ getWebhookIntake: () => ({ receive }) }));
+vi.mock("@labstrail/workflows", () => ({ getWebhookIntake: () => ({ receive }) }));
 
 const { POST } = await import("./route.ts");
 

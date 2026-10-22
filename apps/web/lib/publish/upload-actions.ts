@@ -1,11 +1,11 @@
-import { canonicalCid } from "@verisci/core";
+import { canonicalCid } from "@labstrail/core";
 import type {
   PublishedRecord,
   PublishLogger,
   SubmitLimiter,
   SubmitResult,
   UploadService,
-} from "@verisci/workflows";
+} from "@labstrail/workflows";
 import { cache } from "react";
 import type { Counter } from "./limits.ts";
 import { eventTime, type PaperStage, paperProgress } from "./progress.ts";

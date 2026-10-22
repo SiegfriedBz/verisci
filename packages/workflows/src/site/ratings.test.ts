@@ -1,7 +1,7 @@
-import type { RatingRequestState, ReadRequestResult } from "@verisci/contracts";
-import { ratingControllerAbi } from "@verisci/contracts";
-import { rKaName, rKaQuads, SCORER_PROMPT_VERSION } from "@verisci/core";
-import type { AssetResult, QueryResult } from "@verisci/dkg";
+import type { RatingRequestState, ReadRequestResult } from "@labstrail/contracts";
+import { ratingControllerAbi } from "@labstrail/contracts";
+import { rKaName, rKaQuads, SCORER_PROMPT_VERSION } from "@labstrail/core";
+import type { AssetResult, QueryResult } from "@labstrail/dkg";
 import { encodeAbiParameters, encodeEventTopics, type Hex, keccak256, toHex } from "viem";
 import { describe, expect, it, vi } from "vitest";
 import { createRatingService, type RatingIo, summariseRatings } from "./ratings.ts";
@@ -477,7 +477,7 @@ describe("announceLocalRating", () => {
     });
     expect(fake.sent).toEqual([
       {
-        name: "verisci/rating.requested",
+        name: "labstrail/rating.requested",
         id: `rating:${requestId}`,
         data: { contract: ANVIL, requestId },
       },

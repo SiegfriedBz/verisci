@@ -1,4 +1,4 @@
-import { checklistOf, type PaperText, SCORER_OUTPUT_SCHEMA, scorerPrompt } from "@verisci/core";
+import { checklistOf, type PaperText, SCORER_OUTPUT_SCHEMA, scorerPrompt } from "@labstrail/core";
 import { describe, expect, it, vi } from "vitest";
 import { askScorer, scorePaper } from "./scorer.ts";
 

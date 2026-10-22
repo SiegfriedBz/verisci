@@ -1,4 +1,4 @@
-import { getRatingService } from "@verisci/workflows";
+import { getRatingService } from "@labstrail/workflows";
 import { ratingChainConfig } from "../../../../lib/rating/chain.ts";
 import { isRequestId } from "../../../../lib/rating/stage.ts";
 import { createWebEnv } from "../../../../lib/web-env.ts";

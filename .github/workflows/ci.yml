@@ -93,7 +93,7 @@ jobs:
           restore-keys: pnpm-${{ runner.os }}-
 
       - name: Install the contracts workspace
-        run: pnpm install --frozen-lockfile --filter @verisci/contracts
+        run: pnpm install --frozen-lockfile --filter @labstrail/contracts
 
       - uses: foundry-rs/foundry-toolchain@v1
         with:

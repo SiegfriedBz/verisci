@@ -1,4 +1,4 @@
-import { getUploadService } from "@verisci/workflows";
+import { getUploadService } from "@labstrail/workflows";
 import { readProgress } from "../../../../lib/publish/upload-actions.ts";
 
 /**

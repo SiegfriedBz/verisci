@@ -1,5 +1,5 @@
+import type { RatingView } from "@labstrail/workflows";
 import { cleanup, render, screen } from "@testing-library/react";
-import type { RatingView } from "@verisci/workflows";
 import { Suspense } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PaperView } from "../../../../../lib/publish/upload-actions.ts";
@@ -28,7 +28,7 @@ vi.mock("next/navigation", () => ({
     throw new Error("NEXT_NOT_FOUND");
   },
 }));
-vi.mock("@verisci/workflows", () => ({
+vi.mock("@labstrail/workflows", () => ({
   getRatingService: () => getRatingService(),
   getUploadService: () => ({}),
 }));

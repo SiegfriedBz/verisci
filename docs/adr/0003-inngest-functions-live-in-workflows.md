@@ -9,7 +9,7 @@ Inngest functions combine the dkg and contracts adapters with core logic. Defini
 
 ## Decision
 
-Inngest functions are defined in `@verisci/workflows`. `web` only serves them through its `/api/inngest` route.
+Inngest functions are defined in `@labstrail/workflows`. `web` only serves them through its `/api/inngest` route.
 
 ## Consequences
 
@@ -20,3 +20,4 @@ Inngest functions are defined in `@verisci/workflows`. `web` only serves them th
 
 - 2026-10-10: the package is renamed `workflows` (was `agents`), since it holds background workflows and none of them uses AI; retitled (was "Inngest workflows live in the agents package"). The decision is unchanged.
 - 2026-10-10: corrected: the context no longer says the package keeps adapter code out of `web`'s build; `web` serves the functions, so its build includes it (ADR sweep).
+- 2026-10-22: the project renamed LabsTrail ([0042](0042-the-project-is-named-labstrail.md), user's choice).

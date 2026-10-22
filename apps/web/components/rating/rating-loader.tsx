@@ -1,4 +1,4 @@
-import { getRatingService, getUploadService } from "@verisci/workflows";
+import { getRatingService, getUploadService } from "@labstrail/workflows";
 import { notFound } from "next/navigation";
 import { readProgressOnce } from "../../lib/publish/upload-actions.ts";
 import { ratingChainConfig } from "../../lib/rating/chain.ts";

@@ -1,5 +1,5 @@
+import type { PublishedRecord } from "@labstrail/workflows";
 import { cleanup, render, screen, within } from "@testing-library/react";
-import type { PublishedRecord } from "@verisci/workflows";
 import { afterEach, describe, expect, it } from "vitest";
 import { VERIFY_GROUPS, VERIFY_LABELS } from "./labels.ts";
 import { VerifyPanel } from "./verify-panel.tsx";

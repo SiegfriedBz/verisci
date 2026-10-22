@@ -1,6 +1,6 @@
 graph LR
     read-request["Read Request\nstep read-request"] -->|"pending, our oracle"| find-target["Find Target\nstep find-target"]
-    find-target -->|"a paper verisci published"| read-rka["Read R-KA\nstep read-rka-n"]
+    find-target -->|"a paper LabsTrail published"| read-rka["Read R-KA\nstep read-rka-n"]
     find-target -->|"anything else"| cancel["Cancel\noracle cancel"]
     read-rka -->|"missing"| find-pdf["Find PDF\nstep find-pdf-n"]
     read-rka -->|"past 24 hours, not minted: expired"| cancel

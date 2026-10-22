@@ -1,5 +1,5 @@
 graph LR
-    events["Rating Event\nevents.ts"] -->|"verisci/rating.requested starts"| rate-paper["Rating Run\nrate-paper.ts"]
+    events["Rating Event\nevents.ts"] -->|"labstrail/rating.requested starts"| rate-paper["Rating Run\nrate-paper.ts"]
     rate-paper -->|"scores the paper's text with"| scorer["Scorer Call\nscorer.ts"]
     rate-paper -->|"step.invoke fulfil or cancel"| oracle["Oracle Function\noracle.ts, oracle-chain.ts"]
     reconciler["Reconciler\nreconciler.ts, pending.ts"] -->|"sends the event again for stale requests, built with"| events

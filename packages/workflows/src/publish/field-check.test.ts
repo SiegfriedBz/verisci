@@ -1,4 +1,4 @@
-import { FIELD_OUTPUT_SCHEMA, type FieldCheckInput, fieldCheckPrompt } from "@verisci/core";
+import { FIELD_OUTPUT_SCHEMA, type FieldCheckInput, fieldCheckPrompt } from "@labstrail/core";
 import { describe, expect, it, vi } from "vitest";
 import { checkField } from "./field-check.ts";
 

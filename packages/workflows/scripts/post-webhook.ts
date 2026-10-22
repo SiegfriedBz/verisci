@@ -2,13 +2,13 @@
 // an Alchemy Notify delivery signed with ALCHEMY_WEBHOOK_SIGNING_KEY (ADR 0017), to check the
 // route by hand. Alchemy Notify watches only real chains, so this stands in for it locally.
 //
-//   pnpm --filter @verisci/workflows post-webhook <tx hash> [--url <route>]
+//   pnpm --filter @labstrail/workflows post-webhook <tx hash> [--url <route>]
 //
 // Reads LOCAL_CHAIN_RPC_URL and ALCHEMY_WEBHOOK_SIGNING_KEY from the root .env.local; the route
 // needs the same key (packages/workflows README). Request without an event first
 // (`rate-paper <UAL> --no-event`), or Inngest drops this one as a repeat for 24 hours.
 import { createHmac } from "node:crypto";
-import { createSharedEnv, defineEnv } from "@verisci/env";
+import { createSharedEnv, defineEnv } from "@labstrail/env";
 import { createPublicClient, type Hex, http } from "viem";
 import { anvil } from "viem/chains";
 import { z } from "zod";
@@ -19,7 +19,7 @@ const hash = args.find((arg) => /^0x[0-9a-fA-F]{64}$/.test(arg));
 const urlAt = args.indexOf("--url");
 const url = urlAt >= 0 ? args[urlAt + 1] : "http://localhost:3000/api/webhooks/alchemy";
 if (!hash || !url) {
-  console.error("usage: pnpm --filter @verisci/workflows post-webhook <tx hash> [--url <route>]");
+  console.error("usage: pnpm --filter @labstrail/workflows post-webhook <tx hash> [--url <route>]");
   process.exit(1);
 }
 

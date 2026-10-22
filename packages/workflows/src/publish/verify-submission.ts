@@ -1,4 +1,4 @@
-import { canonicalContextGraph, submissionTypedData, targetKaName } from "@verisci/core";
+import { canonicalContextGraph, submissionTypedData, targetKaName } from "@labstrail/core";
 import {
   type Address,
   type Hex,
@@ -60,10 +60,10 @@ const eventData = z.object({
 });
 
 /**
- * Checks a `verisci/paper.submitted` event's data: the CID is canonical CIDv1 base32, the
+ * Checks a `labstrail/paper.submitted` event's data: the CID is canonical CIDv1 base32, the
  * context graph is this environment's, the deadline is ahead of `now` by at most a day
  * (further ahead is `malformed`), and the submitter
- * signed `{ cid, contextGraph, deadline }` under verisci's EIP-712 domain (ADR 0010).
+ * signed `{ cid, contextGraph, deadline }` under LabsTrail's EIP-712 domain (ADR 0010).
  *
  * An EOA signature is checked locally; any other is asked of the chain, so smart-contract
  * wallets verify too. Never throws for an expected failure.

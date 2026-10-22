@@ -1,7 +1,7 @@
 "use client";
 
+import { canonicalCid } from "@labstrail/core";
 import { ArrowSquareOut, Warning } from "@phosphor-icons/react";
-import { canonicalCid } from "@verisci/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -39,7 +39,7 @@ const NOW: Partial<Record<PaperStage["stage"], string>> = {
   reading:
     "We fetch your PDF from IPFS, read its title, authors, abstract and DOI, and check it's a life-science or health paper. Nothing is written yet. When our check is busy, this can take a few minutes.",
   saving:
-    "The record is written to VeriSci's DKG node, then shared to the context graph's shared memory, where peer nodes acknowledge it.",
+    "The record is written to LabsTrail's DKG node, then shared to the context graph's shared memory, where peer nodes acknowledge it.",
   minting:
     "The node mints the record on Base as a Knowledge Asset: a token, and the merkle root of its statements, so any change to the content would no longer match.",
 };

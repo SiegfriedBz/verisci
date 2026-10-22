@@ -1,5 +1,5 @@
 /** Package name, imported by the web app's package test (`apps/web/app/packages.test.ts`). */
-export const coreName = "@verisci/core";
+export const coreName = "@labstrail/core";
 
 export {
   type AssetNameError,

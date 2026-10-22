@@ -3,7 +3,7 @@ import {
   fulfilCalldata,
   type ReadOracleResult,
   type ReadRequestResult,
-} from "@verisci/contracts";
+} from "@labstrail/contracts";
 import { type Inngest, NonRetriableError } from "inngest";
 import type { Hex } from "viem";
 import { z } from "zod";

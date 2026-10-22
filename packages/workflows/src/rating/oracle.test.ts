@@ -3,7 +3,7 @@ import {
   fulfilCalldata,
   type RatingRequestState,
   type ReadRequestResult,
-} from "@verisci/contracts";
+} from "@labstrail/contracts";
 import { Inngest, NonRetriableError } from "inngest";
 import type { Hex } from "viem";
 import { describe, expect, it, vi } from "vitest";
@@ -400,7 +400,7 @@ describe("parseOracleInput", () => {
 
 describe("createOracleTransaction", () => {
   const fn = createOracleTransaction(
-    new Inngest({ id: "verisci-test" }),
+    new Inngest({ id: "labstrail-test" }),
     () => {
       throw new Error("unused");
     },

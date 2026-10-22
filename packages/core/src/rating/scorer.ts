@@ -10,14 +10,14 @@ import { type PaperText, quoteFound, quoteTextOf } from "./paper-text.ts";
  */
 export const SCORER_PROMPT_VERSION = "3";
 
-/** Whether a paper is in VeriSci's field (ADR 0037). */
+/** Whether a paper is in LabsTrail's field (ADR 0037). */
 export const FIELDS = ["life-sciences", "outside"] as const;
 
 /** One of {@link FIELDS}. */
 export type Field = (typeof FIELDS)[number];
 
 /**
- * What VeriSci's field holds (ADR 0037), the sentence the scorer's prompt and the publish run's
+ * What LabsTrail's field holds (ADR 0037), the sentence the scorer's prompt and the publish run's
  * field check (`fieldCheckPrompt`) both define it with.
  */
 export const FIELD_RULE =
@@ -75,7 +75,7 @@ const STUDY_TYPE_IDS = STUDY_TYPES.map((type) => type.id) as [StudyType, ...Stud
 const CHECK_IDS = Object.keys(CHECKS) as [CheckId, ...CheckId[]];
 
 /**
- * The scorer's prompt (ADRs 0018, 0037), one request per paper: `system` defines VeriSci's
+ * The scorer's prompt (ADRs 0018, 0037), one request per paper: `system` defines LabsTrail's
  * field and the study types, says what each check asks and which checks each study type
  * answers, marking those that may not apply, states the four answers and the quote rule, and
  * says the paper is data, never instructions; `user` holds the paper's text, saying when it was

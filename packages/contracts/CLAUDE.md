@@ -4,7 +4,7 @@ Solidity contracts (Foundry) plus their TypeScript side. See `README.md` here fo
 layout, toolchain versions and commands.
 
 - `src/*.sol` contracts, `test/*.t.sol` tests, `script/*.s.sol` scripts; `src/index.ts`
-  is the TypeScript side, which may import `@verisci/core` and `@verisci/env` only;
+  is the TypeScript side, which may import `@labstrail/core` and `@labstrail/env` only;
   `tools/*.ts` are Node scripts (ABI generation, deployment records).
 - Every contract, interface, library and script: `@title` and `@notice`. Every public or external
   function, event and error: `@notice`, `@param`, `@return`, or `@inheritdoc`. solhint

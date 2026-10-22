@@ -1,14 +1,14 @@
 # Architecture decision records
 
 Each file records one decision already taken: why, what, and what it costs. Plans cite
-them instead of re-arguing them. Facts about the systems VeriSci runs on (DKG, chain,
+them instead of re-arguing them. Facts about the systems LabsTrail runs on (DKG, chain,
 Inngest, Vercel, tooling) live in [`docs/domain.md`](../domain.md).
 
 An ADR states the decision and its reason. The mechanics (timeouts, fee bumps, reading
 lists in chunks, exact checks) belong in the plan that builds them, where code and tests
 confirm them.
 
-Groups follow reading order: what VeriSci covers, tools, environments, how writes behave,
+Groups follow reading order: what LabsTrail covers, tools, environments, how writes behave,
 then the publish flow before the rating flow that builds on it. Numbers follow the order
 decisions were taken, so a later ADR can sit in an earlier group.
 
@@ -16,7 +16,8 @@ decisions were taken, so a later ADR can sit in an earlier group.
 
 | ADR | Decision |
 | --- | --- |
-| [0037. VeriSci publishes and rates life-science and health papers](0037-verisci-rates-life-science-and-health-papers.md) | Biology, medicine and health research; publishing refuses a paper outside the field, and a request to rate one is cancelled |
+| [0037. LabsTrail publishes and rates life-science and health papers](0037-labstrail-rates-life-science-and-health-papers.md) | Biology, medicine and health research; publishing refuses a paper outside the field, and a request to rate one is cancelled |
+| [0042. The project is named LabsTrail](0042-the-project-is-named-labstrail.md) | LabsTrail, `labstrail` in code, at `labstrail.vercel.app`; names stored outside the repo (graph and asset names, `urn:verisci:`, the Inngest app id, the contracts until a redeploy, the node server's) keep "verisci" |
 
 ## Tools
 
@@ -63,7 +64,7 @@ A PDF becomes a Target KA.
 
 | ADR | Decision |
 | --- | --- |
-| [0011. A rating is a separate R-KA, linked by schema:about](0011-a-rating-is-a-separate-r-ka.md) | Each rating is its own R-KA pointing at the paper; the paper is never modified; only papers verisci published, in its field, are rated |
+| [0011. A rating is a separate R-KA, linked by schema:about](0011-a-rating-is-a-separate-r-ka.md) | Each rating is its own R-KA pointing at the paper; the paper is never modified; only papers LabsTrail published, in its field, are rated |
 | [0012. Ratings evolve in three phases, each settled by the oracle](0012-three-phases-settled-by-the-oracle.md) | Machine score, human review by reviewers drawn with Chainlink VRF, wet-lab; the oracle records every phase's score |
 | [0013. A paper can have several ratings](0013-several-ratings-per-paper.md) | A rating is identified by its request id and its R-KA's UAL |
 | [0014. The contract owns scores, the DKG owns content](0014-contract-owns-scores-dkg-owns-content.md) | The UI shows the contract's score and flags a gap with the DKG |

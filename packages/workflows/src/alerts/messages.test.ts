@@ -4,16 +4,16 @@ import { publishedNotice, ratedNotice, siteUrlOf } from "./messages.ts";
 const CID = "bafkreigh2akiscaildcqabsyg3dfr6chu3fgpregiymsck7e7aqa4s52zy";
 const TARGET = "did:dkg:base:84532/0xd701ed157232ad5e14bc4134a8d10d64d86f13b3/7";
 const REQUEST_ID = `0x${"ab".repeat(32)}`;
-const SITE = "https://verisci.example";
+const SITE = "https://labstrail.example";
 
 describe("siteUrlOf", () => {
   it("gives the address a message links to: production's, develop's branch URL, or localhost", () => {
     expect(
-      siteUrlOf({ APP_ENV: "production", VERCEL_PROJECT_PRODUCTION_URL: "verisci.example" }),
-    ).toBe("https://verisci.example");
+      siteUrlOf({ APP_ENV: "production", VERCEL_PROJECT_PRODUCTION_URL: "labstrail.example" }),
+    ).toBe("https://labstrail.example");
     expect(
-      siteUrlOf({ APP_ENV: "staging", VERCEL_BRANCH_URL: "verisci-git-develop.vercel.app" }),
-    ).toBe("https://verisci-git-develop.vercel.app");
+      siteUrlOf({ APP_ENV: "staging", VERCEL_BRANCH_URL: "labstrail-git-develop.vercel.app" }),
+    ).toBe("https://labstrail-git-develop.vercel.app");
     expect(siteUrlOf({ APP_ENV: "local" })).toBe("http://localhost:3000");
   });
 

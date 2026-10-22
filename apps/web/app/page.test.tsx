@@ -20,20 +20,20 @@ describe("/", () => {
     );
   });
 
-  it("opens with the sentence that says what VeriSci is", () => {
+  it("opens with the sentence that says what LabsTrail is", () => {
     const { container } = render(<Home />);
 
     expect(container.querySelector("section p")?.textContent).toBe(SITE.definition);
   });
 
-  it("says why VeriSci exists, with its source, and links to the full account", () => {
+  it("says why LabsTrail exists, with its source, and links to the full account", () => {
     render(<Home />);
 
     const why = screen.getByRole("region", { name: "Why it exists" });
     expect(why.textContent).toMatch(/More than 70%/);
     expect(why.querySelector("cite")?.textContent).toBe("Nature");
     expect(
-      screen.getByRole("link", { name: "Why VeriSci, in more detail" }).getAttribute("href"),
+      screen.getByRole("link", { name: "Why LabsTrail, in more detail" }).getAttribute("href"),
     ).toBe("/about");
   });
 

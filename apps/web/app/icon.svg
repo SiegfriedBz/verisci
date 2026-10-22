@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <title>VeriSci</title>
-  <!-- VeriSci's mark, as components/site/logo.tsx draws it, in fixed colours (the dark theme's blue and teal on its deep blue-grey tile) that read on light and dark browser tabs. -->
+  <title>LabsTrail</title>
+  <!-- LabsTrail's mark, as components/site/logo.tsx draws it, in fixed colours (the dark theme's blue and teal on its deep blue-grey tile) that read on light and dark browser tabs. -->
   <defs>
     <linearGradient id="g" x1="5" y1="20" x2="27" y2="10" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#7eaaff"/>

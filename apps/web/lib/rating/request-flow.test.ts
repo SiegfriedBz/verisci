@@ -1,4 +1,4 @@
-import { ratingControllerAbi } from "@verisci/contracts";
+import { ratingControllerAbi } from "@labstrail/contracts";
 import { encodeAbiParameters, encodeEventTopics, type Hex, keccak256, toHex } from "viem";
 import { describe, expect, it, vi } from "vitest";
 import { type RequestDeps, requestRating } from "./request-flow.ts";

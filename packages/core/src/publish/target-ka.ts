@@ -17,7 +17,7 @@ export interface PaperSubmission {
   readonly deadline: bigint;
 }
 
-/** The prefix of verisci's own predicates and subjects. */
+/** The prefix of LabsTrail's own predicates and subjects. */
 export const VERISCI_NS = "urn:verisci:";
 
 const SCHEMA = "http://schema.org/";

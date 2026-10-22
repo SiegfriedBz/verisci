@@ -5,11 +5,11 @@
 
 ## Context
 
-Every rating costs LLM calls (on Gemini's free tier, capped per day for each model: a field check, and a scorer request per attempt until one is answered, [0018](0018-phase-1-scorer-output-contract.md), [0037](0037-verisci-rates-life-science-and-health-papers.md)), the oracle's `fulfil` gas and a DKG publish. The previous repo made requests free to keep the first version simple, and named that an abuse surface.
+Every rating costs LLM calls (on Gemini's free tier, capped per day for each model: a field check, and a scorer request per attempt until one is answered, [0018](0018-phase-1-scorer-output-contract.md), [0037](0037-labstrail-rates-life-science-and-health-papers.md)), the oracle's `fulfil` gas and a DKG publish. The previous repo made requests free to keep the first version simple, and named that an abuse surface.
 
 ## Decision
 
-- Rating requests are free: the requester pays only their own gas. The oracle wallet pays the fulfil, the node's publisher wallets pay the DKG publish, and verisci pays the LLM.
+- Rating requests are free: the requester pays only their own gas. The oracle wallet pays the fulfil, the node's publisher wallets pay the DKG publish, and LabsTrail pays the LLM.
 - Abuse is bounded, not priced: the contract caps pending requests per requester, and the rating function is throttled.
 - Testnet only: a payment plan supersedes this ADR before any mainnet deployment.
 
@@ -26,5 +26,6 @@ Every rating costs LLM calls (on Gemini's free tier, capped per day for each mod
 - 2026-10-10: corrected: "the agents plan" is now "the rating plan", since the agents package was renamed `workflows`.
 - 2026-10-12: corrected: the LLM call runs on Gemini's free tier, capped per day (ADR 0018), not at a cost per call, and that daily cap bounds ratings too (ADR sweep, user's choice).
 - 2026-10-16: the balances are alerted on through the one alerts chat ([0038](0038-alerts-go-to-one-telegram-chat.md)) (intake and recovery).
-- 2026-10-16: corrected: a rating costs a field check and a scorer request per attempt until one is answered, each model with its own daily cap ([0018](0018-phase-1-scorer-output-contract.md), [0037](0037-verisci-rates-life-science-and-health-papers.md)), not one LLM call (ADR sweep and branch review, user's choices).
+- 2026-10-16: corrected: a rating costs a field check and a scorer request per attempt until one is answered, each model with its own daily cap ([0018](0018-phase-1-scorer-output-contract.md), [0037](0037-labstrail-rates-life-science-and-health-papers.md)), not one LLM call (ADR sweep and branch review, user's choices).
 - 2026-10-17: corrected: the throttle is sized against the Inngest execution cap and the oracle's gas; the LLM's daily limit, which every environment shares ([0005](0005-staging-and-production-are-isolated.md)), caps the papers rated a day across all of them (ADR sweep).
+- 2026-10-22: the project renamed LabsTrail ([0042](0042-the-project-is-named-labstrail.md), user's choice).

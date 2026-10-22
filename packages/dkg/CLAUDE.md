@@ -3,7 +3,7 @@
 Adapter between `core` and the DKG: reads and writes Knowledge Assets. See `README.md`
 here.
 
-- May import `@verisci/core` and `@verisci/env` only.
+- May import `@labstrail/core` and `@labstrail/env` only.
 - Network and node access live here, behind functions that return typed results
   (`src/types.ts`) and `core`'s normalized UALs, so `core` stays pure and `workflows` and
   `web` never call the DKG directly.
@@ -13,7 +13,7 @@ here.
   the caller polls `readAsset` (0008); the env module refuses a `-prod` context graph
   unless `APP_ENV=production` (0005), and a graph address not in the node's EIP-55 case
   (`docs/domain.md` → DKG). See [`docs/adr/`](../../docs/adr/README.md).
-- `src/env.ts` validates on import, so only `@verisci/dkg/env` imports it; the main
+- `src/env.ts` validates on import, so only `@labstrail/dkg/env` imports it; the main
   entry (`src/index.ts`) never does, since the web app imports it. The main entry
   exports `createDkgEnv`, which validates only when called.
 - Calls return typed results (`DkgFailure`), never throw for an expected failure, and

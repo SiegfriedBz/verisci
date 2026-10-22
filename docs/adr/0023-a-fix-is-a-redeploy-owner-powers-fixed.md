@@ -5,7 +5,7 @@
 
 ## Context
 
-A bug in the rating contract needs a way out. An upgrade proxy keeps one address and its state, but adds an admin key that can change every rule, storage-layout constraints, and a class of bugs of its own. verisci runs on testnet only until a payment plan ([0015](0015-rating-requests-are-free-on-testnet.md)).
+A bug in the rating contract needs a way out. An upgrade proxy keeps one address and its state, but adds an admin key that can change every rule, storage-layout constraints, and a class of bugs of its own. LabsTrail runs on testnet only until a payment plan ([0015](0015-rating-requests-are-free-on-testnet.md)).
 
 Requests can still be pending on a contract when it is replaced, and no request stays pending forever ([0020](0020-stuck-requests-recovered-only-oracle-cancels.md)). Anyone can keep calling a past contract directly, since its address is public. A lost or exposed owner key needs a way out short of a redeploy.
 
@@ -38,3 +38,4 @@ Requests can still be pending on a contract when it is replaced, and no request 
 - 2026-10-12: corrected: local runs read their contract on Anvil from local-only settings, not from the deployments file, as 0036 decided on 2026-10-11.
 - 2026-10-13: corrected: request ids also hash the contract's deploy time, which keeps apart two deployments at one address, as 0016 says.
 - 2026-10-16: corrected: the reconciler, which reads every contract too, comes with the intake and recovery plan.
+- 2026-10-22: the project renamed LabsTrail ([0042](0042-the-project-is-named-labstrail.md), user's choice).

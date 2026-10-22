@@ -1,4 +1,4 @@
-import type { RatingView } from "@verisci/workflows";
+import type { RatingView } from "@labstrail/workflows";
 import { describe, expect, it } from "vitest";
 import { isFinalRating, isRequestId, newRatingPath, ratingStage, whileFresh } from "./stage.ts";
 

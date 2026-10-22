@@ -1,11 +1,11 @@
-# @verisci/env
+# @labstrail/env
 
 Typed, validated environment variables for every other workspace. Each workspace
 declares the variables it reads as Zod schemas; a missing or invalid variable fails
 on first import with one `EnvError` that names every bad variable and never shows
 its value.
 
-Workflows (`@verisci/workflows`) and the web app's own settings (`apps/web/lib/web-env.ts`)
+Workflows (`@labstrail/workflows`) and the web app's own settings (`apps/web/lib/web-env.ts`)
 are the exception, since `next build` imports them with only `APP_ENV` set: a deployed
 server checks them when it starts (`apps/web/instrumentation.ts`) and refuses to start on a
 bad one; locally (`APP_ENV=local`) a workflow checks its settings on its first run and stops
@@ -53,7 +53,7 @@ reads the Pinata key and the context graph, not the rest of the workflows' setti
 
 ```ts
 // packages/<workspace>/src/env.ts
-import { defineEnv, sharedEnv } from "@verisci/env";
+import { defineEnv, sharedEnv } from "@labstrail/env";
 import { z } from "zod";
 
 export const env = defineEnv({
@@ -116,7 +116,7 @@ running app.
 
 | Command | What it does |
 | --- | --- |
-| `pnpm --filter @verisci/env typecheck` | Typechecks the package |
-| `pnpm --filter @verisci/env test` | Runs its Vitest project (`vitest run`) |
+| `pnpm --filter @labstrail/env typecheck` | Typechecks the package |
+| `pnpm --filter @labstrail/env test` | Runs its Vitest project (`vitest run`) |
 
 Ships TypeScript source (`src/index.ts`), with no build step.

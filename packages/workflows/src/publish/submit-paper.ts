@@ -1,4 +1,4 @@
-import type { AssetResult } from "@verisci/dkg";
+import type { AssetResult } from "@labstrail/dkg";
 import { describeFailure } from "./failure.ts";
 import type { DeleteFileResult, FindFileResult } from "./pinata.ts";
 import { PAPER_SUBMITTED, type PublishLogger } from "./publish-paper.ts";

@@ -34,11 +34,11 @@ const nextConfig: NextConfig = {
     resolveAlias: Object.fromEntries(OPTIONAL_PEERS.map((name) => [name, "./lib/empty-module.ts"])),
   },
   transpilePackages: [
-    "@verisci/contracts",
-    "@verisci/core",
-    "@verisci/dkg",
-    "@verisci/env",
-    "@verisci/workflows",
+    "@labstrail/contracts",
+    "@labstrail/core",
+    "@labstrail/dkg",
+    "@labstrail/env",
+    "@labstrail/workflows",
   ],
 };
 

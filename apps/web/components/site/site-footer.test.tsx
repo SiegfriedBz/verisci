@@ -40,13 +40,15 @@ describe("SiteFooter", () => {
     expect(screen.queryByText("RatingController")).toBeNull();
   });
 
-  it("links how the score works and who builds VeriSci", () => {
+  it("links how the score works and who builds LabsTrail", () => {
     render(<SiteFooter ratingController={undefined} />);
 
     expect(screen.getByRole("link", { name: "How the score works" }).getAttribute("href")).toBe(
       "/method",
     );
-    expect(screen.getByRole("link", { name: "About VeriSci" }).getAttribute("href")).toBe("/about");
+    expect(screen.getByRole("link", { name: "About LabsTrail" }).getAttribute("href")).toBe(
+      "/about",
+    );
   });
 
   it("adds no heading to the page's outline", () => {

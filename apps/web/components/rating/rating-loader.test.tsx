@@ -1,5 +1,5 @@
+import type { PaperStatus, RatingView } from "@labstrail/workflows";
 import { cleanup, render, screen } from "@testing-library/react";
-import type { PaperStatus, RatingView } from "@verisci/workflows";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const CID = "bafybeihwexgn2z6ffhokgkcu55hyrq6pc4v2pnkdvpj6nc63durj4q6b6m";
@@ -8,8 +8,8 @@ const UAL = "did:dkg:base:84532/0xd701ed157232ad5e14bc4134a8d10d64d86f13b3/7";
 const readRating = vi.fn<(id: string) => Promise<RatingView>>();
 const readPaper = vi.fn<(cid: string) => Promise<PaperStatus>>();
 
-vi.mock("@verisci/workflows", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@verisci/workflows")>()),
+vi.mock("@labstrail/workflows", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@labstrail/workflows")>()),
   getRatingService: () => ({ readRating }),
   getUploadService: () => ({ readPaper }),
 }));

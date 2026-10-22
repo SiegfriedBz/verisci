@@ -1,4 +1,4 @@
-import { getWebhookIntake } from "@verisci/workflows";
+import { getWebhookIntake } from "@labstrail/workflows";
 
 /**
  * Alchemy Notify's webhook (ADR 0017): hands the raw body and its `X-Alchemy-Signature` to the

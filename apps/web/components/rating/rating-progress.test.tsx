@@ -1,6 +1,6 @@
+import { SCORER_PROMPT_VERSION } from "@labstrail/core";
+import type { RatingView } from "@labstrail/workflows";
 import { act, cleanup, render, screen, within } from "@testing-library/react";
-import { SCORER_PROMPT_VERSION } from "@verisci/core";
-import type { RatingView } from "@verisci/workflows";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { RatingProgress } from "./rating-progress.tsx";
 
@@ -287,7 +287,7 @@ describe("RatingProgress", () => {
       "Recorded on-chain",
     ]);
     expect(screen.getAllByText(/OriginTrail's Knowledge Asset contracts/)).toHaveLength(2);
-    expect(screen.getByText(/VeriSci's RatingController contract/)).toBeTruthy();
+    expect(screen.getByText(/LabsTrail's RatingController contract/)).toBeTruthy();
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Minting the rating");
   });
 

@@ -8,6 +8,13 @@ function runScript(stored: string | null) {
   new Function(THEME_SCRIPT)();
 }
 
+describe("THEME_KEY", () => {
+  it("stores the theme under labstrail-theme, the key the script reads", () => {
+    expect(THEME_KEY).toBe("labstrail-theme");
+    expect(THEME_SCRIPT).toContain(JSON.stringify(THEME_KEY));
+  });
+});
+
 describe("THEME_SCRIPT", () => {
   afterEach(() => {
     localStorage.clear();

@@ -5,8 +5,8 @@ import {
   type Triple,
   targetKaName,
   targetKaQuads,
-} from "@verisci/core";
-import type { DkgClient, DkgFailure } from "@verisci/dkg";
+} from "@labstrail/core";
+import type { DkgClient, DkgFailure } from "@labstrail/dkg";
 import { type Inngest, NonRetriableError } from "inngest";
 import { publishedNotice } from "../alerts/messages.ts";
 import type { Notify } from "../alerts/notify.ts";
@@ -14,7 +14,7 @@ import type { FieldCheckResult } from "./field-check.ts";
 import type { SubmissionRefusal, VerifiedSubmission, VerifyResult } from "./verify-submission.ts";
 
 /** The event that starts a publish: `{ cid, contextGraph, deadline, submitter, signature }`. */
-export const PAPER_SUBMITTED = "verisci/paper.submitted";
+export const PAPER_SUBMITTED = "labstrail/paper.submitted";
 
 /** The publish run's limits and its field check's settings (ADR 0008, ADR 0009, ADR 0037). */
 export const PUBLISH_SETTINGS = {
@@ -50,7 +50,7 @@ export const PUBLISH_SETTINGS = {
 /**
  * Why a paper cannot be published; a retry would not change it. `unreadable` and `no-text` are
  * PDFs the rating's reader cannot read; `outside-field`, a paper the field check placed
- * outside VeriSci's field (ADR 0037).
+ * outside LabsTrail's field (ADR 0037).
  */
 export type PaperRefusal =
   | "not-a-pdf"
@@ -142,7 +142,7 @@ export interface PublishDeps {
    * bytes are never a step output.
    */
   readPaper(cid: string): Promise<ReadPaperResult>;
-  /** Asks Gemini whether a new paper is in VeriSci's field (ADR 0037). */
+  /** Asks Gemini whether a new paper is in LabsTrail's field (ADR 0037). */
   checkField(paper: FieldCheckInput): Promise<FieldCheckResult>;
   readonly dkg: Pick<DkgClient, "readAsset" | "storeAsset" | "startMint">;
   /** Tells the maintainer's Telegram chat (ADR 0038); never throws. */
@@ -181,7 +181,7 @@ type Attempt =
  *
  * The deadline is checked against `receivedAt`, so retries during an outage never expire a
  * signature that was valid when it arrived. `receivedAt` is the event's `ts`, which its
- * sender may set: only verisci's own server and scripts send this event, and the server
+ * sender may set: only LabsTrail's own server and scripts send this event, and the server
  * must never take `ts` from a browser.
  */
 export async function runPublish(

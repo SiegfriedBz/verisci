@@ -1,4 +1,4 @@
-import { ratingControllerAbi } from "@verisci/contracts";
+import { ratingControllerAbi } from "@labstrail/contracts";
 import { decodeFunctionData, encodeFunctionResult, type Hex, multicall3Abi } from "viem";
 import { anvil, baseSepolia } from "viem/chains";
 import { afterEach, describe, expect, it, vi } from "vitest";

@@ -1,4 +1,4 @@
-import { getRatingService, getUploadService } from "@verisci/workflows";
+import { getRatingService, getUploadService } from "@labstrail/workflows";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";

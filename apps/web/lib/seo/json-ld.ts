@@ -1,5 +1,5 @@
-import { canonicalCid } from "@verisci/core";
-import type { PublishedRecord } from "@verisci/workflows";
+import { canonicalCid } from "@labstrail/core";
+import type { PublishedRecord } from "@labstrail/workflows";
 import { ipfsUrl } from "../papers/explorer.ts";
 import { SITE } from "../site.ts";
 import { clip } from "./clip.ts";
@@ -46,7 +46,7 @@ const property = (propertyID: string, value: string) => ({
 
 /**
  * The home page's structured data: the website and the organization behind it, with the
- * GitHub repo and the maintainer's LinkedIn as who stands behind it. VeriSci has no search,
+ * GitHub repo and the maintainer's LinkedIn as who stands behind it. LabsTrail has no search,
  * so no `SearchAction`.
  */
 export function siteJsonLd(site: string): JsonLdGraph {
@@ -82,7 +82,7 @@ export function siteJsonLd(site: string): JsonLdGraph {
 /**
  * A published paper's structured data: a `ScholarlyArticle` mirroring the Target KA's
  * schema.org record (ADR 0010), with its DOI, DKG UAL and IPFS CID (in its canonical
- * spelling) as identifiers and the PDF as its encoding, then its breadcrumb. VeriSci is named
+ * spelling) as identifiers and the PDF as its encoding, then its breadcrumb. LabsTrail is named
  * as the publisher of this record (`sdPublisher`, dated by its mint, `sdDatePublished`), never
  * of the paper, whose journal and date the record does not hold. Fields the record lacks are
  * left out, never empty; the submitter's wallet is never an author (ADR 0040).
@@ -135,7 +135,7 @@ export function paperJsonLd(
 
 /**
  * A fulfilled rating as a `Review` of its paper (`itemReviewed`, the paper's `@id`), written by
- * VeriSci, scored out of 100, with its rationale and its R-KA's UAL when given. One `Review`
+ * LabsTrail, scored out of 100, with its rationale and its R-KA's UAL when given. One `Review`
  * per rating, as its R-KA is: never an `aggregateRating`, never a `ClaimReview` (ADR 0040).
  */
 export function reviewJsonLd(site: string, cid: string, rating: ReviewFacts): JsonLdNode {

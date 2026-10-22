@@ -1,6 +1,6 @@
 "use client";
 
-import type { RatingView } from "@verisci/workflows";
+import type { RatingView } from "@labstrail/workflows";
 import { useEffect, useState } from "react";
 import { requestedAgo, takingLong } from "../../lib/rating/elapsed.ts";
 import { cancelMessage } from "../../lib/rating/messages.ts";
@@ -23,11 +23,11 @@ const CLOCK_MS = 30_000;
 
 /** Why the page shows the paper's address, and perhaps no checks, when the node is down. */
 const NODE_DOWN_NOTE =
-  "VeriSci's node isn't answering right now, so the paper's title and the rating's checks can't be shown. The score comes from the chain, so it's accurate. Reload the page later to see everything.";
+  "LabsTrail's node isn't answering right now, so the paper's title and the rating's checks can't be shown. The score comes from the chain, so it's accurate. Reload the page later to see everything.";
 
 /** What a rating running past `SLOW_AFTER_MS` adds to the panel. */
 const SLOW_NOTE =
-  "This is taking longer than usual, most often because the scoring model is busy. VeriSci keeps trying. If the rating can't finish within a day, the request is cancelled and you can ask again.";
+  "This is taking longer than usual, most often because the scoring model is busy. LabsTrail keeps trying. If the rating can't finish within a day, the request is cancelled and you can ask again.";
 
 /**
  * Follows a rating from its page, starting from the view the server read (`RatingLoader`):

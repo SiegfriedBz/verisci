@@ -8,7 +8,7 @@ const readPaper = vi.fn(async () => ({
   run: { ok: true, run: { state: "running" } } as const,
 }));
 
-vi.mock("@verisci/workflows", () => ({ getUploadService: () => ({ readPaper }) }));
+vi.mock("@labstrail/workflows", () => ({ getUploadService: () => ({ readPaper }) }));
 
 const { GET } = await import("./route.ts");
 

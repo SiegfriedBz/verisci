@@ -4,7 +4,7 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /*
- * VeriSci's look, "Clinical": a clinical record with an on-chain proof, light by default, with
+ * LabsTrail's look, "Clinical": a clinical record with an on-chain proof, light by default, with
  * a dark theme. Cool slate greys, two signal colours with one meaning each: blue for the
  * off-chain record ("verified"), teal for the on-chain asset. They blend only on the main
  * action, live lines and the link between them, and stay out of plain text and links, which

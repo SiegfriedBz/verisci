@@ -1,4 +1,4 @@
-import type { PaperSummary } from "@verisci/workflows";
+import type { PaperSummary } from "@labstrail/workflows";
 import { describe, expect, it, vi } from "vitest";
 import { withRatings } from "./ratings.ts";
 

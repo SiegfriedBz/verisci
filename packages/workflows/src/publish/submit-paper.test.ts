@@ -1,4 +1,4 @@
-import type { AssetResult } from "@verisci/dkg";
+import type { AssetResult } from "@labstrail/dkg";
 import { describe, expect, it } from "vitest";
 import type { DeleteFileResult, FindFileResult } from "./pinata.ts";
 import { PAPER_SUBMITTED } from "./publish-paper.ts";
@@ -77,7 +77,7 @@ function deps(fakes: Fakes = {}) {
 }
 
 describe("submitPaper", () => {
-  it("sends verisci/paper.submitted with the verified submission, and counts it", async () => {
+  it("sends labstrail/paper.submitted with the verified submission, and counts it", async () => {
     const { submitDeps, calls } = deps();
 
     expect(await submitPaper(INPUT, submitDeps)).toEqual({

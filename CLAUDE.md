@@ -1,4 +1,4 @@
-# verisci
+# LabsTrail
 
 pnpm + Turborepo monorepo: a Next.js 16 app (`apps/web`), five internal packages
 (`packages/{env,core,dkg,contracts,workflows}`) and the DKG node server's RPC proxy
@@ -20,7 +20,7 @@ rules, PRs and releases. Each workspace has its own `CLAUDE.md` and `README.md`.
 | `pnpm test` | Vitest per workspace + `forge test` |
 | `pnpm test:coverage` | Root Vitest run with thresholds (core ≥ 90% branches, others ≥ 70% lines) |
 | `pnpm vitest related <file> --run` | Tests touching one file |
-| `pnpm --filter @verisci/<ws> <script>` | One workspace |
+| `pnpm --filter @labstrail/<ws> <script>` | One workspace |
 
 Toolchain: Node 24.21.0 (`.nvmrc`), pnpm 10.34.6 via Corepack, Foundry 1.8.4. If `pnpm` or
 `node` fails with a proto "missing_tool" error, tell the user to run
@@ -31,7 +31,7 @@ Toolchain: Node 24.21.0 (`.nvmrc`), pnpm 10.34.6 via Corepack, Foundry 1.8.4. If
 - Dependency direction: env, core → nothing; dkg, contracts → core, env; workflows →
   core, env, dkg, contracts; web → all five; `infra/rpc-proxy` → nothing. Import only
   workspaces declared in `package.json`.
-- **core does no IO**: no `fetch`, no `node:*`, no `@verisci/*`. IO lives in adapter
+- **core does no IO**: no `fetch`, no `node:*`, no `@labstrail/*`. IO lives in adapter
   packages. Biome enforces this in `packages/core/biome.json`.
 - Relative imports keep the `.ts` extension (`./shared.ts`); `allowImportingTsExtensions`
   is on in `tsconfig.base.json` because nothing emits. Scripts run packages' source with
@@ -39,7 +39,7 @@ Toolchain: Node 24.21.0 (`.nvmrc`), pnpm 10.34.6 via Corepack, Foundry 1.8.4. If
   cannot strip, such as `enum` (ADR 0002).
 - Environment variables: each workspace declares what it reads in its env module
   (`src/env.ts`, which may import its schema from a file next to it such as
-  `src/dkg-env.ts`; `lib/web-env.ts` in `apps/web`) with `defineEnv` from `@verisci/env`,
+  `src/dkg-env.ts`; `lib/web-env.ts` in `apps/web`) with `defineEnv` from `@labstrail/env`,
   and adds it to `.env.example` in the same PR (a dev script in `scripts/` declares the
   variables only it reads in the script). The repo's programs that run on the DKG node
   server (`infra/rpc-proxy`) read their own settings instead, listed in their README

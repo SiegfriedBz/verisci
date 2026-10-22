@@ -1,5 +1,5 @@
+import { getUploadService, PUBLISH_SETTINGS, UPLOAD_SETTINGS } from "@labstrail/workflows";
 import { Eye, Gauge, Heartbeat, PenNib, Repeat } from "@phosphor-icons/react/dist/ssr";
-import { getUploadService, PUBLISH_SETTINGS, UPLOAD_SETTINGS } from "@verisci/workflows";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { PublishForm } from "../../components/publish/publish-form.tsx";
@@ -25,7 +25,7 @@ const BEFORE = [
   {
     icon: PenNib,
     title: "You sign, you don't pay",
-    body: "Your wallet signs the PDF's fingerprint (its CID), VeriSci's graph and a 10-minute deadline. Signing sends no transaction, so it costs no gas.",
+    body: "Your wallet signs the PDF's fingerprint (its CID), LabsTrail's graph and a 10-minute deadline. Signing sends no transaction, so it costs no gas.",
   },
   {
     icon: Repeat,
@@ -50,7 +50,7 @@ export default async function PublishPage() {
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Publish a paper</h1>
           <p className="max-w-[48ch] leading-relaxed text-muted">
             Your paper becomes a public record on the DKG, with your wallet as its submitter.
-            VeriSci takes papers in the life sciences and health only.
+            LabsTrail takes papers in the life sciences and health only.
           </p>
         </div>
         <PublishForm

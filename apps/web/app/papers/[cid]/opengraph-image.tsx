@@ -1,4 +1,4 @@
-import { getRatingService, getUploadService } from "@verisci/workflows";
+import { getRatingService, getUploadService } from "@labstrail/workflows";
 import { ImageResponse } from "next/og";
 import { readProgress } from "../../../lib/publish/upload-actions.ts";
 import { ratingChainConfig } from "../../../lib/rating/chain.ts";
@@ -7,7 +7,7 @@ import { readPaperCard, SHARE_SIZE, ShareCard } from "../../../lib/seo/share-car
 import { createWebEnv } from "../../../lib/web-env.ts";
 
 export const alt =
-  "A paper on VeriSci, with its title, its authors and its reproducibility readiness score";
+  "A paper on LabsTrail, with its title, its authors and its reproducibility readiness score";
 export const size = SHARE_SIZE;
 export const contentType = "image/png";
 

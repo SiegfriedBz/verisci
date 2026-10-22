@@ -1,4 +1,4 @@
-import type { RatingService, RatingView } from "@verisci/workflows";
+import type { RatingService, RatingView } from "@labstrail/workflows";
 import { cache } from "react";
 
 /**

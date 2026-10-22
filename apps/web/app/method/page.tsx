@@ -1,13 +1,13 @@
+import { checklistOf, STUDY_TYPES } from "@labstrail/core";
+import { RATING_SETTINGS } from "@labstrail/workflows";
 import { Flask, Robot, UsersThree } from "@phosphor-icons/react/dist/ssr";
-import { checklistOf, STUDY_TYPES } from "@verisci/core";
-import { RATING_SETTINGS } from "@verisci/workflows";
 import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "How the score works",
   description:
-    "How VeriSci rates a life-science paper's reproducibility readiness: the checklist for each kind of study, the model, how its answers become a score from 0 to 100, and what the score leaves out.",
+    "How LabsTrail rates a life-science paper's reproducibility readiness: the checklist for each kind of study, the model, how its answers become a score from 0 to 100, and what the score leaves out.",
   alternates: { canonical: "/method" },
 };
 
@@ -80,8 +80,8 @@ export default function MethodPage() {
           score runs from 0 to 100, and it doesn't say whether the findings are right.
         </p>
         <p className="leading-relaxed text-muted">
-          VeriSci takes papers in biology, medicine and health. A paper outside the field is refused
-          before it is published, and a rating asked for one is cancelled.
+          LabsTrail takes papers in biology, medicine and health. A paper outside the field is
+          refused before it is published, and a rating asked for one is cancelled.
         </p>
       </header>
 
@@ -149,7 +149,7 @@ export default function MethodPage() {
         <div className="grid content-start gap-4">
           <h2 className="text-xl font-semibold tracking-tight">Where it is recorded</h2>
           <p className="max-w-[56ch] text-sm leading-relaxed text-muted">
-            The score goes on Base, in VeriSci's RatingController contract. The answers and quotes
+            The score goes on Base, in LabsTrail's RatingController contract. The answers and quotes
             go in the rating's own Knowledge Asset on the OriginTrail DKG, which points to the
             paper's. Like the paper's, the rating's statements are anchored on Base by their merkle
             root, so anyone can read them and check they haven't changed since. The paper's asset

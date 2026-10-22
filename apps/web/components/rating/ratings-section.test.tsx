@@ -1,5 +1,5 @@
+import type { RatingListResult } from "@labstrail/workflows";
 import { cleanup, render, screen, within } from "@testing-library/react";
-import type { RatingListResult } from "@verisci/workflows";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -10,8 +10,8 @@ const id = (n: number) => `0x${n.toString(16).padStart(64, "0")}`;
 const listRatings = vi.fn<(ual: string) => Promise<RatingListResult>>();
 let env: Record<string, string | undefined> = { APP_ENV: "staging" };
 
-vi.mock("@verisci/workflows", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@verisci/workflows")>()),
+vi.mock("@labstrail/workflows", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@labstrail/workflows")>()),
   getRatingService: () => ({ listRatings }),
 }));
 vi.mock("../../lib/web-env.ts", () => ({ createWebEnv: () => env }));
@@ -121,7 +121,7 @@ describe("RatingsSection", () => {
     await show();
 
     expect(screen.getByTestId("score-sentence").textContent).toBe(
-      `${TITLE} scores 72/100 for reproducibility readiness on VeriSci. How the score works`,
+      `${TITLE} scores 72/100 for reproducibility readiness on LabsTrail. How the score works`,
     );
     expect(screen.getByRole("link", { name: "How the score works" }).getAttribute("href")).toBe(
       "/method",

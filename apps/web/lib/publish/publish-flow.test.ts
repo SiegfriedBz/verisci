@@ -1,4 +1,4 @@
-import type { SubmitResult } from "@verisci/workflows";
+import type { SubmitResult } from "@labstrail/workflows";
 import { describe, expect, it } from "vitest";
 import { type FlowDeps, type Phase, publishFile, uploadToSignedUrl } from "./publish-flow.ts";
 

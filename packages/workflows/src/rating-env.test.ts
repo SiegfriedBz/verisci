@@ -1,4 +1,4 @@
-import { EnvError } from "@verisci/env";
+import { EnvError } from "@labstrail/env";
 import { describe, expect, it } from "vitest";
 import {
   checkRatingSettings,

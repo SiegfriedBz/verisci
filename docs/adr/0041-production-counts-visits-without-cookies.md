@@ -5,7 +5,7 @@
 
 ## Context
 
-The maintainer wants to know which countries and pages VeriSci's visitors come from. The site has no accounts and no cookies, and it runs on free plans. Google Analytics is free but sets cookies, which EU visitors must accept through a banner before it loads, and it adds a third-party script to every page.
+The maintainer wants to know which countries and pages LabsTrail's visitors come from. The site has no accounts and no cookies, and it runs on free plans. Google Analytics is free but sets cookies, which EU visitors must accept through a banner before it loads, and it adds a third-party script to every page.
 
 ## Decision
 
@@ -19,3 +19,7 @@ The maintainer wants to know which countries and pages VeriSci's visitors come f
 - Vercel leaves bots out of the counts, and ad blockers may hide some visits, so the numbers are a floor.
 - Web Analytics is switched on in the Vercel project's settings; until then the page's script records nothing.
 - The About page says visits are counted this way.
+
+## History
+
+- 2026-10-22: the project renamed LabsTrail ([0042](0042-the-project-is-named-labstrail.md), user's choice).

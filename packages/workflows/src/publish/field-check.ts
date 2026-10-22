@@ -4,7 +4,7 @@ import {
   type FieldCheckInput,
   fieldCheckPrompt,
   parseFieldAnswer,
-} from "@verisci/core";
+} from "@labstrail/core";
 import { type GeminiFailureResult, type GeminiOptions, generate } from "../gemini/gemini.ts";
 
 /** The result of {@link checkField}: the paper's field and Gemini's reason, or why not. */
@@ -13,7 +13,7 @@ export type FieldCheckResult =
   | GeminiFailureResult;
 
 /**
- * Asks Gemini whether a paper is in VeriSci's field (ADR 0037), from its title, abstract and
+ * Asks Gemini whether a paper is in LabsTrail's field (ADR 0037), from its title, abstract and
  * opening, for the publish run before it stores a new paper and for the rating run before it
  * scores one: the prompt from `fieldCheckPrompt`, temperature 0, JSON output held to
  * `FIELD_OUTPUT_SCHEMA` and checked again with `parseFieldAnswer`. Returns the field, Gemini's

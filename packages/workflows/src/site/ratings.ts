@@ -4,10 +4,10 @@ import {
   type ReadRequestResult,
   readRatingRequest,
   readRequestIdsOf,
-} from "@verisci/contracts";
-import { parseRating, type RatingRecord, ratingQuery, rKaName } from "@verisci/core";
-import { createDkgClient, type DkgClient } from "@verisci/dkg";
-import { defineEnv, sharedEnv } from "@verisci/env";
+} from "@labstrail/contracts";
+import { parseRating, type RatingRecord, ratingQuery, rKaName } from "@labstrail/core";
+import { createDkgClient, type DkgClient } from "@labstrail/dkg";
+import { defineEnv, sharedEnv } from "@labstrail/env";
 import type { Hex } from "viem";
 import { anvil, baseSepolia } from "viem/chains";
 import { inngest } from "../inngest.ts";

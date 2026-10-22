@@ -1,4 +1,4 @@
-import type { PaperListResult, PaperSummary } from "@verisci/workflows";
+import type { PaperListResult, PaperSummary } from "@labstrail/workflows";
 import { describe, expect, it } from "vitest";
 import {
   authorsLine,

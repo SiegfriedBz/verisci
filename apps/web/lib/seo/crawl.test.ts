@@ -1,4 +1,4 @@
-import type { PaperListResult, PaperSummary } from "@verisci/workflows";
+import type { PaperListResult, PaperSummary } from "@labstrail/workflows";
 import { describe, expect, it, vi } from "vitest";
 import { createWebEnv } from "../web-env.ts";
 import { robotsFor, sitemapFor } from "./crawl.ts";
@@ -7,12 +7,12 @@ const deployed = {
   UPSTASH_REDIS_REST_URL: "https://example.upstash.io",
   UPSTASH_REDIS_REST_TOKEN: "secret-upstash-token",
   REOWN_PROJECT_ID: "0123456789abcdef0123456789abcdef",
-  VERCEL_PROJECT_PRODUCTION_URL: "verisci.vercel.app",
-  VERCEL_BRANCH_URL: "verisci-git-develop-siegfriedbzs-projects.vercel.app",
+  VERCEL_PROJECT_PRODUCTION_URL: "labstrail.vercel.app",
+  VERCEL_BRANCH_URL: "labstrail-git-develop-siegfriedbzs-projects.vercel.app",
 };
 const production = createWebEnv({ ...deployed, APP_ENV: "production" });
 const staging = createWebEnv({ ...deployed, APP_ENV: "staging" });
-const SITE = "https://verisci.vercel.app";
+const SITE = "https://labstrail.vercel.app";
 
 function paper(cid: string, publishedAt: string): PaperSummary {
   return {

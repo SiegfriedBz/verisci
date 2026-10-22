@@ -1,5 +1,5 @@
 {
-  "name": "@verisci/workflows",
+  "name": "@labstrail/workflows",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,10 +17,10 @@
     "post-webhook": "node --env-file-if-exists=../../.env.local scripts/post-webhook.ts"
   },
   "dependencies": {
-    "@verisci/contracts": "workspace:*",
-    "@verisci/core": "workspace:*",
-    "@verisci/dkg": "workspace:*",
-    "@verisci/env": "workspace:*",
+    "@labstrail/contracts": "workspace:*",
+    "@labstrail/core": "workspace:*",
+    "@labstrail/dkg": "workspace:*",
+    "@labstrail/env": "workspace:*",
     "inngest": "4.22.0",
     "unpdf": "1.8.1",
     "viem": "2.57.4",

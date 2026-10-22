@@ -1,5 +1,5 @@
+import type { PaperStatus, PublishedRecord } from "@labstrail/workflows";
 import { cleanup, render, screen } from "@testing-library/react";
-import type { PaperStatus, PublishedRecord } from "@verisci/workflows";
 import { isValidElement, type ReactNode, Suspense } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -8,8 +8,8 @@ const EVENT_ID = "01K7C2M4X8Q9R1S2T3V4W5Y6Z7";
 const UAL = "did:dkg:base:84532/0xd701ed157232ad5e14bc4134a8d10d64d86f13b3/6";
 const readPaper = vi.fn<(cid: string, eventId?: string) => Promise<PaperStatus>>();
 
-vi.mock("@verisci/workflows", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@verisci/workflows")>()),
+vi.mock("@labstrail/workflows", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@labstrail/workflows")>()),
   getUploadService: () => ({
     contextGraph: "0xd701ed157232ad5e14bc4134a8d10d64d86f13b3/verisci-staging",
     readPaper,

@@ -18,7 +18,7 @@
           "options": {
             "patterns": [
               {
-                "group": ["node:*", "@verisci/*"],
+                "group": ["node:*", "@labstrail/*"],
                 "message": "core does no IO: put this in an adapter package"
               }
             ]

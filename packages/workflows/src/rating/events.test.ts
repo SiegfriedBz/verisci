@@ -1,4 +1,4 @@
-import { ratingControllerAbi } from "@verisci/contracts";
+import { ratingControllerAbi } from "@labstrail/contracts";
 import { encodeAbiParameters, encodeEventTopics, type Hex, keccak256, toHex } from "viem";
 import { describe, expect, it } from "vitest";
 import { RATING_REQUESTED, ratingRequestedEvent } from "./events.ts";
@@ -28,7 +28,7 @@ describe("ratingRequestedEvent", () => {
       id: `rating:${REQUEST_ID}`,
       data: { contract: CONTRACT.toLowerCase(), requestId: REQUEST_ID },
     });
-    expect(RATING_REQUESTED).toBe("verisci/rating.requested");
+    expect(RATING_REQUESTED).toBe("labstrail/rating.requested");
   });
 
   it("gives nothing for another event of the contract", () => {

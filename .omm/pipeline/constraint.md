@@ -1,5 +1,5 @@
 - Every step ends within Vercel Hobby's 300 s; Gemini's scoring request gets 240 s, the publish run's field check 60 s.
 - The publish run has a 45-minute budget, the rating run 300 minutes, the oracle function 30 (the rating run waits up to 35 for it).
 - Only life-science and health papers are published: the publish run refuses a paper outside the field when its check answers (ADR 0037).
-- Only papers verisci published, in the life sciences and health, with a readable PDF, for which the scorer does not give two answers its check refuses, are rated; any other request is cancelled invalid-target (ADRs 0011, 0020, 0037).
+- Only papers LabsTrail published, in the life sciences and health, with a readable PDF, for which the scorer does not give two answers its check refuses, are rated; any other request is cancelled invalid-target (ADRs 0011, 0020, 0037).
 - The score is computed once, stored in the R-KA and read back, so the chain records the R-KA's score (ADR 0018).

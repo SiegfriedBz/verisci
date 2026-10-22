@@ -1,5 +1,5 @@
-import { submissionTypedData } from "@verisci/core";
-import type { DkgFailure, QueryResult } from "@verisci/dkg";
+import { submissionTypedData } from "@labstrail/core";
+import type { DkgFailure, QueryResult } from "@labstrail/dkg";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { checkSignature, listPapers, type PaperListDeps } from "./papers.ts";

@@ -4,7 +4,7 @@ import {
   type CheckResult,
   STUDY_TYPES,
   type StudyType,
-} from "@verisci/core";
+} from "@labstrail/core";
 
 /** One check as the rating page shows it. */
 export interface CheckRow {

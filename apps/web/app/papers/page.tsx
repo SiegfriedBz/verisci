@@ -9,7 +9,7 @@ import { PAPERS_PER_PAGE, pageHref, parsePageParam } from "../../lib/papers/pape
 type SearchParams = Promise<{ page?: string | string[] }>;
 
 /**
- * "Papers", naming the page past the first (the layout's template adds "· VeriSci"), with its
+ * "Papers", naming the page past the first (the layout's template adds "· LabsTrail"), with its
  * own canonical address, its page number kept, and a description of the list.
  */
 export async function generateMetadata({
@@ -22,7 +22,7 @@ export async function generateMetadata({
   return {
     title: later ? `Papers, page ${page}` : "Papers",
     description:
-      "Every life-science and health paper published on VeriSci, newest first: each a signed record on the OriginTrail DKG, minted on Base, with its reproducibility readiness score.",
+      "Every life-science and health paper published on LabsTrail, newest first: each a signed record on the OriginTrail DKG, minted on Base, with its reproducibility readiness score.",
     alternates: { canonical: pageHref(later ? page : 1) },
   };
 }

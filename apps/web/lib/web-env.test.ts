@@ -1,4 +1,4 @@
-import { EnvError } from "@verisci/env";
+import { EnvError } from "@labstrail/env";
 import { describe, expect, it } from "vitest";
 import { createWebEnv } from "./web-env.ts";
 
@@ -39,12 +39,12 @@ describe("createWebEnv", () => {
   it("reads the addresses Vercel gives a deployment, for the site's links", () => {
     const env = createWebEnv({
       ...settings,
-      VERCEL_PROJECT_PRODUCTION_URL: "verisci.vercel.app",
-      VERCEL_BRANCH_URL: "verisci-git-develop-siegfriedbzs-projects.vercel.app",
+      VERCEL_PROJECT_PRODUCTION_URL: "labstrail.vercel.app",
+      VERCEL_BRANCH_URL: "labstrail-git-develop-siegfriedbzs-projects.vercel.app",
     });
 
-    expect(env.VERCEL_PROJECT_PRODUCTION_URL).toBe("verisci.vercel.app");
-    expect(env.VERCEL_BRANCH_URL).toBe("verisci-git-develop-siegfriedbzs-projects.vercel.app");
+    expect(env.VERCEL_PROJECT_PRODUCTION_URL).toBe("labstrail.vercel.app");
+    expect(env.VERCEL_BRANCH_URL).toBe("labstrail-git-develop-siegfriedbzs-projects.vercel.app");
   });
 
   it("needs none locally", () => {

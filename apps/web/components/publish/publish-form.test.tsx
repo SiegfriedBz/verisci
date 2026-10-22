@@ -33,7 +33,7 @@ const SETTINGS = {
 };
 
 const TYPED_DATA = {
-  domain: { name: "verisci", version: "1", chainId: 84532 },
+  domain: { name: "labstrail", version: "1", chainId: 84532 },
   types: { Submission: [{ name: "cid", type: "string" }] },
   primaryType: "Submission",
   message: { cid: "bafy" },

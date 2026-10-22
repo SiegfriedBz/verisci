@@ -1,4 +1,4 @@
-import type { PaperListResult, PaperSummary, SignatureCheck } from "@verisci/workflows";
+import type { PaperListResult, PaperSummary, SignatureCheck } from "@labstrail/workflows";
 
 /** Papers on each page of `/papers`. */
 export const PAPERS_PER_PAGE = 20;

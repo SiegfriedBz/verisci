@@ -1,5 +1,5 @@
+import type { PaperListResult, PaperSummary } from "@labstrail/workflows";
 import { cleanup, render, screen } from "@testing-library/react";
-import type { PaperListResult, PaperSummary } from "@verisci/workflows";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const listPapers =
@@ -7,7 +7,7 @@ const listPapers =
 
 const getUploadService = vi.fn(() => ({ listPapers }));
 
-vi.mock("@verisci/workflows", () => ({ getUploadService: () => getUploadService() }));
+vi.mock("@labstrail/workflows", () => ({ getUploadService: () => getUploadService() }));
 
 const { LatestPapers } = await import("./latest-papers.tsx");
 

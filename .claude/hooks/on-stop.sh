@@ -8,7 +8,7 @@ set -uo pipefail
 root="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 cd "$root" || exit 0
 session=$(jq -r '.session_id // "unknown"')
-counter="${TMPDIR:-/tmp}/verisci-stop-${session}"
+counter="${TMPDIR:-/tmp}/labstrail-stop-${session}"
 max_blocks=3
 
 base=$(git merge-base HEAD origin/develop 2>/dev/null || git rev-parse HEAD)

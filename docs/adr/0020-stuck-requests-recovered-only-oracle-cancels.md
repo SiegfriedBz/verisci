@@ -15,7 +15,7 @@ Requests can stop halfway ([0007](0007-all-writes-converge.md)), or never start 
 - Each run reads the request on chain and its R-KA on the daemon, then does what is left of score, store, mint and fulfil. A stored score is read back, never recomputed ([0018](0018-phase-1-scorer-output-contract.md)). Past a maximum age, it fulfils if the R-KA is minted, and otherwise cancels.
 - The v2 contract keeps an enumerable set of pending request ids with their request time, so recovery reads current state, never log history.
 - A reconciler, an Inngest cron, reads that set and starts the function for every request pending longer than a threshold. It never writes itself.
-- Only the oracle cancels a pending request, and a cancel records why: maximum age, or invalid target for a target VeriSci does not rate under that UAL: one that is not its paper or that it cannot rate ([0011](0011-a-rating-is-a-separate-r-ka.md)), or a UAL not in canonical form ([0031](0031-uals-are-normalized-before-the-contract.md)). In an emergency, the owner replaces the oracle's address, and the new oracle cancels.
+- Only the oracle cancels a pending request, and a cancel records why: maximum age, or invalid target for a target LabsTrail does not rate under that UAL: one that is not its paper or that it cannot rate ([0011](0011-a-rating-is-a-separate-r-ka.md)), or a UAL not in canonical form ([0031](0031-uals-are-normalized-before-the-contract.md)). In an emergency, the owner replaces the oracle's address, and the new oracle cancels.
 
 ## Consequences
 
@@ -37,3 +37,4 @@ Requests can stop halfway ([0007](0007-all-writes-converge.md)), or never start 
 - 2026-10-16: the intake and recovery plan sets the threshold and the cron interval, and builds the reconciler (intake and recovery).
 - 2026-10-16: "invalid target" covers every paper VeriSci cannot rate, one the scorer gives two refused answers for included ([0011](0011-a-rating-is-a-separate-r-ka.md)), so the recorded reason still says why the request stopped (intake and recovery review, user's choice).
 - 2026-10-16: corrected: "invalid target" also covers a UAL not in canonical form, as [0031](0031-uals-are-normalized-before-the-contract.md) decides (ADR sweep, user's choice).
+- 2026-10-22: the project renamed LabsTrail ([0042](0042-the-project-is-named-labstrail.md), user's choice).

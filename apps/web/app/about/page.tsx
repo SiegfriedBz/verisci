@@ -13,7 +13,7 @@ import { SITE } from "../../lib/site.ts";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Why VeriSci exists, how it records life-science papers and their quality ratings off-chain on the OriginTrail DKG and on-chain on Base, with each PDF on IPFS, and who builds it.",
+    "Why LabsTrail exists, how it records life-science papers and their quality ratings off-chain on the OriginTrail DKG and on-chain on Base, with each PDF on IPFS, and who builds it.",
   alternates: { canonical: "/about" },
 };
 
@@ -47,7 +47,7 @@ const NEXT = [
   {
     name: "Payment, for people and AI agents",
     status: "planned",
-    why: "Today a requester pays only their gas, VeriSci pays the rest, and caps hold spam back. The plan, not decided yet: a fee on publishing and on rating that a person or an AI agent can pay, covering the costs and the reviewers' pay.",
+    why: "Today a requester pays only their gas, LabsTrail pays the rest, and caps hold spam back. The plan, not decided yet: a fee on publishing and on rating that a person or an AI agent can pay, covering the costs and the reviewers' pay.",
   },
   {
     name: "An API for AI agents",
@@ -67,10 +67,9 @@ const NEXT = [
 ] as const;
 
 /**
- * Why VeriSci exists, how it uses the OriginTrail DKG, Base and IPFS to record papers and
+ * Why LabsTrail exists, how it uses the OriginTrail DKG, Base and IPFS to record papers and
  * their ratings as Knowledge Assets, what comes next, and who builds it, with the code and the maintainer's
- * profile, so search engines and AI search can tell this VeriSci from AllenAI's 2020 SciFact
- * model of the same name (ADR 0040).
+ * profile (ADR 0040).
  */
 export default function AboutPage() {
   return (
@@ -85,7 +84,7 @@ export default function AboutPage() {
 
       <section aria-labelledby="why-title" className="grid max-w-[65ch] gap-4">
         <h2 id="why-title" className="text-xl font-semibold tracking-tight">
-          Why VeriSci exists
+          Why LabsTrail exists
         </h2>
         <p className="leading-relaxed text-muted">
           Many published results can't be repeated. In a 2016 <cite>Nature</cite> survey of more
@@ -102,7 +101,7 @@ export default function AboutPage() {
           better way to tell a paper that gives enough to be repeated from one that doesn't.
         </p>
         <p className="leading-relaxed text-ink">
-          VeriSci gives each paper a record whose provenance anyone can check, then rates its
+          LabsTrail gives each paper a record whose provenance anyone can check, then rates its
           quality in the open: a machine reproducibility score first, then transparent human review.
           The paper and each of its ratings are recorded off-chain and on-chain, where people and
           agents can read and check them.
@@ -158,23 +157,23 @@ export default function AboutPage() {
             <p className="max-w-[56ch] text-sm leading-relaxed text-muted">
               Its asset gives the title, the authors and the PDF's CID, with the submitter's address
               and their signature of that CID. Anyone can check who submitted which file without
-              trusting VeriSci.
+              trusting LabsTrail.
             </p>
           </div>
           <div className="grid content-start gap-3">
             <h3 className="font-medium">A rating</h3>
             <p className="max-w-[56ch] text-sm leading-relaxed text-muted">
               Each rating is an asset of its own that points to the paper's, with every check,
-              answer and quote behind its score. VeriSci's RatingController contract on Base records
-              the score. A new rating or review adds its own score, and the paper's asset and
-              earlier scores stay as they were.
+              answer and quote behind its score. LabsTrail's RatingController contract on Base
+              records the score. A new rating or review adds its own score, and the paper's asset
+              and earlier scores stay as they were.
             </p>
           </div>
         </div>
         <p className="max-w-[65ch] text-sm leading-relaxed text-muted">
-          VeriSci's node mints both kinds of asset, holds their tokens and pays their fees, so only
-          VeriSci can add a version to them. The rating grows in three phases, from a machine score
-          for reproducibility readiness to wet-lab replication.
+          LabsTrail's node mints both kinds of asset, holds their tokens and pays their fees, so
+          only LabsTrail can add a version to them. The rating grows in three phases, from a machine
+          score for reproducibility readiness to wet-lab replication.
         </p>
       </section>
 
@@ -197,10 +196,10 @@ export default function AboutPage() {
                 closed doors.
               </p>
               <p>
-                VeriSci will draw reviewers at random with Chainlink VRF, which delivers each random
-                number with a proof checked on-chain, so no one, VeriSci included, can steer who is
-                picked, and anyone can check the draw. The reviewers' scores join the paper's rating
-                record, off-chain and on-chain.
+                LabsTrail will draw reviewers at random with Chainlink VRF, which delivers each
+                random number with a proof checked on-chain, so no one, LabsTrail included, can
+                steer who is picked, and anyone can check the draw. The reviewers' scores join the
+                paper's rating record, off-chain and on-chain.
               </p>
               <p>
                 The plan, not decided yet: reviewers stake to join the pool, are paid for their
@@ -263,23 +262,13 @@ export default function AboutPage() {
           <h2 className="text-xl font-semibold tracking-tight">On testnets for now</h2>
           <p className="max-w-[56ch] text-sm leading-relaxed text-muted">
             Everything runs on Base Sepolia, a testnet, until a payment plan is in place; then
-            VeriSci moves to mainnet. Until then a requester pays only their gas, and VeriSci pays
-            to publish and to rate.
+            LabsTrail moves to mainnet. Until then a requester pays only their gas, and LabsTrail
+            pays to publish and to rate.
           </p>
           <p className="max-w-[56ch] text-sm leading-relaxed text-muted">
             Visits are counted with Vercel Web Analytics, which sets no cookies.
           </p>
         </div>
-      </section>
-
-      <section aria-labelledby="name-title" className="glass grid gap-3 rounded-2xl p-5 sm:p-6">
-        <h2 id="name-title" className="font-semibold">
-          Another VeriSci
-        </h2>
-        <p className="max-w-[70ch] text-sm leading-relaxed text-muted">
-          A 2020 research model for checking scientific claims, built at the Allen Institute for AI
-          with the SciFact dataset, is also called VeriSci. This site is a separate project.
-        </p>
       </section>
     </div>
   );

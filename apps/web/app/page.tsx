@@ -74,14 +74,14 @@ const RATE: readonly Step[] = [
 /** The example UAL of the "What a paper asset holds" card, split into what each part names. */
 const UAL_PARTS = [
   { value: "did:dkg:base:84532", label: "chain: Base Sepolia" },
-  { value: "0xd701…13b3", label: "publisher: VeriSci's node" },
+  { value: "0xd701…13b3", label: "publisher: LabsTrail's node" },
   { value: "7", label: "asset number" },
 ] as const;
 
 const HOLDS = [
   {
     term: "The token",
-    detail: "Held by VeriSci's node, which publishes the asset and pays its fees.",
+    detail: "Held by LabsTrail's node, which publishes the asset and pays its fees.",
   },
   {
     term: "Your claim",
@@ -108,7 +108,7 @@ const RECORD = [
 ] as const;
 
 /**
- * Home: what VeriSci is, in one sentence, with a demo that publishes a paper and then rates
+ * Home: what LabsTrail is, in one sentence, with a demo that publishes a paper and then rates
  * it, the latest published papers, and how publishing and rating work. The latest papers
  * stream in, so the hero never waits for the DKG node. Its structured data describes the
  * website and the organization behind it (ADR 0040).
@@ -177,12 +177,12 @@ export default function Home() {
             which ones give enough to be repeated.
           </p>
           <p className="leading-relaxed text-muted">
-            VeriSci records each paper, with who submitted it and which exact file, then rates its
+            LabsTrail records each paper, with who submitted it and which exact file, then rates its
             quality in the open: a machine reproducibility score first, transparent human review
             next. The paper and each rating are recorded off-chain and on-chain.
           </p>
           <Link href="/about" className="link w-fit text-sm">
-            Why VeriSci, in more detail
+            Why LabsTrail, in more detail
           </Link>
         </div>
         <figure className="grid content-start gap-3 border-l-2 border-accent pl-5">
@@ -206,8 +206,8 @@ export default function Home() {
             Two layers, one record
           </h2>
           <p className="leading-relaxed text-muted">
-            VeriSci publishes each paper on the OriginTrail Decentralized Knowledge Graph (DKG) as a
-            Knowledge Asset: a set of linked statements about the paper, with an owner and a proof
+            LabsTrail publishes each paper on the OriginTrail Decentralized Knowledge Graph (DKG) as
+            a Knowledge Asset: a set of linked statements about the paper, with an owner and a proof
             on-chain. Its content and its proof live in two places that check each other.
           </p>
         </div>
@@ -220,7 +220,7 @@ export default function Home() {
             <p className="max-w-[56ch] text-sm leading-relaxed text-muted">
               DKG nodes store the asset's statements: title, authors, the PDF's link, the submitter,
               their signature and its deadline. Once published, OriginTrail replicates them across
-              the context graph's nodes, and any node subscribed to VeriSci's graph can fetch them
+              the context graph's nodes, and any node subscribed to LabsTrail's graph can fetch them
               by the UAL, the asset's permanent address.
             </p>
           </article>
@@ -262,7 +262,7 @@ export default function Home() {
               </ol>
               <div className="flex flex-wrap gap-x-6 gap-y-1.5 text-xs text-muted">
                 <span className="flex items-center gap-1.5">
-                  <Graph size={14} className="shrink-0 text-accent" />A node on VeriSci's graph
+                  <Graph size={14} className="shrink-0 text-accent" />A node on LabsTrail's graph
                   returns its statements
                 </span>
                 <span className="flex items-center gap-1.5">

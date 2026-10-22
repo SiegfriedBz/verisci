@@ -1,4 +1,4 @@
-import type { ReadRequestResult } from "@verisci/contracts";
+import type { ReadRequestResult } from "@labstrail/contracts";
 import type { Hex } from "viem";
 import { describe, expect, it } from "vitest";
 import { PENDING_CONCURRENCY, type PendingReads, readPending } from "./pending.ts";

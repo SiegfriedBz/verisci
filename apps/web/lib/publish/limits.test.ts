@@ -56,7 +56,7 @@ describe("counter", () => {
   });
   it("never logs the command Upstash echoes, which holds the visitor's IP", async () => {
     const refused = new Error(
-      'WRONGPASS invalid password, command was: ["evalsha","abc",["verisci:upload-url:203.0.113.7"]]',
+      'WRONGPASS invalid password, command was: ["evalsha","abc",["labstrail:upload-url:203.0.113.7"]]',
     );
     const broken: RateWindow = {
       limit: () => Promise.reject(refused),
@@ -113,14 +113,14 @@ describe("createLimits", () => {
         await submissions.count("0xa");
       });
 
-      expect(sent).toContain(`verisci:${appEnv}:upload-url`);
-      expect(sent).toContain(`verisci:${appEnv}:submission`);
+      expect(sent).toContain(`labstrail:${appEnv}:upload-url`);
+      expect(sent).toContain(`labstrail:${appEnv}:submission`);
     });
 
     it("leaves production's counters alone when staging counts a hit", async () => {
       const sent = await keysSent("staging", async ({ urls }) => urls.take("203.0.113.7"));
 
-      expect(sent).not.toContain("verisci:production:");
+      expect(sent).not.toContain("labstrail:production:");
     });
   });
 });

@@ -1,5 +1,5 @@
-import { dkgSchema } from "@verisci/dkg";
-import { createSharedEnv, defineEnv, type RuntimeEnv, type SharedEnv } from "@verisci/env";
+import { dkgSchema } from "@labstrail/dkg";
+import { createSharedEnv, defineEnv, type RuntimeEnv, type SharedEnv } from "@labstrail/env";
 import { z } from "zod";
 
 /** The Pinata API key (JWT) that signs uploads, lists and unpins files. Secret. */
@@ -62,7 +62,7 @@ export function webhookSchema(appEnv: SharedEnv["APP_ENV"]) {
  * ones. The Inngest SDK reads its keys itself; they are checked
  * here so a deployed server stops at start without them, and the signing key also reads
  * runs. Throws one `EnvError` naming every bad variable, never its value.
- * `@verisci/workflows/env` builds it once from `process.env`; the functions build it on
+ * `@labstrail/workflows/env` builds it once from `process.env`; the functions build it on
  * their first run, and tests call this with their own object.
  */
 export function createWorkflowsEnv(runtimeEnv: RuntimeEnv = process.env) {

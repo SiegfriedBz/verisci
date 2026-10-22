@@ -20,7 +20,7 @@ export const RATING_STEPS = [
     layer: "off-chain",
     detail: "The rating, with every answer and quote, is written to OriginTrail's knowledge graph",
     headline: "Saving the rating",
-    now: "The rating is written to VeriSci's DKG node as its own Knowledge Asset, linked to the paper, which stays as it was.",
+    now: "The rating is written to LabsTrail's DKG node as its own Knowledge Asset, linked to the paper, which stays as it was.",
   },
   {
     stage: "minting",
@@ -29,14 +29,14 @@ export const RATING_STEPS = [
     detail:
       "Minted on Base by OriginTrail's Knowledge Asset contracts, as its own asset linked to the paper",
     headline: "Minting the rating",
-    now: "VeriSci's DKG node mints the rating on Base through OriginTrail's Knowledge Asset contracts, the same ones that hold every paper. Once minted, its checks and quotes can't change unnoticed.",
+    now: "LabsTrail's DKG node mints the rating on Base through OriginTrail's Knowledge Asset contracts, the same ones that hold every paper. Once minted, its checks and quotes can't change unnoticed.",
   },
   {
     stage: "recording",
     label: "Recorded",
     layer: "on-chain",
-    detail: "The score is stored on VeriSci's RatingController contract, next to the request",
+    detail: "The score is stored on LabsTrail's RatingController contract, next to the request",
     headline: "Recording the score",
-    now: "VeriSci's oracle reads the score back from the minted rating and records it on VeriSci's RatingController contract, next to the request. Once it's recorded, the rating is done and its score shows in the papers list.",
+    now: "LabsTrail's oracle reads the score back from the minted rating and records it on LabsTrail's RatingController contract, next to the request. Once it's recorded, the rating is done and its score shows in the papers list.",
   },
 ] as const satisfies readonly (ChainStep & { stage: string; headline: string; now: string })[];

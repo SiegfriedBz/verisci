@@ -1,5 +1,5 @@
-import { canonicalCid } from "@verisci/core";
-import type { PublishedRecord } from "@verisci/workflows";
+import { canonicalCid } from "@labstrail/core";
+import type { PublishedRecord } from "@labstrail/workflows";
 import { describe, expect, it } from "vitest";
 import {
   breadcrumbJsonLd,
@@ -10,7 +10,7 @@ import {
   siteJsonLd,
 } from "./json-ld.ts";
 
-const SITE = "https://verisci.vercel.app";
+const SITE = "https://labstrail.vercel.app";
 const CID = "bafybeias652m2pfpmuaeze4dxmtcjvfwvr7dsteumagdd2vwaqrbkjokxu";
 const UAL = "did:dkg:base:84532/0xd701ed157232ad5e14bc4134a8d10d64d86f13b3/6";
 const REQUEST = `0x${"ab".repeat(32)}`;
@@ -38,7 +38,7 @@ describe("siteJsonLd", () => {
         {
           "@type": "WebSite",
           "@id": `${SITE}/#website`,
-          name: "VeriSci",
+          name: "LabsTrail",
           url: SITE,
           description: expect.stringMatching(/life-science and health papers/),
           inLanguage: "en",
@@ -47,10 +47,10 @@ describe("siteJsonLd", () => {
         {
           "@type": "Organization",
           "@id": `${SITE}/#org`,
-          name: "VeriSci",
+          name: "LabsTrail",
           url: SITE,
           logo: `${SITE}/icon.svg`,
-          sameAs: ["https://github.com/SiegfriedBz/verisci"],
+          sameAs: ["https://github.com/SiegfriedBz/labstrail"],
           founder: {
             "@type": "Person",
             name: "Siegfried Bozza",
@@ -61,7 +61,7 @@ describe("siteJsonLd", () => {
     });
   });
 
-  it("offers no site search, which VeriSci does not have", () => {
+  it("offers no site search, which LabsTrail does not have", () => {
     expect(JSON.stringify(siteJsonLd(SITE))).not.toContain("SearchAction");
   });
 });
@@ -124,7 +124,7 @@ describe("paperJsonLd", () => {
     ]);
   });
 
-  it("names VeriSci as the publisher of this record, never of the paper", () => {
+  it("names LabsTrail as the publisher of this record, never of the paper", () => {
     const [article] = paperJsonLd(SITE, CID, UAL, record)["@graph"];
 
     expect(article).not.toHaveProperty("publisher");
@@ -163,7 +163,7 @@ describe("paperJsonLd", () => {
 });
 
 describe("reviewJsonLd", () => {
-  it("describes a rating as a Review of the paper, by VeriSci, out of 100", () => {
+  it("describes a rating as a Review of the paper, by LabsTrail, out of 100", () => {
     expect(reviewJsonLd(SITE, CID, { requestId: REQUEST, score: 72 })).toEqual({
       "@context": "https://schema.org",
       "@type": "Review",

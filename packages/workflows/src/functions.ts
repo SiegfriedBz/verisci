@@ -1,7 +1,7 @@
-import { readPendingCount, readPendingRequestIds } from "@verisci/contracts";
-import { ORIGINTRAIL_CONTRACTS } from "@verisci/core";
-import { createDkgClient } from "@verisci/dkg";
-import { defineEnv, type RuntimeEnv, sharedEnv } from "@verisci/env";
+import { readPendingCount, readPendingRequestIds } from "@labstrail/contracts";
+import { ORIGINTRAIL_CONTRACTS } from "@labstrail/core";
+import { createDkgClient } from "@labstrail/dkg";
+import { defineEnv, type RuntimeEnv, sharedEnv } from "@labstrail/env";
 import { createPublicClient, createWalletClient, erc20Abi, type Hex, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { anvil, baseSepolia } from "viem/chains";
@@ -204,7 +204,7 @@ function getRatingDeps(): RatingDeps {
   return ratingDeps;
 }
 
-/** Publishes a submitted PDF as a Target KA (`verisci/paper.submitted`). */
+/** Publishes a submitted PDF as a Target KA (`labstrail/paper.submitted`). */
 export const publishPaper = createPublishPaper(inngest, getPublishDeps);
 
 /** Sends the oracle's fulfil and cancel transactions, one at a time (ADR 0019). */
@@ -214,7 +214,7 @@ export const oracleTransaction = createOracleTransaction(
   (text) => alertMaintainer(text),
 );
 
-/** Rates a requested paper and has the oracle record it (`verisci/rating.requested`). */
+/** Rates a requested paper and has the oracle record it (`labstrail/rating.requested`). */
 export const ratePaper = createRatePaper(inngest, getRatingDeps, oracleTransaction, {
   throttle: sharedEnv.APP_ENV !== "local",
 });

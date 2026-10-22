@@ -3,7 +3,7 @@
 Inngest workflows that combine `core` logic with the `dkg` and `contracts` adapters. See
 `README.md` here.
 
-- May import `@verisci/core`, `@verisci/env`, `@verisci/dkg` and `@verisci/contracts`.
+- May import `@labstrail/core`, `@labstrail/env`, `@labstrail/dkg` and `@labstrail/contracts`.
 - Orchestrate here; put the rules themselves in `core` so they stay pure and testable.
 - Mock the adapters in tests.
 - ADRs that govern workflows: Inngest functions live here and `web` only serves them

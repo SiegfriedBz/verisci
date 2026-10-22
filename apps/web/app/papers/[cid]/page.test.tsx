@@ -22,7 +22,7 @@ vi.mock("next/navigation", () => ({
     throw new Error("NEXT_NOT_FOUND");
   },
 }));
-vi.mock("@verisci/workflows", () => ({ getUploadService: () => ({}) }));
+vi.mock("@labstrail/workflows", () => ({ getUploadService: () => ({}) }));
 vi.mock("../../../lib/publish/upload-actions.ts", () => ({
   readProgressOnce: (cid: string, eventId: string | undefined) => readProgressOnce(cid, eventId),
 }));

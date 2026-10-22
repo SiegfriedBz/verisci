@@ -1,6 +1,6 @@
+import { checklistOf, STUDY_TYPES } from "@labstrail/core";
+import { RATING_SETTINGS } from "@labstrail/workflows";
 import { cleanup, render, screen } from "@testing-library/react";
-import { checklistOf, STUDY_TYPES } from "@verisci/core";
-import { RATING_SETTINGS } from "@verisci/workflows";
 import { afterEach, describe, expect, it } from "vitest";
 import { SITE } from "../../lib/site.ts";
 import MethodPage, { metadata } from "./page.tsx";

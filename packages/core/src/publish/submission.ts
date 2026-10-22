@@ -1,7 +1,7 @@
 import { BASE_SEPOLIA_CHAIN_ID } from "../assets/chains.ts";
 
 /**
- * The largest PDF verisci publishes and rates: 15 MB. A paper published before the limit was
+ * The largest PDF LabsTrail publishes and rates: 15 MB. A paper published before the limit was
  * lowered from 30 MB, and over it, is cancelled when someone asks to rate it (ADR 0011). The
  * scorer's reference papers weigh 0.4 to 12.4 MB.
  */
@@ -21,11 +21,11 @@ export interface SubmissionMessage {
 }
 
 /**
- * verisci's EIP-712 domain: no `verifyingContract`, since a submission calls no contract
+ * LabsTrail's EIP-712 domain: no `verifyingContract`, since a submission calls no contract
  * (ADR 0010).
  */
 export const SUBMISSION_DOMAIN = {
-  name: "verisci",
+  name: "labstrail",
   version: "1",
   chainId: BASE_SEPOLIA_CHAIN_ID,
 } as const;

@@ -1,5 +1,5 @@
+import { ORIGINTRAIL_CONTRACTS } from "@labstrail/core";
 import { ArrowSquareOut } from "@phosphor-icons/react/dist/ssr";
-import { ORIGINTRAIL_CONTRACTS } from "@verisci/core";
 import Link from "next/link";
 import { addressUrl } from "../../lib/papers/explorer.ts";
 import { shorten } from "../../lib/shorten.ts";
@@ -11,7 +11,7 @@ const CHAIN_ID = 84532;
 
 interface ContractRow {
   name: string;
-  owner: "OriginTrail" | "VeriSci";
+  owner: "OriginTrail" | "LabsTrail";
   role: string;
   address: string;
   /** On Anvil, which no block explorer shows: the address stays unlinked. */
@@ -19,7 +19,7 @@ interface ContractRow {
 }
 
 /**
- * The site's footer: what VeriSci is and runs on, links to publishing, the method and the about
+ * The site's footer: what LabsTrail is and runs on, links to publishing, the method and the about
  * page, and the contracts behind every record, each
  * linked on Basescan: OriginTrail's, which hold and publish every asset, and the
  * RatingController this environment's pages use, when it has one; locally that is the Anvil
@@ -52,7 +52,7 @@ export function SiteFooter({
       ? [
           {
             name: "RatingController",
-            owner: "VeriSci" as const,
+            owner: "LabsTrail" as const,
             role: ratingController.local
               ? "Records each rating phase's score, on Anvil on this computer"
               : "Records each rating phase's score",
@@ -73,7 +73,7 @@ export function SiteFooter({
           <p className="w-fit rounded-md border border-line px-2.5 py-1 font-mono text-xs text-muted">
             Base Sepolia testnet · chain {CHAIN_ID}
           </p>
-          <nav aria-label="About VeriSci" className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+          <nav aria-label="About LabsTrail" className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
             <Link href="/publish" className="link w-fit">
               Publish a paper
             </Link>
@@ -81,7 +81,7 @@ export function SiteFooter({
               How the score works
             </Link>
             <Link href="/about" className="link w-fit">
-              About VeriSci
+              About LabsTrail
             </Link>
           </nav>
         </div>
@@ -101,7 +101,7 @@ export function SiteFooter({
                     <span className="text-sm font-medium">{row.name}</span>
                     <span
                       className={`rounded-md px-1.5 py-0.5 font-mono text-[11px] ${
-                        row.owner === "VeriSci"
+                        row.owner === "LabsTrail"
                           ? "bg-accent-soft text-accent"
                           : "bg-surface-strong text-muted"
                       }`}

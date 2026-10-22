@@ -24,7 +24,7 @@ export const VERIFY_LABELS = {
   signature: "Submitter's signature",
   deadline: "Signed deadline (Unix seconds)",
   contextGraph: "Context graph",
-  publisher: "Minted to VeriSci's node",
+  publisher: "Minted to LabsTrail's node",
   token: "Asset token (ERC-721, OriginTrail's DKGKnowledgeAssets)",
   ual: "Knowledge Asset (UAL)",
   pdf: "PDF (CID)",

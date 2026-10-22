@@ -1,11 +1,11 @@
-# @verisci/core
+# @labstrail/core
 
 Domain logic. Core does no IO: no `fetch`, no `node:*` imports and no other
-`@verisci/*` package. IO belongs in an adapter package such as `dkg` or
+`@labstrail/*` package. IO belongs in an adapter package such as `dkg` or
 `contracts`.
 
 `pnpm check` enforces this: `packages/core/biome.json` turns `fetch`,
-`node:*` and `@verisci/*` into errors ("core does no IO").
+`node:*` and `@labstrail/*` into errors ("core does no IO").
 
 Its `package.json` declares `"sideEffects": false`: its modules only define functions and
 constants, so a bundler drops what a page doesn't use, and a web page that imports one
@@ -26,7 +26,7 @@ Architecture views: [`.omm/overall-architecture/core/`](../../.omm/overall-archi
 
 The `multiformats` library, to parse CIDs, `@xmldom/xmldom`, to read TEI, Zod, to check the
 scorer's and the field check's answers, and no other workspace. pnpm does not hoist undeclared workspace packages,
-so an import of another `@verisci/*` package fails to typecheck.
+so an import of another `@labstrail/*` package fails to typecheck.
 
 ## API
 
@@ -47,14 +47,14 @@ so an import of another `@verisci/*` package fails to typecheck.
 | `AssetNameResult`, `AssetNameError` | The result of both, and why an input cannot be named |
 | `submissionTypedData(message)` | The EIP-712 typed data a submitter signs to publish a PDF, in the shape viem takes |
 | `canonicalContextGraph(id)` | A context graph id with its address in lowercase and its name unchanged: the one spelling a submission signs |
-| `SUBMISSION_DOMAIN`, `SubmissionMessage` | VeriSci's EIP-712 domain, and the signed `{ cid, contextGraph, deadline }` |
-| `MAX_PDF_BYTES` | The largest PDF verisci publishes and rates, 15 MB: read by the upload page, the publish run and the rating run |
+| `SUBMISSION_DOMAIN`, `SubmissionMessage` | LabsTrail's EIP-712 domain, and the signed `{ cid, contextGraph, deadline }` |
+| `MAX_PDF_BYTES` | The largest PDF LabsTrail publishes and rates, 15 MB: read by the upload page, the publish run and the rating run |
 | `parseTeiHeader(xml)` | A paper's `PaperMetadata` (title, authors, abstract, DOI) from GROBID's TEI header, or `not-tei` or `no-title`; returns a result for every input |
 | `PaperMetadata`, `TeiResult` | The metadata read from a TEI header, and the result of `parseTeiHeader` |
 | `completeTitle(grobid, stored)` | GROBID's title, or the title the PDF stores in its metadata when that one completes it (below) |
 | `fieldCheckPrompt(paper)`, `FieldCheckInput`, `FIELD_OUTPUT_SCHEMA` | The field check, which the publish run makes for a new paper and the rating run before scoring: the system and user text for a paper's title, abstract and opening (an absent abstract or an empty opening leaves out its label), and the JSON Schema its answer must match |
 | `parseFieldAnswer(text)` | The field check's answer checked: a known field and a reason that is not empty, cut at a word to 300 characters, or `{ ok: false }` |
-| `FIELD_RULE` | The sentence that defines VeriSci's field ([ADR 0037](../../docs/adr/0037-verisci-rates-life-science-and-health-papers.md)), in both the field check's and the scorer's prompt |
+| `FIELD_RULE` | The sentence that defines LabsTrail's field ([ADR 0037](../../docs/adr/0037-labstrail-rates-life-science-and-health-papers.md)), in both the field check's and the scorer's prompt |
 | `ORIGINTRAIL_CONTRACTS`, `OriginTrailContracts`, `knowledgeAssetToken(ual)` | OriginTrail's `DKGKnowledgeAssets` (the ERC-721 holding every asset's token), `KnowledgeAssetsLifecycle` and TRAC token (which the health check reads publisher wallets' balances of) addresses by chain id, and the contract and token id behind a UAL: the id itself when the UAL names the contract, else the author's address above the asset number in the low 96 bits; `undefined` for a chain with no recorded contracts |
 | `paperRecordQuery(cid, contextGraph, ual)`, `parsePaperRecord(cid, bindings)` | The SPARQL that reads a paper's Target KA back from that asset's own graph (named by its UAL; `undefined` when another agent than the graph's minted it), and the `PaperRecord` (title, authors in order, abstract, DOI, PDF link, submitter, signature, deadline) from its rows, or `undefined` when a required field is missing |
 | `PaperRecord`, `QueryBinding` | A record read back, and one row of a SPARQL answer |
@@ -159,7 +159,7 @@ A Target KA describes a paper and who submitted it
 - **Submission:** `urn:verisci:submitter` (the lowercase address), `urn:verisci:signature`
   and `urn:verisci:deadline` record the EIP-712 signature over
   `Submission { string cid; string contextGraph; uint256 deadline }`, under the domain
-  `{ name: "verisci", version: "1", chainId: 84532 }`.
+  `{ name: "labstrail", version: "1", chainId: 84532 }`.
 - **Checking who submitted a paper:** take the CID from `schema:url`, the context graph id
   the KA is in, and the deadline; rebuild the typed data with `submissionTypedData`, which
   writes the graph id's address in lowercase (`canonicalContextGraph`), the spelling every
@@ -178,7 +178,7 @@ A Target KA describes a paper and who submitted it
   reads with no new mint.
 
 - **The field check:** before a new paper is stored, the publish run asks a small model
-  whether it is in VeriSci's field, and the rating run asks it again before scoring ([ADR 0037](../../docs/adr/0037-verisci-rates-life-science-and-health-papers.md)).
+  whether it is in LabsTrail's field, and the rating run asks it again before scoring ([ADR 0037](../../docs/adr/0037-labstrail-rates-life-science-and-health-papers.md)).
   `fieldCheckPrompt` defines the field with `FIELD_RULE`, the same sentence the scorer's
   prompt uses, tells the model the paper's text is data, never instructions, and gives it the
   title, the abstract and the opening of the text, each under its label. The answer is
@@ -191,9 +191,9 @@ A rating is its own Knowledge Asset, the R-KA, linked to the KA it rates
 ([ADR 0011](../../docs/adr/0011-a-rating-is-a-separate-r-ka.md)) and named from its phase-1
 request id (Asset names above).
 
-- **Targets:** only papers verisci published, in its field, are rated
+- **Targets:** only papers LabsTrail published, in its field, are rated
   ([ADR 0011](../../docs/adr/0011-a-rating-is-a-separate-r-ka.md),
-  [ADR 0037](../../docs/adr/0037-verisci-rates-life-science-and-health-papers.md)).
+  [ADR 0037](../../docs/adr/0037-labstrail-rates-life-science-and-health-papers.md)).
   `classifyTarget` decides what a rating run does with a request's target UAL: one that does
   not parse, is not in the canonical spelling `normalizeUal` writes
   ([ADR 0031](../../docs/adr/0031-uals-are-normalized-before-the-contract.md)), names another
@@ -259,8 +259,8 @@ request id (Asset names above).
 
 | Command | What it does |
 | --- | --- |
-| `pnpm --filter @verisci/core typecheck` | Typechecks the package |
-| `pnpm --filter @verisci/core test` | Runs its Vitest project (`vitest run`) |
+| `pnpm --filter @labstrail/core typecheck` | Typechecks the package |
+| `pnpm --filter @labstrail/core test` | Runs its Vitest project (`vitest run`) |
 
 Ships TypeScript source (`src/index.ts`), with no build step. The source is grouped by
 feature: `src/assets/`, `src/publish/`, `src/papers/` and `src/rating/` (`CLAUDE.md` here).

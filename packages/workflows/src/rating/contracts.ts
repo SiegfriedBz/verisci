@@ -1,5 +1,5 @@
-import { ratingControllerDeployments } from "@verisci/contracts";
-import type { SharedEnv } from "@verisci/env";
+import { ratingControllerDeployments } from "@labstrail/contracts";
+import type { SharedEnv } from "@labstrail/env";
 
 /**
  * The contracts an environment takes and reads rating requests from, lowercase: locally the

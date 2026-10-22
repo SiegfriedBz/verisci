@@ -1,4 +1,4 @@
-import { NoDeploymentError, ratingControllerDeployments } from "@verisci/contracts";
+import { NoDeploymentError, ratingControllerDeployments } from "@labstrail/contracts";
 import type { WebEnv } from "../web-env.ts";
 
 /** Anvil's chain id (ADR 0036). */

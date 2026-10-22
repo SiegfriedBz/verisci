@@ -1,4 +1,4 @@
-import { createSharedEnv, defineEnv, type RuntimeEnv, type SharedEnv } from "@verisci/env";
+import { createSharedEnv, defineEnv, type RuntimeEnv, type SharedEnv } from "@labstrail/env";
 import { z } from "zod";
 import { workflowsSchema } from "./workflows-env.ts";
 

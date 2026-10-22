@@ -1,4 +1,4 @@
-import { createSharedEnv, defineEnv, type RuntimeEnv } from "@verisci/env";
+import { createSharedEnv, defineEnv, type RuntimeEnv } from "@labstrail/env";
 import { getAddress } from "viem";
 import { z } from "zod";
 
@@ -22,7 +22,7 @@ function checksummed(contextGraph: string): boolean {
 
 /**
  * Validates the DKG node's settings from `runtimeEnv` (default `process.env`); throws
- * `EnvError` naming every bad variable, never its value. `@verisci/dkg/env` builds it once
+ * `EnvError` naming every bad variable, never its value. `@labstrail/dkg/env` builds it once
  * from `process.env`; tests and scripts call this with their own object.
  *
  * `DKG_CONTEXT_GRAPH` must be a full id (a bare name reads another, empty graph) with its

@@ -1,18 +1,18 @@
 // Dev only: requests a phase-1 rating on the RatingController deployed on a local Anvil chain
-// (ADR 0036), from a throwaway requester, and sends `verisci/rating.requested` to the local
+// (ADR 0036), from a throwaway requester, and sends `labstrail/rating.requested` to the local
 // Inngest dev server. On staging and production, the Alchemy Notify webhook sends the event
 // instead.
 //
-//   pnpm --filter @verisci/workflows rate-paper <target UAL> [--raw] [--no-event]
+//   pnpm --filter @labstrail/workflows rate-paper <target UAL> [--raw] [--no-event]
 //
 // --no-event requests without sending the event, to start the run another way: `post-webhook`
 // with the printed transaction, or the reconciler once the request is old enough.
 // Reads LOCAL_CHAIN_RPC_URL and LOCAL_RATING_CONTRACT from the root .env.local (packages/workflows
 // README). The UAL is normalized first, as the app does (ADR 0031); --raw sends it as typed, to
 // see the oracle cancel an invalid target.
-import { ratingControllerAbi } from "@verisci/contracts";
-import { normalizeUal } from "@verisci/core";
-import { createSharedEnv, defineEnv } from "@verisci/env";
+import { ratingControllerAbi } from "@labstrail/contracts";
+import { normalizeUal } from "@labstrail/core";
+import { createSharedEnv, defineEnv } from "@labstrail/env";
 import {
   createPublicClient,
   createTestClient,
@@ -33,7 +33,7 @@ const noEvent = args.includes("--no-event");
 const input = args.find((arg) => !arg.startsWith("--"));
 if (!input) {
   console.error(
-    "usage: pnpm --filter @verisci/workflows rate-paper <target UAL> [--raw] [--no-event]",
+    "usage: pnpm --filter @labstrail/workflows rate-paper <target UAL> [--raw] [--no-event]",
   );
   process.exit(1);
 }

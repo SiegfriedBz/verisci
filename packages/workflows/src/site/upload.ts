@@ -7,8 +7,8 @@ import {
   parseUal,
   publishedPaperQuery,
   targetKaName,
-} from "@verisci/core";
-import { type AssetResult, createDkgClient } from "@verisci/dkg";
+} from "@labstrail/core";
+import { type AssetResult, createDkgClient } from "@labstrail/dkg";
 import { baseSepolia } from "viem/chains";
 import { inngest } from "../inngest.ts";
 import {
@@ -232,7 +232,7 @@ let service: UploadService | undefined;
 /**
  * The pages' calls, built on first use from `process.env` (they throw `EnvError`
  * when a setting is bad, which a deployed server catches at start). Events go through
- * verisci's Inngest client.
+ * LabsTrail's Inngest client.
  */
 export function getUploadService(): UploadService {
   service ??= createUploadService(createWorkflowsEnv(), {

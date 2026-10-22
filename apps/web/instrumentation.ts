@@ -1,4 +1,4 @@
-import type { RuntimeEnv } from "@verisci/env";
+import type { RuntimeEnv } from "@labstrail/env";
 
 /**
  * Runs once when a Next.js server starts, before it answers any request, and not during
@@ -8,7 +8,7 @@ import type { RuntimeEnv } from "@verisci/env";
  */
 export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
-  const { checkRatingSettings, createWorkflowsEnv } = await import("@verisci/workflows");
+  const { checkRatingSettings, createWorkflowsEnv } = await import("@labstrail/workflows");
   const { createWebEnv } = await import("./lib/web-env.ts");
   checkServerSettings(process.env, [createWorkflowsEnv, createWebEnv, checkRatingSettings]);
 }

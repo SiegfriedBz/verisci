@@ -5,7 +5,7 @@ import {
   getRatingService,
   getUploadService,
   type SubmitResult,
-} from "@verisci/workflows";
+} from "@labstrail/workflows";
 import { headers } from "next/headers";
 import {
   clientIp,

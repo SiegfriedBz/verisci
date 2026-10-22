@@ -1,4 +1,4 @@
-import { normalizeUal } from "@verisci/core";
+import { normalizeUal } from "@labstrail/core";
 import { type Connection, field, isSuccess, type Reply, send, toFailure } from "./http.ts";
 import type {
   AssetResult,

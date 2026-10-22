@@ -1,5 +1,5 @@
 {
-  "name": "@verisci/dkg",
+  "name": "@labstrail/dkg",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -12,8 +12,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@verisci/core": "workspace:*",
-    "@verisci/env": "workspace:*",
+    "@labstrail/core": "workspace:*",
+    "@labstrail/env": "workspace:*",
     "viem": "2.57.4",
     "zod": "4.6.5"
   },

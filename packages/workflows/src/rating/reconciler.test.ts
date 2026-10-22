@@ -1,4 +1,4 @@
-import type { ReadRequestResult } from "@verisci/contracts";
+import type { ReadRequestResult } from "@labstrail/contracts";
 import { Inngest } from "inngest";
 import type { Hex } from "viem";
 import { describe, expect, it, vi } from "vitest";
@@ -64,7 +64,7 @@ describe("findStaleRequests", () => {
 
     expect(await findStaleRequests(io, CURRENT, NOW)).toEqual([
       {
-        name: "verisci/rating.requested",
+        name: "labstrail/rating.requested",
         id: `rating:${id(1)}:${windowOf(NOW)}`,
         data: { contract: CURRENT, requestId: id(1) },
       },
@@ -236,7 +236,7 @@ describe("runReconciler", () => {
 
 describe("createReconciler", () => {
   it("runs every 30 minutes, a singleton that skips a tick while the last one runs", () => {
-    const fn = createReconciler(new Inngest({ id: "verisci-test" }), () => deps({}).io);
+    const fn = createReconciler(new Inngest({ id: "labstrail-test" }), () => deps({}).io);
 
     expect(fn.opts.id).toBe("reconcile-ratings");
     expect(fn.opts.triggers).toEqual([{ cron: "*/30 * * * *" }]);

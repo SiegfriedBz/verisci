@@ -24,6 +24,15 @@ describe("fieldCheckPrompt", () => {
     expect(system).toContain("- reason:");
   });
 
+  it("names no brand, so a rename leaves the prompt as it is", () => {
+    const { system } = fieldCheckPrompt(PAPER);
+
+    expect(system).toContain(
+      "for a registry that publishes and rates papers in the life sciences and health",
+    );
+    expect(system).not.toMatch(/LabsTrail|VeriSci/);
+  });
+
   it("holds the title, the abstract and the opening, each under its label", () => {
     const { user } = fieldCheckPrompt(PAPER);
 

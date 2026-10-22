@@ -3,7 +3,7 @@
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { BASE_SEPOLIA_CHAIN_ID } from "@verisci/core";
+import { BASE_SEPOLIA_CHAIN_ID } from "@labstrail/core";
 import { z } from "zod";
 import {
   type DeployEnv,

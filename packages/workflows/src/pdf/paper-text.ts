@@ -1,4 +1,4 @@
-import { type PaperText, preparePaperText } from "@verisci/core";
+import { type PaperText, preparePaperText } from "@labstrail/core";
 import { extractText, getDocumentProxy } from "unpdf";
 import { type FetchPdfOptions, fetchPdf } from "./fetch-pdf.ts";
 

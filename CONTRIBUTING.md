@@ -69,7 +69,7 @@ contract, so the parser accepts both instead of assuming our node.
 Commit small and often on the branch: each commit should build and pass its
 tests. History on the branch is for you; squash-merge rewrites it for `develop`.
 
-VeriSci is built with [Claude Code](https://claude.com/claude-code). Commits it
+LabsTrail is built with [Claude Code](https://claude.com/claude-code). Commits it
 writes end with `Co-Authored-By: Claude <noreply@anthropic.com>`, and PR
 descriptions end with a "Built with Claude Code" line.
 
@@ -78,7 +78,7 @@ descriptions end with a "Built with Claude Code" line.
 Docs ship with the code: a PR is not ready to push until every doc its diff
 touches is true again.
 
-- **READMEs.** The root `README.md` is the entry point: what VeriSci is, how
+- **READMEs.** The root `README.md` is the entry point: what LabsTrail is, how
   it works, how to set it up, and a table of workspaces that links to each
   workspace's own `README.md` instead of repeating it. Each workspace README
   says what the workspace is for, what it depends on, and how to run, test

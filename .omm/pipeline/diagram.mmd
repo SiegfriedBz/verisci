@@ -1,7 +1,7 @@
 graph LR
-    upload-and-sign["Upload and Sign\napps/web/lib/publish/publish-flow.ts"] -->|"verisci/paper.submitted"| publish-run["Publish Run\nworkflows/src/publish/publish-paper.ts"]
+    upload-and-sign["Upload and Sign\napps/web/lib/publish/publish-flow.ts"] -->|"labstrail/paper.submitted"| publish-run["Publish Run\nworkflows/src/publish/publish-paper.ts"]
     publish-run -->|"a minted Target KA anyone may ask to rate"| rating-request["Rating Request\nRatingController.requestPhase1"]
-    rating-request -->|"verisci/rating.requested, from the Alchemy Notify webhook, the reconciler, or locally the page"| rating-run["Rating Run\nworkflows/src/rating/rate-paper.ts"]
+    rating-request -->|"labstrail/rating.requested, from the Alchemy Notify webhook, the reconciler, or locally the page"| rating-run["Rating Run\nworkflows/src/rating/rate-paper.ts"]
     rating-run -->|"step.invoke fulfil or cancel"| oracle-transaction["Oracle Transaction\nworkflows/src/rating/oracle.ts"]
     oracle-transaction -->|"score and R-KA recorded on"| rating-request
     classDef entry fill:#89b4fa,stroke:#89b4fa,color:#1e1e2e

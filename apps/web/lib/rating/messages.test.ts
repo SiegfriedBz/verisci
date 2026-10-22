@@ -7,7 +7,7 @@ describe("cancelMessage", () => {
     expect(message.title).toBe("This paper can't be rated");
     expect(message.body).toMatch(/life sciences/);
     expect(message.body).toMatch(/text/);
-    expect(message.body).toMatch(/VeriSci/);
+    expect(message.body).toMatch(/LabsTrail/);
   });
 
   it("says an expired rating couldn't finish within a day", () => {

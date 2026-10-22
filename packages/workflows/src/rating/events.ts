@@ -1,8 +1,8 @@
-import { ratingControllerAbi } from "@verisci/contracts";
+import { ratingControllerAbi } from "@labstrail/contracts";
 import { decodeEventLog, type Hex } from "viem";
 
 /** The event that starts a rating run: `{ contract, requestId }`. */
-export const RATING_REQUESTED = "verisci/rating.requested";
+export const RATING_REQUESTED = "labstrail/rating.requested";
 
 /** What a rating run needs to find its request: the contract and the request id. */
 export interface RatingRequested {

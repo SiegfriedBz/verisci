@@ -163,7 +163,7 @@ describe("createWalletRuntime", () => {
   it("opens the window, switches chain, signs, sends and waits through wagmi's config", async () => {
     const runtime = await createWalletRuntime(SETTINGS);
     const typedData = {
-      domain: { name: "verisci", version: "1", chainId: 84532 },
+      domain: { name: "labstrail", version: "1", chainId: 84532 },
       types: { Submission: [{ name: "cid", type: "string" }] },
       primaryType: "Submission",
       message: { cid: "bafy" },

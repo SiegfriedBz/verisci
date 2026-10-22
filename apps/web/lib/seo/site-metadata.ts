@@ -1,4 +1,4 @@
-import { siteUrlOf } from "@verisci/workflows";
+import { siteUrlOf } from "@labstrail/workflows";
 import type { Metadata } from "next";
 import { SITE } from "../site.ts";
 import type { WebEnv } from "../web-env.ts";

@@ -1,6 +1,6 @@
+import type { SignatureCheck } from "@labstrail/workflows";
 import { CheckCircle, Question, XCircle } from "@phosphor-icons/react/dist/ssr";
 import { createColumnHelper, tableFeatures } from "@tanstack/react-table";
-import type { SignatureCheck } from "@verisci/workflows";
 import Link from "next/link";
 import { addressUrl } from "../../lib/papers/explorer.ts";
 import { authorsLine, formatPublished, signatureLabel } from "../../lib/papers/papers.ts";

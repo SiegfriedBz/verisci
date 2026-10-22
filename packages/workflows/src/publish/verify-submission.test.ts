@@ -1,4 +1,4 @@
-import { submissionTypedData } from "@verisci/core";
+import { submissionTypedData } from "@labstrail/core";
 import { createPublicClient, custom } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { baseSepolia } from "viem/chains";
@@ -72,6 +72,29 @@ describe("verifySubmission", () => {
       ...(await signed()),
       submitter: privateKeyToAccount(generatePrivateKey()).address,
     };
+
+    expect(await verify(data, client(false).publicClient)).toEqual({
+      ok: false,
+      reason: "bad-signature",
+    });
+  });
+
+  it("accepts a signature under the labstrail domain", async () => {
+    const data = await signed();
+
+    expect(
+      submissionTypedData({ cid: CID, contextGraph: GRAPH, deadline: DEADLINE }).domain.name,
+    ).toBe("labstrail");
+    expect(await verify(data)).toMatchObject({ ok: true });
+  });
+
+  it("refuses a signature under the old verisci domain", async () => {
+    const typedData = submissionTypedData({ cid: CID, contextGraph: GRAPH, deadline: DEADLINE });
+    const signature = await submitter.signTypedData({
+      ...typedData,
+      domain: { ...typedData.domain, name: "verisci" },
+    });
+    const data = { ...(await signed()), signature };
 
     expect(await verify(data, client(false).publicClient)).toEqual({
       ok: false,

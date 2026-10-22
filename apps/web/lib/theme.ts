@@ -2,7 +2,7 @@
 export type Theme = "light" | "dark";
 
 /** Where the visitor's choice is kept, in this browser's `localStorage`. */
-export const THEME_KEY = "verisci-theme";
+export const THEME_KEY = "labstrail-theme";
 
 /**
  * Runs in `<head>`, before the first paint: sets `<html data-theme>` to the visitor's stored

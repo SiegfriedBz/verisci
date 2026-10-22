@@ -1,4 +1,4 @@
-import type { ReadRequestResult } from "@verisci/contracts";
+import type { ReadRequestResult } from "@labstrail/contracts";
 import { Inngest } from "inngest";
 import type { Hex } from "viem";
 import { describe, expect, it, vi } from "vitest";
@@ -287,7 +287,7 @@ oracle ${ORACLE} holds 0.004999999999999999 ETH, under 0.005`,
 describe("createHealthCheck", () => {
   it("runs every hour, a singleton that skips an hour while the last check runs", () => {
     const fn = createHealthCheck(
-      new Inngest({ id: "verisci-test" }),
+      new Inngest({ id: "labstrail-test" }),
       () => deps({}),
       async () => {},
     );

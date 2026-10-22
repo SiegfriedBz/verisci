@@ -1,7 +1,7 @@
 // The scorer's reference set: open-access papers with the study type, the answer to each check
 // and the score range a careful reader expects, written before the scorer first read them.
 // `score-papers` compares the scorer's answers with them (packages/workflows README).
-import { CHECK_ANSWERS, STUDY_TYPES, type StudyType } from "@verisci/core";
+import { CHECK_ANSWERS, STUDY_TYPES, type StudyType } from "@labstrail/core";
 import { z } from "zod";
 
 const STUDY_TYPE_IDS = STUDY_TYPES.map((type) => type.id) as [StudyType, ...StudyType[]];

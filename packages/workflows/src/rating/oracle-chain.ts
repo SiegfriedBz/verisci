@@ -1,4 +1,4 @@
-import { readOracleAgent, readRatingRequest } from "@verisci/contracts";
+import { readOracleAgent, readRatingRequest } from "@labstrail/contracts";
 import {
   type Account,
   BaseError,

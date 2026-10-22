@@ -6,7 +6,7 @@ const failed = (functionId: string, message: string) => ({
   function_id: functionId,
   run_id: "01JRUN",
   error: { name: "NonRetriableError", message },
-  event: { name: "verisci/rating.requested", data: {} },
+  event: { name: "labstrail/rating.requested", data: {} },
 });
 
 describe("failureText", () => {
@@ -138,7 +138,7 @@ describe("alertOnFailure", () => {
 
 describe("createFailureAlerts", () => {
   it("runs on every function's failure and cancel", () => {
-    const fn = createFailureAlerts(new Inngest({ id: "verisci-test" }), async () => {});
+    const fn = createFailureAlerts(new Inngest({ id: "labstrail-test" }), async () => {});
 
     expect(fn.opts.id).toBe("alert-on-failure");
     expect(fn.opts.triggers).toEqual([

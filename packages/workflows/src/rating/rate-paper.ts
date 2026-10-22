@@ -1,4 +1,4 @@
-import type { RatingRequestState, ReadOracleResult, ReadRequestResult } from "@verisci/contracts";
+import type { RatingRequestState, ReadOracleResult, ReadRequestResult } from "@labstrail/contracts";
 import {
   classifyTarget,
   type FieldCheckInput,
@@ -14,8 +14,8 @@ import {
   rKaQuads,
   SCORER_PROMPT_VERSION,
   type ScorerOutput,
-} from "@verisci/core";
-import type { DkgClient, DkgFailure } from "@verisci/dkg";
+} from "@labstrail/core";
+import type { DkgClient, DkgFailure } from "@labstrail/dkg";
 import { type Inngest, type InngestFunction, NonRetriableError } from "inngest";
 import type { Hex } from "viem";
 import { z } from "zod";
@@ -33,7 +33,7 @@ import type { ScoreResult } from "./scorer.ts";
 export const RATING_SETTINGS = {
   /** The Gemini model that scores, on the free tier (ADR 0018). */
   model: "gemini-3.8-flash",
-  /** The largest PDF read: the largest one verisci publishes. */
+  /** The largest PDF read: the largest one LabsTrail publishes. */
   maxPdfBytes: MAX_PDF_BYTES,
   /** How long the gateway gets to give the PDF. */
   pdfTimeoutMs: 60_000,
@@ -225,7 +225,7 @@ export function ratingFailureReason(output: unknown): RatingFailure | undefined 
  *
  * 1. the request must be on one of the environment's contracts, pending, and that contract's
  *    oracle must be this deployment's key, or the run stops before spending anything;
- * 2. a target verisci did not publish is cancelled `invalid-target` at once (ADR 0011): its UAL
+ * 2. a target LabsTrail did not publish is cancelled `invalid-target` at once (ADR 0011): its UAL
  *    must name our node (`classifyTarget`), and our node must list it among its published
  *    papers (`find-target`);
  * 3. the R-KA is read: minted is fulfilled; stored is minted at once (ADR 0008); a draft is
@@ -704,7 +704,7 @@ async function paperOf(
 }
 
 /**
- * The `rate-paper` Inngest function, run by `verisci/rating.requested`: a singleton per
+ * The `rate-paper` Inngest function, run by `labstrail/rating.requested`: a singleton per
  * request id in mode `skip` (ADR 0020), with a 300-minute budget (`finishTimeout`), throttled
  * when `throttle` (outside `local`, ADR 0015). It invokes `oracle` to fulfil or cancel.
  * `getDeps` builds the adapters on the first run, so importing the function validates no

@@ -1,4 +1,4 @@
-import { getUploadService } from "@verisci/workflows";
+import { getUploadService } from "@labstrail/workflows";
 import { Suspense } from "react";
 import { readProgressOnce } from "../../lib/publish/upload-actions.ts";
 import { paperJsonLd } from "../../lib/seo/json-ld.ts";

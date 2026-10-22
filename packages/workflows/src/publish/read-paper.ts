@@ -1,4 +1,4 @@
-import { completeTitle, parseTeiHeader } from "@verisci/core";
+import { completeTitle, parseTeiHeader } from "@labstrail/core";
 import { type FetchPdfOptions, fetchPdf } from "../pdf/fetch-pdf.ts";
 import { paperTextOf } from "../pdf/paper-text.ts";
 import { type GrobidOptions, parseHeader } from "./grobid.ts";

@@ -1,4 +1,4 @@
-# @verisci/contracts
+# @labstrail/contracts
 
 Solidity contracts built with Foundry, and the TypeScript bindings the other
 workspaces import: the typed ABI, the deployed addresses of each environment, reads of a
@@ -12,7 +12,7 @@ Architecture views: [`.omm/overall-architecture/contracts/`](../../.omm/overall-
 
 ## Depends on
 
-`@verisci/core`, `@verisci/env`, Zod (validates `deployments/base-sepolia.json`), and viem
+`@labstrail/core`, `@labstrail/env`, Zod (validates `deployments/base-sepolia.json`), and viem
 (reads requests and encodes the oracle's calls).
 
 ## RatingController
@@ -34,13 +34,13 @@ pending on it
   Each requester may hold at most `maxPendingPerRequester` pending requests
   ([ADR 0015](../../docs/adr/0015-rating-requests-are-free-on-testnet.md)).
   The contract stores and hashes the UAL exactly as given, so callers send the
-  canonical spelling from `normalizeUal` in `@verisci/core`; the oracle cancels
+  canonical spelling from `normalizeUal` in `@labstrail/core`; the oracle cancels
   with `InvalidTarget` a request whose UAL is in any other spelling
   ([ADR 0031](../../docs/adr/0031-uals-are-normalized-before-the-contract.md)),
-  whose target is not a paper verisci published
+  whose target is not a paper LabsTrail published
   ([ADR 0011](../../docs/adr/0011-a-rating-is-a-separate-r-ka.md)), or whose paper
   is outside the life sciences and health
-  ([ADR 0037](../../docs/adr/0037-verisci-rates-life-science-and-health-papers.md)), or
+  ([ADR 0037](../../docs/adr/0037-labstrail-rates-life-science-and-health-papers.md)), or
   whose PDF link is not an IPFS CID, whose PDF cannot be read for its text, such as a scan,
   a file over the size limit or one that read 4 times as no PDF, or for which the scorer gave
   two answers its check refused
@@ -181,7 +181,7 @@ The steps below deploy staging; for production, use `production` and
 5. **Record** the deployment in `deployments/base-sepolia.json`:
 
    ```bash
-   pnpm --filter @verisci/contracts record-deployment staging
+   pnpm --filter @labstrail/contracts record-deployment staging
    ```
 
 6. **Commit** `script/HelperConfig.s.sol` and `deployments/base-sepolia.json`,
@@ -305,7 +305,7 @@ Vercel builds without Foundry, and deployed addresses are reviewed in pull
 requests. Both are written by tooling only.
 
 - **ABI.** After changing a contract's interface, run
-  `pnpm --filter @verisci/contracts generate:abi` and commit the result. CI
+  `pnpm --filter @labstrail/contracts generate:abi` and commit the result. CI
   regenerates the file and fails on any difference. Biome skips
   `src/generated/`.
 - **Deployments.** `deployments/base-sepolia.json` changes only through
@@ -347,11 +347,11 @@ giving the reason.
 | Command | What it does |
 | --- | --- |
 | `forge soldeer install` | Installs the Solidity dependencies from `soldeer.lock` |
-| `pnpm --filter @verisci/contracts check` | `forge fmt --check`, `forge lint --deny notes`, then solhint NatSpec on `src/` and `script/` |
-| `pnpm --filter @verisci/contracts test` | Vitest for the TypeScript code, then `forge test` |
-| `pnpm --filter @verisci/contracts typecheck` | Typechecks the TypeScript code |
-| `pnpm --filter @verisci/contracts generate:abi` | Runs `forge build`, then writes `src/generated/rating-controller-abi.ts` |
-| `pnpm --filter @verisci/contracts record-deployment <staging\|production>` | Records the latest Base Sepolia broadcast in `deployments/base-sepolia.json` |
+| `pnpm --filter @labstrail/contracts check` | `forge fmt --check`, `forge lint --deny notes`, then solhint NatSpec on `src/` and `script/` |
+| `pnpm --filter @labstrail/contracts test` | Vitest for the TypeScript code, then `forge test` |
+| `pnpm --filter @labstrail/contracts typecheck` | Typechecks the TypeScript code |
+| `pnpm --filter @labstrail/contracts generate:abi` | Runs `forge build`, then writes `src/generated/rating-controller-abi.ts` |
+| `pnpm --filter @labstrail/contracts record-deployment <staging\|production>` | Records the latest Base Sepolia broadcast in `deployments/base-sepolia.json` |
 | `forge build --sizes` | Compiles and reports contract sizes |
 | `forge coverage` | Reports Solidity test coverage per file |
 | `FOUNDRY_PROFILE=ci forge test` | Runs the tests with the CI fuzz and invariant settings |

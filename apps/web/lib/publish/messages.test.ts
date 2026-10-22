@@ -65,7 +65,7 @@ describe("refusalMessage", () => {
     expect(refusalMessage("no-text")).toMatch(/pictures/);
   });
 
-  it("says VeriSci publishes life-science and health papers only, names the field and says this one was not published", () => {
+  it("says LabsTrail publishes life-science and health papers only, names the field and says this one was not published", () => {
     const message = refusalMessage("outside-field");
 
     expect(message).toMatch(/life sciences and health only/);

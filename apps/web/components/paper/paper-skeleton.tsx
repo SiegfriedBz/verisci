@@ -1,4 +1,4 @@
-import { canonicalCid } from "@verisci/core";
+import { canonicalCid } from "@labstrail/core";
 import { shorten } from "../../lib/shorten.ts";
 import { Breadcrumbs } from "../site/breadcrumbs.tsx";
 import {

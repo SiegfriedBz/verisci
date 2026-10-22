@@ -1,4 +1,4 @@
-import type { RatingRequestState, ReadRequestResult } from "@verisci/contracts";
+import type { RatingRequestState, ReadRequestResult } from "@labstrail/contracts";
 import {
   type PaperText,
   paperPdfQuery,
@@ -8,8 +8,8 @@ import {
   SCORER_PROMPT_VERSION,
   type ScorerOutput,
   type Triple,
-} from "@verisci/core";
-import type { AssetResult, DkgFailure, MintResult, QueryResult } from "@verisci/dkg";
+} from "@labstrail/core";
+import type { AssetResult, DkgFailure, MintResult, QueryResult } from "@labstrail/dkg";
 import { Inngest, NonRetriableError } from "inngest";
 import type { Hex } from "viem";
 import { describe, expect, it, vi } from "vitest";
@@ -39,7 +39,7 @@ const R_KA = `did:dkg:base:84532/${AGENT}/12`;
 const REQUEST_ID = `0x${"ab".repeat(32)}` as Hex;
 const NAME = `verisci-rka-${REQUEST_ID}`;
 const NOW = 1_800_000_000_000;
-const SITE = "https://verisci.example";
+const SITE = "https://labstrail.example";
 const YOUNG = NOW / 1000 - 60;
 const OLD = NOW / 1000 - 25 * 3600;
 const EVENT = { contract: CONTRACT, requestId: REQUEST_ID };
@@ -1023,16 +1023,16 @@ describe("loadRatingDeps", () => {
 });
 
 describe("createRatePaper", () => {
-  const inngest = new Inngest({ id: "verisci-test" });
+  const inngest = new Inngest({ id: "labstrail-test" });
   const oracleFn = inngest.createFunction({ id: "oracle-transaction" }, async () => null);
   const build = (throttle: boolean) =>
     createRatePaper(inngest, () => rate({}).deps, oracleFn, { throttle });
 
-  it("runs on verisci/rating.requested as a singleton per request id, skipping new runs", () => {
+  it("runs on labstrail/rating.requested as a singleton per request id, skipping new runs", () => {
     const fn = build(true);
 
     expect(fn.opts.id).toBe("rate-paper");
-    expect(fn.opts.triggers).toEqual([{ event: "verisci/rating.requested" }]);
+    expect(fn.opts.triggers).toEqual([{ event: "labstrail/rating.requested" }]);
     expect(fn.opts.singleton).toEqual({ key: "event.data.requestId", mode: "skip" });
     expect(fn.opts.timeouts).toEqual({ finish: "300m" });
   });

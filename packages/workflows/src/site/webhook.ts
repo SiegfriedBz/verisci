@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { defineEnv, sharedEnv } from "@verisci/env";
+import { defineEnv, sharedEnv } from "@labstrail/env";
 import type { Hex } from "viem";
 import { z } from "zod";
 import { inngest } from "../inngest.ts";
@@ -10,7 +10,7 @@ import { webhookSchema } from "../workflows-env.ts";
 /** What the webhook route answers Alchemy Notify: 2xx ends the delivery, 5xx has it delivered again. */
 export type WebhookStatus = 200 | 400 | 401 | 404 | 503;
 
-/** One `verisci/rating.requested` event, as {@link createWebhookIntake} sends it. */
+/** One `labstrail/rating.requested` event, as {@link createWebhookIntake} sends it. */
 export interface RatingEvent {
   readonly name: string;
   readonly id: string;
@@ -62,7 +62,7 @@ const payloadSchema = z.object({
 /**
  * Builds the webhook intake (ADR 0017): it checks the `X-Alchemy-Signature` HMAC-SHA256 over the
  * raw body in constant time before parsing (401 when absent or wrong), reads the payload (400,
- * logged `webhook-unreadable`, when it is not one), and sends one `verisci/rating.requested`
+ * logged `webhook-unreadable`, when it is not one), and sends one `labstrail/rating.requested`
  * event per `Phase1Requested` log of an environment contract, with the id `rating:<requestId>`
  * a repeated delivery shares. A log marked `removed`, of another contract or of another event
  * sends nothing. After a reorg, Alchemy Notify delivers the new block; the run's read of the

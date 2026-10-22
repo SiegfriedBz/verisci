@@ -1,4 +1,4 @@
-import { NoDeploymentError } from "@verisci/contracts";
+import { NoDeploymentError } from "@labstrail/contracts";
 import { describe, expect, it } from "vitest";
 import { ratingChainConfig } from "./chain.ts";
 

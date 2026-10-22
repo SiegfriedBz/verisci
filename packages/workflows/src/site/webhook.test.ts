@@ -1,5 +1,5 @@
 import { createHmac } from "node:crypto";
-import { ratingControllerAbi, ratingControllerDeployments } from "@verisci/contracts";
+import { ratingControllerAbi, ratingControllerDeployments } from "@labstrail/contracts";
 import { encodeAbiParameters, encodeEventTopics, type Hex, keccak256, toHex } from "viem";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createWebhookIntake, type WebhookIo } from "./webhook.ts";
@@ -78,7 +78,7 @@ describe("createWebhookIntake", () => {
     expect(sent).toEqual([
       [
         {
-          name: "verisci/rating.requested",
+          name: "labstrail/rating.requested",
           id: `rating:${REQUEST_ID}`,
           data: { contract: PAST, requestId: REQUEST_ID },
         },

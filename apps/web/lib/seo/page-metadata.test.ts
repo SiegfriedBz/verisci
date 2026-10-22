@@ -1,4 +1,4 @@
-import type { PublishedRecord, RatingView } from "@verisci/workflows";
+import type { PublishedRecord, RatingView } from "@labstrail/workflows";
 import { describe, expect, it } from "vitest";
 import type { PaperView } from "../publish/upload-actions.ts";
 import { paperMetadata, ratingMetadata } from "./page-metadata.ts";
@@ -33,7 +33,7 @@ describe("paperMetadata", () => {
       alternates: { canonical: `/papers/${CID}` },
       openGraph: {
         type: "article",
-        siteName: "VeriSci",
+        siteName: "LabsTrail",
         url: `/papers/${CID}`,
         authors: record.authors,
         publishedTime: "2026-10-17T08:42:01.123Z",
@@ -59,7 +59,7 @@ describe("paperMetadata", () => {
     const metadata = paperMetadata(CID, { stage: "published", ual: UAL, record: bare });
 
     expect(metadata).toMatchObject({
-      description: `${record.title}, by 4 authors, published on the OriginTrail DKG and rated for reproducibility readiness on VeriSci.`,
+      description: `${record.title}, by 4 authors, published on the OriginTrail DKG and rated for reproducibility readiness on LabsTrail.`,
     });
     expect(metadata === "not-found" ? {} : metadata.openGraph).not.toHaveProperty("publishedTime");
   });
@@ -142,7 +142,7 @@ describe("ratingMetadata", () => {
     const { record: _record, ...chainOnly } = fulfilled as Extract<RatingView, { ok: true }>;
 
     expect(ratingMetadata(CID, REQUEST, chainOnly, published)).toMatchObject({
-      description: `${record.title} scores 72/100 for reproducibility readiness on VeriSci.`,
+      description: `${record.title} scores 72/100 for reproducibility readiness on LabsTrail.`,
     });
   });
 

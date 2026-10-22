@@ -1,4 +1,4 @@
-import { BASE_SEPOLIA_CHAIN_ID } from "@verisci/core";
+import { BASE_SEPOLIA_CHAIN_ID } from "@labstrail/core";
 import { describe, expect, it } from "vitest";
 import {
   type Deployment,

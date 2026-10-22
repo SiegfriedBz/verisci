@@ -8,7 +8,7 @@ const readRating = vi.fn(async () => ({
   stage: "minting",
 }));
 
-vi.mock("@verisci/workflows", () => ({ getRatingService: () => ({ readRating }) }));
+vi.mock("@labstrail/workflows", () => ({ getRatingService: () => ({ readRating }) }));
 let env: Record<string, string | undefined> = { APP_ENV: "staging" };
 vi.mock("../../../../lib/web-env.ts", () => ({ createWebEnv: () => env }));
 

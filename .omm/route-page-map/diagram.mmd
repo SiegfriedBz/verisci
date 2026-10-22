@@ -10,7 +10,7 @@ graph LR
     paper -->|"Rate this paper or Rate again (?new=1), Read the checks, Follow it, Details"| rating["Rating Page\napp/papers/[cid]/ratings/[requestId]/page.tsx"]
     rating -->|"polls until scored or cancelled"| api-ratings["Rating Status\napp/api/ratings/[requestId]/route.ts"]
     home -->|"footer: How the score works"| method["Method\napp/method/page.tsx"]
-    home -->|"footer: About VeriSci"| about["About\napp/about/page.tsx"]
+    home -->|"footer: About LabsTrail"| about["About\napp/about/page.tsx"]
     paper -->|"the score's sentence: How the score works"| method
     about -->|"How the score works"| method
     crawlers["Crawlers\nexternal"] -->|"read the rules and the pages to index"| crawl["Robots and Sitemap\napp/robots.ts, app/sitemap.ts"]

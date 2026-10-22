@@ -43,11 +43,11 @@ describe("createNotify", () => {
       level: "activity",
       text: "📄 Published",
       title: "RNAi therapies",
-      link: { label: "Open the paper", url: "https://verisci.example/papers/bafy" },
+      link: { label: "Open the paper", url: "https://labstrail.example/papers/bafy" },
     });
 
     expect(JSON.parse(String(fetch.mock.calls[0]?.[1]?.body)).text).toBe(
-      '<b>📄 Published</b> · production\n<b>RNAi therapies</b>\n→ <a href="https://verisci.example/papers/bafy">Open the paper</a>',
+      '<b>📄 Published</b> · production\n<b>RNAi therapies</b>\n→ <a href="https://labstrail.example/papers/bafy">Open the paper</a>',
     );
   });
 

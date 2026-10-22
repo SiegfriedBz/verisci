@@ -1,10 +1,12 @@
-# VeriSci
+# LabsTrail
 
-[![CI](https://github.com/SiegfriedBz/verisci/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/SiegfriedBz/verisci/actions/workflows/ci.yml)
+[![CI](https://github.com/SiegfriedBz/labstrail/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/SiegfriedBz/labstrail/actions/workflows/ci.yml)
 
-VeriSci publishes life-science and health papers and gives them an open quality rating
+Open, traceable ratings for life-science papers.
+
+LabsTrail publishes life-science and health papers and gives them an open quality rating
 that anyone can request, read and verify
-([ADR 0037](docs/adr/0037-verisci-rates-life-science-and-health-papers.md)).
+([ADR 0037](docs/adr/0037-labstrail-rates-life-science-and-health-papers.md)).
 
 ## Why
 
@@ -14,7 +16,7 @@ cannot be repeated: in a 2016 Nature survey of more than 1,500 researchers, more
 than 70% had tried and failed to reproduce another scientist's experiments
 (Baker, *Nature* 533, 452–454). AI agents now read and build on papers at a scale
 no person can, with no better way to tell which ones give enough to be repeated.
-VeriSci rates the quality of a paper in the open and attaches the rating to the
+LabsTrail rates the quality of a paper in the open and attaches the rating to the
 paper itself: each paper and each rating is a public record on the OriginTrail
 Decentralized Knowledge Graph (DKG), anchored on chain, with the paper's PDF on
 IPFS at an address hashed from its content, so none of them can be quietly
@@ -23,7 +25,7 @@ what others need to reproduce its work, and grows through transparent human
 review and, later, wet-lab replication
 ([ADR 0012](docs/adr/0012-three-phases-settled-by-the-oracle.md)).
 
-Status: early. VeriSci is a rebuild of an earlier prototype,
+Status: early. LabsTrail is a rebuild of an earlier prototype,
 `desci-rating-dapp`, which ran both flows (publish a paper, rate it) end to end on
 Base Sepolia. This repo starts again from clean foundations (monorepo, tooling,
 CI), and its ADRs and domain facts record what the prototype taught us. The first
@@ -33,7 +35,9 @@ published paper is listed at `/papers`, newest first, read a page at a time from
 Ratings work end to end locally, against a contract on Anvil: a published paper's page
 requests one from the visitor's wallet, each rating has a page that follows it to its score
 and then shows every check and quote behind it, and the papers list shows each paper's
-score. Deployed, a webhook starts each rating and a cron restarts a stuck one. The repo, its packages and the EIP-712 domain keep the lowercase name `verisci`.
+score. Deployed, a webhook starts each rating and a cron restarts a stuck one. The repo, its packages and the EIP-712 domain use the lowercase name `labstrail`; minted records,
+graph names, the Inngest app and the node server keep the first name, `verisci`
+([ADR 0042](docs/adr/0042-the-project-is-named-labstrail.md)).
 Everything runs on testnets. Production is open to search engines and AI search: each paper
 and rating has its own title and structured data, each paper its own share image, and
 `/method` explains the score ([`apps/web` → Search engines and AI search](apps/web/README.md#search-engines-and-ai-search),
@@ -50,7 +54,7 @@ Built:
   PDF is parsed, its metadata read, a small Gemini model checks it is a life-science or
   health paper, and it is published to the DKG as a Knowledge Asset that records who
   submitted it ([ADR 0010](docs/adr/0010-pdf-to-target-ka-pipeline.md),
-  [ADR 0037](docs/adr/0037-verisci-rates-life-science-and-health-papers.md)). A paper
+  [ADR 0037](docs/adr/0037-labstrail-rates-life-science-and-health-papers.md)). A paper
   the check places outside the field is refused before anything is stored; when Gemini
   cannot answer, the paper is published and its rating checks the field. A publish that
   fails after its retries is recovered by publishing the same PDF again.
@@ -93,16 +97,16 @@ Terms:
 
 - A **KA** (Knowledge Asset) is a record on the DKG: content off-chain on the DKG,
   an ERC-721 token and a merkle root of the content on-chain (`docs/domain.md` → DKG).
-  The ones VeriSci publishes are minted to its DKG node's agent address, which alone can
+  The ones LabsTrail publishes are minted to its DKG node's agent address, which alone can
   update them.
 - A **Target KA** is a paper's KA (the pages call it a paper asset); an **R-KA** is
   a rating's KA (a rating asset), which points at its Target KA.
 - A **UAL** is a KA's stable address, the link between its off-chain content and its
-  on-chain token; the ones VeriSci publishes read
+  on-chain token; the ones LabsTrail publishes read
   `did:dkg:base:84532/<agent address>/<number>`.
 - A **context graph** is the DKG graph a KA lives in; each environment has its own.
 - The **submitter** is the wallet that signed a paper's submission; the **oracle** is
-  VeriSci's account that records rating results on the contract.
+  LabsTrail's account that records rating results on the contract.
 
 ## Roadmap
 
@@ -117,7 +121,7 @@ plan records its decisions in an ADR.
    contract ([ADR 0012](docs/adr/0012-three-phases-settled-by-the-oracle.md)). Planned, not
    decided yet: reviewers stake to join the pool, are paid for their reviews and lose part
    of their stake for reviews in bad faith.
-2. **Payment, for people and AI agents.** Today a requester pays only their gas and VeriSci
+2. **Payment, for people and AI agents.** Today a requester pays only their gas and LabsTrail
    pays the rest, bounded by a cap and a throttle; a payment plan replaces that before
    mainnet ([ADR 0015](docs/adr/0015-rating-requests-are-free-on-testnet.md)). Planned, not
    decided yet: publishing and rating each carry a fee that a person or an agent can pay,
@@ -259,7 +263,7 @@ sequenceDiagram
   R->>C: read the request and the contract's oracle
   Note over R: Stop if settled, or if the oracle is not this deployment's key.
   R->>N: is the target one of our published papers?
-  alt not a paper verisci published (its UAL, then the node's answer)
+  alt not a paper LabsTrail published (its UAL, then the node's answer)
     R->>O: cancel(requestId, invalid target)
     O->>C: cancelRequest(requestId, invalid target)
   else otherwise
@@ -303,13 +307,13 @@ later steps and raises the fees of a transaction stuck unmined
 ([ADR 0019](docs/adr/0019-oracle-transactions-are-serialized.md)). The score the oracle
 records is always the one read back from the minted R-KA
 ([ADR 0018](docs/adr/0018-phase-1-scorer-output-contract.md)); a target that is
-not a paper verisci published is cancelled
+not a paper LabsTrail published is cancelled
 ([ADR 0011](docs/adr/0011-a-rating-is-a-separate-r-ka.md)), as is a UAL not in
 canonical form ([ADR 0031](docs/adr/0031-uals-are-normalized-before-the-contract.md)) and a
 paper outside the life sciences and health
-([ADR 0037](docs/adr/0037-verisci-rates-life-science-and-health-papers.md)). The
+([ADR 0037](docs/adr/0037-labstrail-rates-life-science-and-health-papers.md)). The
 contract's calls and events are documented in the
-[`@verisci/contracts` README](packages/contracts/README.md).
+[`@labstrail/contracts` README](packages/contracts/README.md).
 
 ## The repo
 
@@ -368,7 +372,7 @@ Environment variables are listed in [`.env.example`](.env.example): copy it to
 publish and paper pages need the DKG node and publish run settings, and the wallet window
 `REOWN_PROJECT_ID`. The rating parts of the pages also read the chain: `CHAIN_RPC_URL`
 when deployed, or locally Anvil and the two `LOCAL_*` settings. How workspaces declare
-and validate them is in the [`@verisci/env` README](packages/env/README.md).
+and validate them is in the [`@labstrail/env` README](packages/env/README.md).
 
 ## Commands
 
@@ -425,7 +429,7 @@ are guard rails, not a sandbox. Personal overrides go in `.claude/settings.local
 ## Contributing
 
 Branches, commits, docs rules, pull requests and releases are covered in
-[CONTRIBUTING.md](CONTRIBUTING.md). VeriSci is built with
+[CONTRIBUTING.md](CONTRIBUTING.md). LabsTrail is built with
 [Claude Code](https://claude.com/claude-code).
 
 ## License

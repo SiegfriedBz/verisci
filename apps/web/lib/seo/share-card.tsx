@@ -3,7 +3,7 @@ import {
   type PublishedRecord,
   type RatingListResult,
   summariseRatings,
-} from "@verisci/workflows";
+} from "@labstrail/workflows";
 import type { PaperView } from "../publish/upload-actions.ts";
 import { SITE } from "../site.ts";
 import { clip } from "./clip.ts";
@@ -91,7 +91,7 @@ export async function readPaperCard(
 
 /**
  * The image a shared link shows, for `next/og`'s `ImageResponse` (inline styles, flex
- * layout): VeriSci's mark and name, then the site's definition, or a paper's title, authors
+ * layout): LabsTrail's mark and name, then the site's definition, or a paper's title, authors
  * and score, over the brand's blue-to-teal line. `logo` is `app/icon.svg` as a data URL.
  */
 export function ShareCard({ logo, paper }: { logo: string; paper?: PaperCard | undefined }) {

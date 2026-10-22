@@ -1,5 +1,5 @@
 /**
- * VeriSci's mark: a heartbeat whose last beat is a check, health research verified, drawn from
+ * LabsTrail's mark: a heartbeat whose last beat is a check, health research verified, drawn from
  * the off-chain record's blue into the on-chain proof's teal. `app/icon.svg` is the same
  * drawing, for the browser tab.
  */
@@ -48,7 +48,7 @@ export function Logo() {
     <span className="flex items-center gap-2.5">
       <LogoMark />
       <span className="text-lg font-semibold tracking-tight">
-        Veri<span className="text-accent">Sci</span>
+        Labs<span className="text-accent">Trail</span>
       </span>
     </span>
   );

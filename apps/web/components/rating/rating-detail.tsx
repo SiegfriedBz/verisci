@@ -1,5 +1,5 @@
+import type { RatingView } from "@labstrail/workflows";
 import { Warning } from "@phosphor-icons/react";
-import type { RatingView } from "@verisci/workflows";
 import { addressUrl, assetTokenUrl } from "../../lib/papers/explorer.ts";
 import { answerLabel, type CheckRow, checkRows, studyTypeLine } from "../../lib/rating/checks.ts";
 import { CopyValue } from "../paper/copy-value.tsx";

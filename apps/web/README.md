@@ -1,4 +1,4 @@
-# @verisci/web
+# @labstrail/web
 
 The Next.js 16 app (App Router).
 
@@ -17,8 +17,8 @@ Architecture views: [`.omm/overall-architecture/web-app/`](../../.omm/overall-ar
 
 ## Depends on
 
-All five packages: `@verisci/env`, `@verisci/core`, `@verisci/dkg`,
-`@verisci/contracts`, `@verisci/workflows`. Each one must be listed in
+All five packages: `@labstrail/env`, `@labstrail/core`, `@labstrail/dkg`,
+`@labstrail/contracts`, `@labstrail/workflows`. Each one must be listed in
 `transpilePackages` in `next.config.ts`. Also `inngest` (the `/api/inngest` route's `serve`
 handler); Reown AppKit, wagmi's actions and viem (the wallet, loaded only when used;
 TanStack Query stays installed as wagmi's peer); `@vercel/analytics` (production's visit
@@ -33,15 +33,15 @@ points the optional `@x402/*` packages, reached through wagmi's connectors, at
 
 | Path | What it is |
 | --- | --- |
-| `/` | Home: what VeriSci is, in one sentence (`SITE.definition`), with a demo that publishes a paper and then rates it, the latest papers (the five newest, streamed in with a skeleton, linking to `/papers`), why VeriSci exists (the 2016 *Nature* reproducibility survey, and AI agents that build on papers they can't weigh, linking to `/about`), the DKG's two layers (the record off-chain, its ERC-721 token and merkle root on-chain, the UAL linking them), how publishing and rating work (phase 1 live, human review and replication to come), and an example paper asset |
+| `/` | Home: what LabsTrail is, in one sentence (`SITE.definition`), with a demo that publishes a paper and then rates it, the latest papers (the five newest, streamed in with a skeleton, linking to `/papers`), why LabsTrail exists (the 2016 *Nature* reproducibility survey, and AI agents that build on papers they can't weigh, linking to `/about`), the DKG's two layers (the record off-chain, its ERC-721 token and merkle root on-chain, the UAL linking them), how publishing and rating work (phase 1 live, human review and replication to come), and an example paper asset |
 | `/publish` | Connect a wallet, drop a PDF, sign once; what publishing means and the limits ([ADR 0010](../../docs/adr/0010-pdf-to-target-ka-pipeline.md), [ADR 0034](../../docs/adr/0034-users-connect-a-wallet-anyone-may-publish.md)) |
 | `/papers?page=<n>` | Every paper this environment published, newest mint first, 20 to a page, each with its score (below) |
 | `/papers/<cid>?event=<id>` | A 404 for an address that is no CID, before anything streams; otherwise where a paper stands, then its record, abstract and how to verify it, and its Ratings section (`#rating`, scrolled into view when the page opens at it, `components/rating/scroll-to-rating.tsx`) once published (below), under "Papers / <title>" breadcrumbs. `?already=1` says a re-submitted PDF was already published |
 | `/api/papers/<cid>?event=<id>` | The same as JSON (`PaperView`: the stage, and the record once published), never cached: a read, so a route rather than a server action |
 | `/papers/<cid>/ratings/<requestId>` | One rating: where it stands until it is scored, then its score and every check behind it, or why it was cancelled (below), under "Papers / <title> / Rating" breadcrumbs. `?new=1`, from the Rate button, follows a request the chain doesn't show yet for 2 minutes |
 | `/api/ratings/<requestId>` | The same as JSON (`RatingView`), never cached, for the rating page to poll; not-found for an id that is not `0x` + 64 hex digits, or where no contract takes ratings |
-| `/method` | How the reproducibility readiness score works: how a paper is scored, the checklist for each kind of study (`STUDY_TYPES` from `@verisci/core`, with each one's number of checks), the scorer's model (`RATING_SETTINGS.model`) and the PDF it reads from IPFS by its CID, what the score leaves out, where it is recorded (the score on Base, the answers in the rating's own Knowledge Asset), and the three phases |
-| `/about` | Why VeriSci exists (the reproducibility crisis, and AI agents that build on papers they can't weigh), the OriginTrail DKG's two layers, the paper's PDF stored off-chain on IPFS at an address hashed from its content, papers and ratings as Knowledge Assets that VeriSci's node mints and holds, what comes next (the root README's roadmap, each step with its status and why), who builds VeriSci (its maintainer, the code on GitHub, a LinkedIn profile, from `SITE`), testnets until mainnet, how it differs from the 2020 SciFact model of the same name, and that visits are counted with Vercel Web Analytics, which sets no cookies (ADR 0041) |
+| `/method` | How the reproducibility readiness score works: how a paper is scored, the checklist for each kind of study (`STUDY_TYPES` from `@labstrail/core`, with each one's number of checks), the scorer's model (`RATING_SETTINGS.model`) and the PDF it reads from IPFS by its CID, what the score leaves out, where it is recorded (the score on Base, the answers in the rating's own Knowledge Asset), and the three phases |
+| `/about` | Why LabsTrail exists (the reproducibility crisis, and AI agents that build on papers they can't weigh), the OriginTrail DKG's two layers, the paper's PDF stored off-chain on IPFS at an address hashed from its content, papers and ratings as Knowledge Assets that LabsTrail's node mints and holds, what comes next (the root README's roadmap, each step with its status and why), who builds LabsTrail (its maintainer, the code on GitHub, a LinkedIn profile, from `SITE`), testnets until mainnet, how it differs from the 2020 SciFact model of the same name, and that visits are counted with Vercel Web Analytics, which sets no cookies (ADR 0041) |
 | `/robots.txt`, `/sitemap.xml` | Production's crawling rules and every page and paper to index; elsewhere, every crawler kept out and an empty sitemap (below) |
 | `/opengraph-image`, `/papers/<cid>/opengraph-image`, `/papers/<cid>/ratings/<request id>/opengraph-image` | The 1200 × 630 images a shared link shows: the site's, a paper's, and a rating's, which is the site's (below) |
 | `/api/inngest` | Serves the Inngest functions: the publish function and the failure alerts, plus the rating, oracle, reconciler and health functions where the oracle key is set |
@@ -58,7 +58,7 @@ signed submission and starts its publish run within the address's daily limit
 picker gives none, by the `%PDF-` it must start with) or is over 15 MB, before spending an
 upload URL. It then uploads the PDF straight to Pinata, canonicalizes the CID it answers,
 and has the wallet sign `{ cid, contextGraph, deadline }` with a deadline 10 minutes ahead.
-The work itself is `@verisci/workflows`' `getUploadService()`
+The work itself is `@labstrail/workflows`' `getUploadService()`
 ([`packages/workflows`](../../packages/workflows/README.md#the-pages-calls)).
 
 Limits (`lib/publish/limits.ts`): 10 upload URLs per connection (IP) and 5 submissions per signing
@@ -150,8 +150,8 @@ stateDiagram-v2
   PDF sees it at once.
 - `refused` shows why (`lib/publish/messages.ts` → `refusalMessage`): not a PDF, too large,
   unreadable, no title or no text (with a hint for PDFs whose pages are pictures), a paper
-  outside the field (VeriSci publishes life-science and health papers only, the field named
-  as [ADR 0037](../../docs/adr/0037-verisci-rates-life-science-and-health-papers.md) names
+  outside the field (LabsTrail publishes life-science and health papers only, the field named
+  as [ADR 0037](../../docs/adr/0037-labstrail-rates-life-science-and-health-papers.md) names
   it), or a submission that failed its checks.
 - `failed` shows why the run stopped (`failureMessage`): Base, the PDF, the DKG node or
   the mint not answering after every retry, OriginTrail's network not accepting the record
@@ -191,7 +191,7 @@ behind a skeleton with the real headings (`components/rating/ratings-section.tsx
 [`packages/workflows`](../../packages/workflows/README.md#the-pages-calls)):
 
 - A scored paper's section opens with one sentence that says its latest score ("<title>
-  scores 72/100 for reproducibility readiness on VeriSci.") with a link to `/method`, and
+  scores 72/100 for reproducibility readiness on LabsTrail.") with a link to `/method`, and
   holds that rating as a `Review` for search engines (below).
 
 - Phase 1, reproducibility readiness, leads: the latest score recorded on chain with a link
@@ -253,7 +253,7 @@ stateDiagram-v2
   whether the paper's text was shortened; the model and prompt version; and links to the R-KA
   and the contract (unlinked on Anvil).
 - Cancelled: why, in plain words (`lib/rating/messages.ts` → `cancelMessage`): the paper can't
-  be rated (outside the field, a PDF whose text can't be read, not one of VeriSci's papers,
+  be rated (outside the field, a PDF whose text can't be read, not one of LabsTrail's papers,
   or no usable answer from the scoring model), or the rating couldn't finish within a day.
 - A rating no contract holds, one of another paper, or any under a paper that isn't
   published, is the not-found page. Opened with `?new=1`, the page follows a request no
@@ -278,7 +278,7 @@ rules, pure and unit-tested; the pages and route files call them.
 - **The site's address** is `siteUrl` (`lib/seo/site-metadata.ts`, from the workflows'
   `siteUrlOf`): production's domain, the branch's URL on staging, `http://localhost:3000`
   locally. The layout's metadata (`siteMetadata`) resolves every link against it, titles
-  pages "<title> · VeriSci" (the home page has its own title, `SITE.title`), gives each page
+  pages "<title> · LabsTrail" (the home page has its own title, `SITE.title`), gives each page
   its own path as canonical (`"./"`, which drops the query), sets a large Twitter card, and
   adds `noindex, nofollow` outside production. Each page sets its own description; the share
   blocks set no title or description, so Next fills them from the page's own.
@@ -303,7 +303,7 @@ rules, pure and unit-tested; the pages and route files call them.
   `<` escaped, since a title comes from a PDF): the home page's `WebSite` and `Organization`
   (the GitHub repo, and its founder with a LinkedIn profile); a published paper's
   `ScholarlyArticle` (its DOI, DKG UAL and IPFS CID as identifiers, the PDF as its encoding,
-  each author a `Person`, never the submitter's wallet, and VeriSci as the publisher of this
+  each author a `Person`, never the submitter's wallet, and LabsTrail as the publisher of this
   record, dated by its mint, never of the paper: `sdPublisher`, `sdDatePublished`) and its
   breadcrumb; every address in it uses the canonical CID and a lowercase request id; a
   fulfilled rating's `Review` of its paper, scored out of 100, on the paper page and, with
@@ -349,12 +349,12 @@ rules, pure and unit-tested; the pages and route files call them.
   `load` and `preload`. A load that fails leaves "Retry wallet" in the header, and the
   publish form and the Rate button say "The wallet couldn't load. Check your connection and
   try again."; a click tries again.
-- `@verisci/core` declares `sideEffects: false`, so a page using one of its helpers carries
+- `@labstrail/core` declares `sideEffects: false`, so a page using one of its helpers carries
   none of its schemas (Zod).
 - `/papers` holds its results area at a minimum height, Sora shows only when it arrives in
   time (`display: "optional"`), and the hero rises without fading, so no page shifts and the
   hero's text can be the home page's largest paint.
-- **Measuring:** run Lighthouse on `pnpm --filter @verisci/web build` then `start`, in a fresh
+- **Measuring:** run Lighthouse on `pnpm --filter @labstrail/web build` then `start`, in a fresh
   private window, never on `dev`: dev serves unminified code, and Lighthouse's simulated LCP
   counts every script requested before the first paint. On 2026-10-18 (mobile): every page
   92-97 (67-74 before), 230-360 KB sent (1.0-1.2 MB before), blocking time 20-70 ms, no
@@ -436,7 +436,7 @@ The "Clinical" look: a clinical record with an on-chain proof, in Tailwind CSS v
   while the bar hides, so the page stays still as it scrolls; `app/viewport.test.ts` refuses
   `dvh` anywhere in `app/`. On-chain values show in
   short form with a copy button.
-- The product name is VeriSci, for life-science and health papers; its name, title,
+- The product name is LabsTrail, for life-science and health papers; its name, title,
   description and one-sentence definition come from `lib/site.ts` (`SITE`). Its mark (`components/site/logo.tsx`, and `app/icon.svg`
   for the tab, in fixed colours that read on light and dark tabs) is a heartbeat whose last
   beat is a check, drawn from the record's blue into the proof's teal.
@@ -451,7 +451,7 @@ The "Clinical" look: a clinical record with an on-chain proof, in Tailwind CSS v
 - The footer (`components/site/site-footer.tsx`) links to publishing, `/method` and `/about`,
   and lists the contracts on Base Sepolia, linked on
   Basescan: OriginTrail's `DKGKnowledgeAssets` and `KnowledgeAssetsLifecycle`
-  (`ORIGINTRAIL_CONTRACTS` from `@verisci/core`), and the RatingController this
+  (`ORIGINTRAIL_CONTRACTS` from `@labstrail/core`), and the RatingController this
   environment's pages use (`lib/rating/chain.ts`): locally the Anvil one, unlinked.
 
 ## Environment
@@ -467,7 +467,7 @@ unless `APP_ENV` is `local`:
 
 | Variable | Value |
 | --- | --- |
-| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis's REST address and token, for the limits: one database shared by every environment, each counter named after its `APP_ENV` (`verisci:staging:upload-url`), since Upstash's free plan allows one ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)). The token is secret |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis's REST address and token, for the limits: one database shared by every environment, each counter named after its `APP_ENV` (`labstrail:staging:upload-url`), since Upstash's free plan allows one ([ADR 0005](../../docs/adr/0005-staging-and-production-are-isolated.md)). The token is secret |
 | `REOWN_PROJECT_ID` | The Reown project id for the wallet window, from one project shared by every environment, read on the server and handed to the page, so nothing is inlined at build time. Without it the pages say the wallet is not set up |
 | `VERCEL_PROJECT_PRODUCTION_URL`, `VERCEL_BRANCH_URL` | Set by Vercel: production's domain and the branch's URL, the site's address for its canonical links, sitemap, structured data and share images (`siteUrl`); unset locally, where it is `http://localhost:3000` |
 | `LOCAL_CHAIN_RPC_URL`, `LOCAL_RATING_CONTRACT` | Optional, read only when `APP_ENV=local`: Anvil's URL and the RatingController deployed there. With both, the pages read and request ratings on that contract and the wallet window offers Anvil; without either, the paper and rating pages say ratings aren't set up, the papers list shows no Rate link, and the wallet window offers only Base Sepolia ([ADR 0036](../../docs/adr/0036-local-rating-runs-use-anvil.md)) |
@@ -486,7 +486,7 @@ before its first deploy, and allow each deployed domain in the Reown project.
 
 ## Deploying
 
-Vercel builds the site from one project (`verisci`, Hobby): Root Directory `apps/web`, the
+Vercel builds the site from one project (`labstrail`, Hobby): Root Directory `apps/web`, the
 Next.js preset, the install and build commands it detects (pnpm from `packageManager`, Node
 24.x from `engines`), and no `vercel.json`. Production tracks `main`; every other branch is a
 preview, and `develop`'s, at its stable branch URL, is staging.
@@ -514,9 +514,9 @@ preview, and `develop`'s, at its stable branch URL, is staging.
 
 | Command | What it does |
 | --- | --- |
-| `pnpm --filter @verisci/web dev` | Starts the dev server on http://localhost:3000 |
-| `pnpm --filter @verisci/web build` | Production build; needs `APP_ENV` (from the root `.env.local` locally) |
-| `pnpm --filter @verisci/web start` | Serves the production build |
-| `pnpm --filter @verisci/web inngest` | Starts the Inngest dev server (http://localhost:8288), pointed at `/api/inngest`; run it next to `dev` |
-| `pnpm --filter @verisci/web typecheck` | Generates Next's types (`next typegen`), then runs `tsc` |
-| `pnpm --filter @verisci/web test` | Runs its Vitest project (`vitest run`) |
+| `pnpm --filter @labstrail/web dev` | Starts the dev server on http://localhost:3000 |
+| `pnpm --filter @labstrail/web build` | Production build; needs `APP_ENV` (from the root `.env.local` locally) |
+| `pnpm --filter @labstrail/web start` | Serves the production build |
+| `pnpm --filter @labstrail/web inngest` | Starts the Inngest dev server (http://localhost:8288), pointed at `/api/inngest`; run it next to `dev` |
+| `pnpm --filter @labstrail/web typecheck` | Generates Next's types (`next typegen`), then runs `tsc` |
+| `pnpm --filter @labstrail/web test` | Runs its Vitest project (`vitest run`) |

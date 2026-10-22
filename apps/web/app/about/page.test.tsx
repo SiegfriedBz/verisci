@@ -6,10 +6,10 @@ import AboutPage, { metadata } from "./page.tsx";
 describe("/about", () => {
   afterEach(cleanup);
 
-  it("says what VeriSci is and who builds it, with the code and the maintainer's profile", () => {
+  it("says what LabsTrail is and who builds it, with the code and the maintainer's profile", () => {
     render(<AboutPage />);
 
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("About VeriSci");
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("About LabsTrail");
     expect(screen.getByText(SITE.definition)).toBeTruthy();
     expect(screen.getByText(/Siegfried Bozza/)).toBeTruthy();
     expect(screen.getByRole("link", { name: /GitHub/ }).getAttribute("href")).toBe(SITE.repo);
@@ -18,10 +18,10 @@ describe("/about", () => {
     );
   });
 
-  it("says why VeriSci exists: results that can't be repeated, and agents that can't tell", () => {
+  it("says why LabsTrail exists: results that can't be repeated, and agents that can't tell", () => {
     render(<AboutPage />);
 
-    const why = screen.getByRole("region", { name: "Why VeriSci exists" });
+    const why = screen.getByRole("region", { name: "Why LabsTrail exists" });
     expect(why.textContent).toMatch(/more than 70% had tried and failed to reproduce/);
     expect(why.textContent).toMatch(/AI agents/);
     expect(why.textContent).toMatch(/provenance/);
@@ -46,7 +46,7 @@ describe("/about", () => {
     expect(dkg.textContent).toMatch(/CID, a hash of its content/);
   });
 
-  it("says papers and ratings are both Knowledge Assets, minted and held by VeriSci's node", () => {
+  it("says papers and ratings are both Knowledge Assets, minted and held by LabsTrail's node", () => {
     render(<AboutPage />);
 
     const assets = screen.getByRole("region", { name: "Papers and ratings are Knowledge Assets" });
@@ -73,7 +73,7 @@ describe("/about", () => {
       ["later", "Wet-lab replication"],
     ]);
     expect(items[0]).toMatch(/Chainlink VRF/);
-    expect(items[0]).toMatch(/no one, VeriSci included, can steer who is picked/);
+    expect(items[0]).toMatch(/no one, LabsTrail included, can steer who is picked/);
     expect(items[0]).toMatch(/not decided yet: reviewers stake to join the pool, are paid/);
     expect(items[1]).toMatch(/a requester pays only their gas/);
     expect(items[1]).toMatch(/The plan, not decided yet/);
@@ -85,11 +85,13 @@ describe("/about", () => {
 
     expect(
       screen.getByText(
-        /Base Sepolia, a testnet, until a payment plan is in place; then VeriSci moves to mainnet/,
+        /Base Sepolia, a testnet, until a payment plan is in place; then LabsTrail moves to mainnet/,
       ),
     ).toBeTruthy();
     expect(
-      screen.getByText(/a requester pays only their gas, and VeriSci pays to publish and to rate/),
+      screen.getByText(
+        /a requester pays only their gas, and LabsTrail pays to publish and to rate/,
+      ),
     ).toBeTruthy();
   });
 
@@ -97,12 +99,6 @@ describe("/about", () => {
     render(<AboutPage />);
 
     expect(screen.getByText(/Vercel Web Analytics, which sets no cookies/)).toBeTruthy();
-  });
-
-  it("tells VeriSci apart from the 2020 SciFact model of the same name", () => {
-    render(<AboutPage />);
-
-    expect(screen.getByText(/SciFact/)).toBeTruthy();
   });
 
   it("has its own title, description and canonical address", () => {

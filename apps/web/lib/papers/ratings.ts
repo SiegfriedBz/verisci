@@ -1,4 +1,4 @@
-import { getRatingService, type PaperRatingSummary, type PaperSummary } from "@verisci/workflows";
+import { getRatingService, type PaperRatingSummary, type PaperSummary } from "@labstrail/workflows";
 import { ratingChainConfig } from "../rating/chain.ts";
 import { createWebEnv } from "../web-env.ts";
 

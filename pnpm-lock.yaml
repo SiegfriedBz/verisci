@@ -32,6 +32,21 @@ importers:
 
   apps/web:
     dependencies:
+      '@labstrail/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@labstrail/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@labstrail/dkg':
+        specifier: workspace:*
+        version: link:../../packages/dkg
+      '@labstrail/env':
+        specifier: workspace:*
+        version: link:../../packages/env
+      '@labstrail/workflows':
+        specifier: workspace:*
+        version: link:../../packages/workflows
       '@next/env':
         specifier: 16.3.8
         version: 16.3.8
@@ -59,21 +74,6 @@ importers:
       '@vercel/analytics':
         specifier: 2.0.1
         version: 2.0.1(next@16.3.8(@opentelemetry/api@1.9.1)(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
-      '@verisci/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
-      '@verisci/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@verisci/dkg':
-        specifier: workspace:*
-        version: link:../../packages/dkg
-      '@verisci/env':
-        specifier: workspace:*
-        version: link:../../packages/env
-      '@verisci/workflows':
-        specifier: workspace:*
-        version: link:../../packages/workflows
       clsx:
         specifier: 2.1.1
         version: 2.1.1
@@ -132,10 +132,10 @@ importers:
 
   packages/contracts:
     dependencies:
-      '@verisci/core':
+      '@labstrail/core':
         specifier: workspace:*
         version: link:../core
-      '@verisci/env':
+      '@labstrail/env':
         specifier: workspace:*
         version: link:../env
       viem:
@@ -170,10 +170,10 @@ importers:
 
   packages/dkg:
     dependencies:
-      '@verisci/core':
+      '@labstrail/core':
         specifier: workspace:*
         version: link:../core
-      '@verisci/env':
+      '@labstrail/env':
         specifier: workspace:*
         version: link:../env
       viem:
@@ -202,16 +202,16 @@ importers:
 
   packages/workflows:
     dependencies:
-      '@verisci/contracts':
+      '@labstrail/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@verisci/core':
+      '@labstrail/core':
         specifier: workspace:*
         version: link:../core
-      '@verisci/dkg':
+      '@labstrail/dkg':
         specifier: workspace:*
         version: link:../dkg
-      '@verisci/env':
+      '@labstrail/env':
         specifier: workspace:*
         version: link:../env
       inngest:

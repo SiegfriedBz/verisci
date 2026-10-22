@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { checklistOf, checklistScore, STUDY_TYPES } from "@verisci/core";
+import { checklistOf, checklistScore, STUDY_TYPES } from "@labstrail/core";
 import { describe, expect, it } from "vitest";
 import { readReferencePapers } from "./reference-papers.ts";
 

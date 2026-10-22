@@ -7,7 +7,7 @@ export const alt = SITE.definition;
 export const size = SHARE_SIZE;
 export const contentType = "image/png";
 
-/** The image every page shares, unless its segment has its own: VeriSci's name and definition. */
+/** The image every page shares, unless its segment has its own: LabsTrail's name and definition. */
 export default async function Image() {
   const { fonts, logo } = await shareAssets();
   return new ImageResponse(<ShareCard logo={logo} />, { ...size, fonts });

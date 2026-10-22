@@ -1,16 +1,16 @@
 // Dev only: pins a PDF on Pinata's public network, signs it with a throwaway key and sends
-// `verisci/paper.submitted` to the local Inngest dev server. The upload page replaces it.
+// `labstrail/paper.submitted` to the local Inngest dev server. The upload page replaces it.
 //
-//   pnpm --filter @verisci/workflows publish-pdf <file.pdf>
+//   pnpm --filter @labstrail/workflows publish-pdf <file.pdf>
 //
 // Reads PINATA_JWT (declared by the workflows' env module) and DKG_CONTEXT_GRAPH from the
 // root .env.local (packages/workflows README).
 // A relative path is read from the directory the command was typed in.
 import { readFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";
-import { canonicalContextGraph, submissionTypedData, targetKaName } from "@verisci/core";
-import { contextGraphSchema } from "@verisci/dkg";
-import { createSharedEnv, defineEnv } from "@verisci/env";
+import { canonicalContextGraph, submissionTypedData, targetKaName } from "@labstrail/core";
+import { contextGraphSchema } from "@labstrail/dkg";
+import { createSharedEnv, defineEnv } from "@labstrail/env";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { z } from "zod";
 import { inngest } from "../src/inngest.ts";
@@ -24,7 +24,7 @@ const SIGNATURE_LIFETIME_S = 3600n;
 // pnpm runs the script in packages/workflows: resolve the path from where it was typed.
 const file = process.argv[2] && resolve(process.env.INIT_CWD ?? process.cwd(), process.argv[2]);
 if (!file) {
-  console.error("usage: pnpm --filter @verisci/workflows publish-pdf <file.pdf>");
+  console.error("usage: pnpm --filter @labstrail/workflows publish-pdf <file.pdf>");
   process.exit(1);
 }
 
@@ -56,7 +56,7 @@ const pinned = z.object({ data: z.object({ cid: z.string() }) }).parse(await upl
 
 const name = targetKaName(pinned.data.cid);
 if (!name.ok) {
-  console.error(`Pinata returned a CID verisci cannot name: ${pinned.data.cid}`);
+  console.error(`Pinata returned a CID LabsTrail cannot name: ${pinned.data.cid}`);
   process.exit(1);
 }
 const cid = name.name.replace(/^verisci-tka-/, "");

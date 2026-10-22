@@ -1,4 +1,4 @@
-import type { LimitAnswer, PaperStatus, SubmitLimiter, UploadService } from "@verisci/workflows";
+import type { LimitAnswer, PaperStatus, SubmitLimiter, UploadService } from "@labstrail/workflows";
 import { describe, expect, it } from "vitest";
 import type { Counter } from "./limits.ts";
 import { clientIp, readProgress, requestUploadUrl, sendSubmission } from "./upload-actions.ts";

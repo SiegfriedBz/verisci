@@ -2,7 +2,7 @@ import type {
   ReadPendingCountResult,
   ReadRequestIdsResult,
   ReadRequestResult,
-} from "@verisci/contracts";
+} from "@labstrail/contracts";
 import type { Hex } from "viem";
 
 /**

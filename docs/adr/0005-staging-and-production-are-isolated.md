@@ -5,7 +5,7 @@
 
 ## Context
 
-verisci runs in production (`main`) and staging (`develop`), each at a stable URL that webhooks target. Shared resources would let a staging test write production assets, or one webhook reach two oracles.
+LabsTrail runs in production (`main`) and staging (`develop`), each at a stable URL that webhooks target. Shared resources would let a staging test write production assets, or one webhook reach two oracles.
 
 ## Decision
 
@@ -15,7 +15,7 @@ verisci runs in production (`main`) and staging (`develop`), each at a stable UR
 - The IPFS pinning account is shared: one account pins every environment's PDFs. A refused file is unpinned only if it is not a PDF, which no environment publishes, so one environment never unpins another's paper, even while their size limits differ ([0010](0010-pdf-to-target-ka-pipeline.md)).
 - The Upstash database is shared: Upstash's free plan allows one, so every environment keeps its upload-limit counters in it, each counter named after its environment, and one environment's hits never count against another's.
 - The Alchemy RPC account is shared: one Alchemy RPC URL serves every deployment's chain reads and the oracles' transactions (`CHAIN_RPC_URL`), and the node's RPC proxy falls back to the same account within its own daily budget ([0006](0006-dkg-node-runs-on-a-dedicated-host.md)), so all of them share one free account's quota.
-- The Gemini key is shared: one key, from one Google project, serves every environment, so their requests share its daily free quota ([0018](0018-phase-1-scorer-output-contract.md), [0037](0037-verisci-rates-life-science-and-health-papers.md)).
+- The Gemini key is shared: one key, from one Google project, serves every environment, so their requests share its daily free quota ([0018](0018-phase-1-scorer-output-contract.md), [0037](0037-labstrail-rates-life-science-and-health-papers.md)).
 - `APP_ENV` names the environment: `local`, `staging` or `production` ([0004](0004-env-variables-per-workspace-one-root-file.md)). One Vercel project deploys every environment, so a per-environment variable is one name, with one value per Vercel scope.
 - The dkg env module refuses a `-prod` context graph unless `APP_ENV=production`, and requires one when it is.
 
@@ -45,3 +45,4 @@ verisci runs in production (`main`) and staging (`develop`), each at a stable UR
 - 2026-10-18: corrected: the node server's credential is created three times, not twice, since local development has its own ([0039](0039-one-credential-per-environment.md)) (ADR sweep).
 - 2026-10-19: production's context graph is `…/verisci-main-prod` (was `…/verisci-prod`, which OriginTrail's cores keep dormant, [domain](../domain.md)) (fresh production graph, user's choice).
 - 2026-10-19: corrected: the node serves every graph on it, the retired `…/verisci-prod` included, not two (ADR sweep, user's choice).
+- 2026-10-22: the project renamed LabsTrail ([0042](0042-the-project-is-named-labstrail.md), user's choice).

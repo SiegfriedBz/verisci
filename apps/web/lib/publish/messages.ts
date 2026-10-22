@@ -1,9 +1,9 @@
-import { MAX_PDF_BYTES } from "@verisci/core";
-import type { PublishFailure, SubmitResult } from "@verisci/workflows";
+import { MAX_PDF_BYTES } from "@labstrail/core";
+import type { PublishFailure, SubmitResult } from "@labstrail/workflows";
 import type { RefusalReason } from "./progress.ts";
 import type { UploadUrlAnswer } from "./upload-actions.ts";
 
-/** The largest PDF verisci publishes, in MB, as the messages name it. */
+/** The largest PDF LabsTrail publishes, in MB, as the messages name it. */
 const MAX_PDF_MB = MAX_PDF_BYTES / 1024 / 1024;
 
 /** What the publish form says when the wallet's code couldn't download, after a click on Connect. */
@@ -53,7 +53,7 @@ export function failureMessage(reason: PublishFailure | undefined): string {
     case "paper-unreachable":
       return "We couldn't read your PDF: the IPFS gateway or our paper reader didn't answer, even after several tries. Publish the same PDF again in a few minutes.";
     case "node-unreachable":
-      return "VeriSci's DKG node didn't answer, even after several tries. Publish the same PDF again in a few minutes: it picks up where it stopped.";
+      return "LabsTrail's DKG node didn't answer, even after several tries. Publish the same PDF again in a few minutes: it picks up where it stopped.";
     case "network-refused":
       return "OriginTrail's network didn't accept the record yet, even after several tries. Publish the same PDF again later: it picks up where it stopped.";
     case "mint-not-confirmed":
@@ -81,7 +81,7 @@ export function refusalMessage(reason: RefusalReason): string {
     case "no-text":
       return "We found no text in this PDF. If its pages are pictures (a scan, or a PDF saved from a browser's viewer), we can't read them: use the publisher's original PDF.";
     case "outside-field":
-      return "VeriSci publishes papers in the life sciences and health only: biology, medicine, neuroscience, pharmacology, public health and bioinformatics, and psychology when the study is about health. Our check placed this paper outside that field, so it wasn't published.";
+      return "LabsTrail publishes papers in the life sciences and health only: biology, medicine, neuroscience, pharmacology, public health and bioinformatics, and psychology when the study is about health. Our check placed this paper outside that field, so it wasn't published.";
     case "expired":
       return "The signature expired before the paper was read. Publish it again.";
     case "bad-signature":

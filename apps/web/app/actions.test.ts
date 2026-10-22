@@ -9,7 +9,7 @@ const submitPaper = vi.fn(async () => ({ ok: false, reason: "bad-signature" }));
 
 const announceLocalRating = vi.fn(async () => ({ ok: true, requestId: `0x${"ab".repeat(32)}` }));
 
-vi.mock("@verisci/workflows", () => ({
+vi.mock("@labstrail/workflows", () => ({
   getUploadService: () => ({ createUploadUrl, submitPaper }),
   getRatingService: () => ({ announceLocalRating }),
 }));

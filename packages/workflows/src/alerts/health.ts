@@ -1,4 +1,4 @@
-import type { NodeStatus } from "@verisci/dkg";
+import type { NodeStatus } from "@labstrail/dkg";
 import type { Inngest } from "inngest";
 import { formatEther, type Hex } from "viem";
 import { type PendingReads, readPending } from "../rating/pending.ts";

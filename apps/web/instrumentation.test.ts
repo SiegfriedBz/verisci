@@ -1,6 +1,6 @@
 // @vitest-environment node
-import { EnvError, type RuntimeEnv } from "@verisci/env";
-import { checkRatingSettings, createWorkflowsEnv } from "@verisci/workflows";
+import { EnvError, type RuntimeEnv } from "@labstrail/env";
+import { checkRatingSettings, createWorkflowsEnv } from "@labstrail/workflows";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { checkServerSettings as check, register } from "./instrumentation.ts";
 import { createWebEnv } from "./lib/web-env.ts";

@@ -1,4 +1,4 @@
-import { knowledgeAssetToken, parseUal } from "@verisci/core";
+import { knowledgeAssetToken, parseUal } from "@labstrail/core";
 
 /** Base Sepolia's block explorer, where staging and production both run until mainnet (ADR 0015). */
 const BASESCAN = "https://sepolia.basescan.org";

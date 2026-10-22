@@ -1,4 +1,4 @@
-import { getUploadService } from "@verisci/workflows";
+import { getUploadService } from "@labstrail/workflows";
 import type { MetadataRoute } from "next";
 import { sitemapFor } from "../lib/seo/crawl.ts";
 import { createWebEnv } from "../lib/web-env.ts";

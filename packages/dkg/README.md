@@ -1,4 +1,4 @@
-# @verisci/dkg
+# @labstrail/dkg
 
 Adapter between `core` and the DKG: reads and writes Knowledge Assets.
 
@@ -22,13 +22,13 @@ Architecture views: [`.omm/overall-architecture/dkg-client/`](../../.omm/overall
 
 ## Depends on
 
-`@verisci/core` (UAL normalization), `@verisci/env`, Zod, and viem (the EIP-55 checksum of
+`@labstrail/core` (UAL normalization), `@labstrail/env`, Zod, and viem (the EIP-55 checksum of
 `DKG_CONTEXT_GRAPH`'s address).
 
 ## Environment
 
 Declared in `src/dkg-env.ts` (`createDkgEnv`) and validated on first import of
-`@verisci/dkg/env` (`src/env.ts`), not of the main entry, so a workspace that only imports
+`@labstrail/dkg/env` (`src/env.ts`), not of the main entry, so a workspace that only imports
 the client's types never needs them.
 
 | Variable | Value |
@@ -58,14 +58,14 @@ the `publish-pdf` script build on the same rule.
 | `client.checkGraph()` | `ok` when the node lists the graph as subscribed, `graph-not-served` when it does not, or a failure when the list cannot be read; the node answers a query on a graph it does not hold with no rows (`docs/domain.md` → DKG), so check this before reading an empty answer as "nothing there" |
 | `DkgClient`, `DkgClientConfig` | The client's calls and its settings |
 | `Quad`, `AssetState`, `AssetResult`, `MintResult`, `QueryResult`, `NodeStatus`, `GraphStatus`, `DkgFailure` | The client's input and result types |
-| `env` (from `@verisci/dkg/env`) | The settings, validated from `process.env` on import |
+| `env` (from `@labstrail/dkg/env`) | The settings, validated from `process.env` on import |
 | `dkgSchema(isProduction)` | The three variables' rules, for a workspace that validates them with its own in one pass |
 | `contextGraphSchema(isProduction)` | The rule for `DKG_CONTEXT_GRAPH` (full id, address in EIP-55 case, `-prod` guard), for a script that reads only that variable |
-| `createDkgEnv(runtimeEnv)`, `DkgEnv` (from either entry) | The function that validates the settings from a given object, when called (what `@verisci/dkg/env` and tests use), and their type; a workspace that also reads the DKG settings spreads `dkgSchema` into its own `defineEnv` instead |
+| `createDkgEnv(runtimeEnv)`, `DkgEnv` (from either entry) | The function that validates the settings from a given object, when called (what `@labstrail/dkg/env` and tests use), and their type; a workspace that also reads the DKG settings spreads `dkgSchema` into its own `defineEnv` instead |
 
 ```ts
-import { createDkgClient } from "@verisci/dkg";
-import { env } from "@verisci/dkg/env";
+import { createDkgClient } from "@labstrail/dkg";
+import { env } from "@labstrail/dkg/env";
 
 const dkg = createDkgClient({
   url: env.DKG_URL,
@@ -101,7 +101,7 @@ routes and refusals are in `docs/domain.md` → DKG.
 
 | Command | What it does |
 | --- | --- |
-| `pnpm --filter @verisci/dkg typecheck` | Typechecks the package |
-| `pnpm --filter @verisci/dkg test` | Runs its Vitest project (`vitest run`) against a fake node |
+| `pnpm --filter @labstrail/dkg typecheck` | Typechecks the package |
+| `pnpm --filter @labstrail/dkg test` | Runs its Vitest project (`vitest run`) against a fake node |
 
 Ships TypeScript source (`src/index.ts`, `src/env.ts`), with no build step.

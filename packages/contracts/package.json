@@ -1,5 +1,5 @@
 {
-  "name": "@verisci/contracts",
+  "name": "@labstrail/contracts",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -14,8 +14,8 @@
     "record-deployment": "node tools/record-deployment.ts"
   },
   "dependencies": {
-    "@verisci/core": "workspace:*",
-    "@verisci/env": "workspace:*",
+    "@labstrail/core": "workspace:*",
+    "@labstrail/env": "workspace:*",
     "viem": "2.57.4",
     "zod": "4.6.5"
   },

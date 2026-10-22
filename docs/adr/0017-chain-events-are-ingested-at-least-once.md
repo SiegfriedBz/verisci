@@ -5,7 +5,7 @@
 
 ## Context
 
-Rating requests reach verisci as Alchemy Notify webhook calls carrying contract logs. Webhooks are delivered at least once, so a log can arrive twice, and after a chain reorganization Alchemy Notify delivers the new block, so a log delivered earlier may no longer be on chain. The previous route checked the signature but neither deduplicated logs nor handled reorged ones.
+Rating requests reach LabsTrail as Alchemy Notify webhook calls carrying contract logs. Webhooks are delivered at least once, so a log can arrive twice, and after a chain reorganization Alchemy Notify delivers the new block, so a log delivered earlier may no longer be on chain. The previous route checked the signature but neither deduplicated logs nor handled reorged ones.
 
 ## Decision
 
@@ -29,3 +29,4 @@ Rating requests reach verisci as Alchemy Notify webhook calls carrying contract 
 - 2026-10-16: corrected: names the Alchemy Notify webhook, not plain Alchemy, whose RPC VeriSci also uses (intake and recovery).
 - 2026-10-16: corrected: after a reorg, Alchemy Notify delivers the new block; its GraphQL logs carry no `removed` mark, so the run's read of the request on chain is what stops a dropped request (intake and recovery review, user's choice).
 - 2026-10-16: corrected: the run's read of the request on chain, and the oracle function's before it sends, are named as the reorg guards, since Alchemy Notify marks no log `removed`; an R-KA minted for a request dropped mid-run is an orphan (ADR sweep and branch review, user's choices).
+- 2026-10-22: the project renamed LabsTrail ([0042](0042-the-project-is-named-labstrail.md), user's choice).

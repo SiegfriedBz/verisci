@@ -1,6 +1,6 @@
 # The DKG node server
 
-VeriSci's DKG node runs on one server, with everything it needs beside it: the DKG daemon,
+LabsTrail's DKG node runs on one server, with everything it needs beside it: the DKG daemon,
 its RPC proxy ([`infra/rpc-proxy`](../infra/rpc-proxy/README.md)), GROBID, and Caddy, the
 only public entry ([ADR 0006](adr/0006-dkg-node-runs-on-a-dedicated-host.md)). Staging,
 production and developers' computers all use this one node, each with its own credential
@@ -208,7 +208,7 @@ other than `accepted` from `finalized-chain`
 ## The server: Oracle Cloud
 
 The server is an Oracle Cloud Always Free VM, chosen because it costs nothing and fits the
-stack. It ran the earlier prototype, `desci-rating-dapp`, from 2026-09; VeriSci took it over
+stack. It ran the earlier prototype, `desci-rating-dapp`, from 2026-09; LabsTrail took it over
 on 2026-10-17, and the prototype's node was set aside (below).
 
 The Oracle account that owns the VM is locked: its console cannot be reached (lost password,
@@ -231,7 +231,7 @@ skipping those marked `this server only` and `one time`.
 ### 1. Set the previous node aside (this server only)
 
 The prototype's node (DKG 10.0.16) ran here with its own keys, wallets and graphs, none of
-which VeriSci uses. It was stopped and kept:
+which LabsTrail uses. It was stopped and kept:
 
 ```bash
 sudo systemctl stop dkg && sudo systemctl disable dkg
@@ -287,7 +287,7 @@ node published. On 2026-10-17 it was copied from the developer's computer, where
 until then.
 
 Before the move, count what the node holds, on the machine it runs on. The papers count is
-the papers list's own query (`paperCountQuery` in `@verisci/core`); on 2026-10-17 it was 7
+the papers list's own query (`paperCountQuery` in `@labstrail/core`); on 2026-10-17 it was 7
 papers and 4 ratings. Then stop that node for good: two daemons with the same keys would
 share one peer identity and the publisher wallets' nonces.
 

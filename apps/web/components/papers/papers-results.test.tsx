@@ -1,11 +1,11 @@
+import type { PaperListResult, PaperSummary } from "@labstrail/workflows";
 import { cleanup, render, screen } from "@testing-library/react";
-import type { PaperListResult, PaperSummary } from "@verisci/workflows";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const listPapers =
   vi.fn<(options: { page: number; pageSize: number }) => Promise<PaperListResult>>();
 
-vi.mock("@verisci/workflows", () => ({ getUploadService: () => ({ listPapers }) }));
+vi.mock("@labstrail/workflows", () => ({ getUploadService: () => ({ listPapers }) }));
 vi.mock("next/navigation", () => ({
   notFound: () => {
     throw new Error("NEXT_NOT_FOUND");

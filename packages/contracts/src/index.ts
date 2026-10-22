@@ -1,5 +1,5 @@
 /** Package name, imported by the web app's package test (`apps/web/app/packages.test.ts`). */
-export const contractsName = "@verisci/contracts";
+export const contractsName = "@labstrail/contracts";
 
 export { ratingControllerDeployments } from "./committed-deployments.ts";
 export {

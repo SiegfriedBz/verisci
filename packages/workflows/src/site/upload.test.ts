@@ -1,4 +1,4 @@
-import { submissionTypedData, targetKaQuads } from "@verisci/core";
+import { submissionTypedData, targetKaQuads } from "@labstrail/core";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { describe, expect, it } from "vitest";
 import type { SubmitLimiter } from "../publish/submit-paper.ts";

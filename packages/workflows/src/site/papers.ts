@@ -6,8 +6,8 @@ import {
   parsePaperAuthors,
   parsePaperCount,
   parsePaperListing,
-} from "@verisci/core";
-import type { DkgClient, DkgFailure } from "@verisci/dkg";
+} from "@labstrail/core";
+import type { DkgClient, DkgFailure } from "@labstrail/dkg";
 import { signatureMatches, type VerifyOptions } from "../publish/verify-submission.ts";
 
 /** The largest page `listPapers` reads. */

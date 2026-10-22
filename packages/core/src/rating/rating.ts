@@ -52,9 +52,9 @@ const ANSWERS: ReadonlySet<string> = new Set(CHECK_ANSWERS);
 /**
  * How a rating run treats `targetUal` (ADRs 0011, 0031): `ours` when it is in canonical form,
  * on Base Sepolia (the DKG's chain), and minted by our node, the agent of `contextGraph`, so
- * verisci published it; `invalid` otherwise: it does not parse, is not canonical, names
+ * LabsTrail published it; `invalid` otherwise: it does not parse, is not canonical, names
  * another chain or another publisher, or is the older form that names the KnowledgeAssets
- * contract. Only papers verisci published are rated.
+ * contract. Only papers LabsTrail published are rated.
  */
 export function classifyTarget(targetUal: string, contextGraph: string): TargetClass {
   const parsed = parseUal(targetUal);

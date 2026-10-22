@@ -1,5 +1,5 @@
+import type { PublishedRecord, RatingListResult } from "@labstrail/workflows";
 import { cleanup, render } from "@testing-library/react";
-import type { PublishedRecord, RatingListResult } from "@verisci/workflows";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PaperView } from "../publish/upload-actions.ts";
 import { SITE } from "../site.ts";
@@ -158,7 +158,7 @@ describe("ShareCard", () => {
     const { container } = render(<ShareCard logo={LOGO} />);
 
     expect(container.textContent).toContain(SITE.definition);
-    expect(container.textContent).toContain("VeriSci");
+    expect(container.textContent).toContain("LabsTrail");
   });
 
   it("shows a paper's title, authors and score", () => {

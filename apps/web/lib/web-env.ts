@@ -1,4 +1,4 @@
-import { createSharedEnv, defineEnv, type RuntimeEnv } from "@verisci/env";
+import { createSharedEnv, defineEnv, type RuntimeEnv } from "@labstrail/env";
 import { z } from "zod";
 
 /**
